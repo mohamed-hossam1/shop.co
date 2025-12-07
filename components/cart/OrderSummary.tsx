@@ -8,11 +8,11 @@ import { useEffect, useState } from "react";
 export default function OrderSummary({
   price,
   isCart,
-  DeliveryFee
+  deliveryFee,
 }: {
   price: number;
   isCart: boolean;
-  DeliveryFee:number
+  deliveryFee: number;
 }) {
   const [currentPrice, setCurrentPrice] = useState(price);
   const [promoCode, setPromoCode] = useState("");
@@ -215,29 +215,30 @@ export default function OrderSummary({
               Delivery Fee
             </span>
             <span className="font-semibold text-sm md:text-base">
-              On Checkout
+              {deliveryFee == 0 ? <>On Checkout</> : <>{deliveryFee}</>}
             </span>
           </div>
           <div className="border-t border-gray-200 pt-2 md:pt-3">
             <div className="flex justify-between">
               <span className="text-base md:text-lg font-semibold">Total</span>
               <span className="text-base md:text-lg font-bold text-primary">
-                EGP {currentPrice.toFixed(2)}{DeliveryFee==-1 ? "":" + Delivery Fee"}
+                EGP {(currentPrice + deliveryFee).toFixed(2)}
               </span>
             </div>
           </div>
         </div>
         {isCart && (
           <>
+            {price ? (
+              <Link
+                className="block w-full bg-gradient-to-r from-primary to-[#14274E] text-white py-2.5 md:py-3 px-4 rounded-lg md:rounded-xl font-semibold hover:from-[#14274E] hover:to-[#394867] transition-all duration-300 shadow-lg hover:shadow-xl mb-3 md:mb-4 text-center text-sm md:text-base"
+                href="/checkout"
+              >
+                Proceed to Checkout
+              </Link>
+            ):<></>}
             <Link
-              className="block w-full bg-gradient-to-r from-primary to-[#14274E] text-white py-2.5 md:py-3 px-4 rounded-lg md:rounded-xl font-semibold hover:from-[#14274E] hover:to-[#394867] transition-all duration-300 shadow-lg hover:shadow-xl mb-3 md:mb-4 text-center text-sm md:text-base"
-              href="/checkout"
-            >
-              Proceed to Checkout
-            </Link>
-
-            <Link
-              className="block w-full text-center text-gray-600 hover:text-primary transition-colors text-sm md:text-base"
+              className="block w-full border py-3  text-center rounded-lg md:rounded-xl text-gray-600 hover:text-primary transition-colors text-sm hover:bg-gray-200 transition-all duration-300 md:text-base"
               href={ROUTES.HOME}
             >
               Continue Shopping

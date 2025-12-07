@@ -6,15 +6,16 @@ import ROUTES from "@/constants/routes";
 import { useEffect, useState } from "react";
 
 export default function UserControl() {
-  const {user, isLoading} = useUser();
+  const userContext = useUser();
 
-  if (isLoading) {
-    return <UserMenu user={null} />;
+  if (userContext.isLoading) {
+    return <UserMenu userContext={null} />;
   }
+
 
   return (
     <>
-      {!user ? (
+      {!userContext.user ? (
         <>
           <div className="hidden lg:flex">
             <Link
@@ -33,12 +34,12 @@ export default function UserControl() {
             </Link>
           </div>
           <div className={`flex  lg:hidden`}>
-            <UserMenu user={user} />
+            <UserMenu userContext={userContext} />
           </div>
         </>
       ) : (
-        <div className={`flex ${!user && "lg:hidden"}`}>
-          <UserMenu user={user} />
+        <div className={`flex ${!userContext.user && "lg:hidden"}`}>
+          <UserMenu userContext={userContext} />
         </div>
       )}
     </>

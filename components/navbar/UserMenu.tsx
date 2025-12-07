@@ -15,14 +15,14 @@ import ROUTES from "@/constants/routes";
 import { SignOutSupabase } from "@/app/actions/userAction";
 import { useRouter } from "next/navigation";
 
-export default function UserMenu({user}) {
+export default function UserMenu({userContext}) {
   const [open, setOpen] = useState<boolean>(false);
   const router = useRouter()
-  const userData = user
-
+  const userData = userContext?.user
+  
   const signOut = async ()=>{
     await SignOutSupabase()
-    user.resetUser()
+    userContext.resetUser()
     router.replace(ROUTES.SIGNIN)
   }
   return (
@@ -50,18 +50,18 @@ export default function UserMenu({user}) {
               <p className="text-gray-500">{userData.email}</p>
             </DropdownMenuLabel>
             <DropdownMenuItem className="cursor-pointer">
-              <Link href={ROUTES.DASHBOARD} className="w-full h-full">
+              <Link onClick={() => setOpen(!open)} href={ROUTES.DASHBOARD} className="w-full h-full">
                 Dashboard
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem className="cursor-pointer" >
-              <Link href={ROUTES.CART} className="w-full h-full">
+              <Link onClick={() => setOpen(!open)} href={ROUTES.CART} className="w-full h-full">
                 Cart
               </Link>
             </DropdownMenuItem>
 
             <DropdownMenuItem className="cursor-pointer" >
-              <Link href={ROUTES.ORDERS} className="w-full h-full">
+              <Link onClick={() => setOpen(!open)} href={ROUTES.ORDERS} className="w-full h-full">
                 Orders
               </Link>
             </DropdownMenuItem>
@@ -74,12 +74,12 @@ export default function UserMenu({user}) {
           
           </>):<>
             <DropdownMenuItem className="cursor-pointer">
-              <Link href={ROUTES.SIGNIN} className="w-full h-full">
+              <Link onClick={() => setOpen(!open)} href={ROUTES.SIGNIN} className="w-full h-full">
                 Login
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem className="cursor-pointer" >
-              <Link href={ROUTES.SIGNUP} className="w-full h-full">
+              <Link onClick={() => setOpen(!open)} href={ROUTES.SIGNUP} className="w-full h-full">
                 Sign Up
               </Link>
             </DropdownMenuItem>

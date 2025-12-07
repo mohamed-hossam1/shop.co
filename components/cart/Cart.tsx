@@ -1,6 +1,6 @@
 import CartList from "./CartList";
 
-export default async function Cart() {
+export default function Cart() {
   
 
   return (

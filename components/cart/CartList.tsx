@@ -209,7 +209,7 @@ export default function CartList() {
           )}
         </div>
 
-        <OrderSummary price={price} isCart={true} DeliveryFee={432} />
+        <OrderSummary price={price} isCart={true} deliveryFee={0} />
       </div>
     </div>
   );

@@ -10,15 +10,13 @@ export default function CheckoutPage() {
   const { cart, isLoading } = useCart();
   const router = useRouter();
 
-  useEffect(() => {
-    if (cart === undefined || cart === null) return <CartSkeleton />;
+  // useEffect(() => {
 
-    if (!cart || Object.keys(cart).length === 0) {
-      router.replace("/cart");
-      return;
-    }
+  //   if (!cart || Object.keys(cart).length === 0) {
+  //     router.replace("/cart");
+  //   }
 
-  }, [cart, router]);
+  // }, [cart, router]);
 
   
   if (isLoading || cart === null || Object.keys(cart).length === 0) {

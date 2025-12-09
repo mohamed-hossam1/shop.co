@@ -5,15 +5,21 @@ import ROUTES from "@/constants/routes";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 
+interface OrderSummaryProps {
+  price: number;
+  isCart: boolean;
+  deliveryFee: number;
+  hasAddress?: boolean;
+  isLoadingFee?: boolean;
+}
+
 export default function OrderSummary({
   price,
   isCart,
   deliveryFee,
-}: {
-  price: number;
-  isCart: boolean;
-  deliveryFee: number;
-}) {
+  hasAddress = false,
+  isLoadingFee = false,
+}: OrderSummaryProps) {
   const [currentPrice, setCurrentPrice] = useState(price);
   const [promoCode, setPromoCode] = useState("");
   const [appliedPromo, setAppliedPromo] = useState<promoCode | null>(null);
@@ -215,14 +221,28 @@ export default function OrderSummary({
               Delivery Fee
             </span>
             <span className="font-semibold text-sm md:text-base">
-              {deliveryFee == 0 ? <>On Checkout</> : <>{deliveryFee}</>}
+              {isLoadingFee ? (
+                <div className="h-5 w-16 bg-gray-200 animate-pulse rounded"></div>
+              ) : isCart ? (
+                "On Checkout"
+              ) : !hasAddress ? (
+                "Select address"
+              ) : (
+                `EGP ${deliveryFee.toFixed(2)}`
+              )}
             </span>
           </div>
           <div className="border-t border-gray-200 pt-2 md:pt-3">
             <div className="flex justify-between">
               <span className="text-base md:text-lg font-semibold">Total</span>
               <span className="text-base md:text-lg font-bold text-primary">
-                EGP {(currentPrice + deliveryFee).toFixed(2)}
+                {isLoadingFee ? (
+                  <div className="h-6 w-20 bg-gray-200 animate-pulse rounded"></div>
+                ) : (
+                  `EGP ${(
+                    currentPrice + (hasAddress ? deliveryFee : 0)
+                  ).toFixed(2)}`
+                )}
               </span>
             </div>
           </div>
@@ -236,7 +256,9 @@ export default function OrderSummary({
               >
                 Proceed to Checkout
               </Link>
-            ):<></>}
+            ) : (
+              <></>
+            )}
             <Link
               className="block w-full border py-3  text-center rounded-lg md:rounded-xl text-gray-600 hover:text-primary transition-colors text-sm hover:bg-gray-200 transition-all duration-300 md:text-base"
               href={ROUTES.HOME}

@@ -1,12 +1,21 @@
-"use client"
-import React, { createContext, useState, useContext, useEffect } from 'react';
-import { useCart } from './CartContext';
+"use client";
+
+import React, { createContext, useState, useContext, useEffect } from "react";
+import { useCart } from "./CartContext";
+
+interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  role: string;
+}
 
 interface UserContextType {
-  user: UserData | null;
-  updateUser: (newData: UserData) => void;
+  user: UserProfile | null;
+  updateUser: (newData: UserProfile) => void;
   resetUser: () => void;
-  isLoading: boolean; 
+  isLoading: boolean;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -14,12 +23,17 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 export function UserProvider({ children }: { children: React.ReactNode }) {
   const { initCart } = useCart();
   const [isLoading, setIsLoading] = useState(true);
-  const [user, setUser] = useState<UserData | null>(null);
+  const [user, setUser] = useState<UserProfile | null>(null);
 
   useEffect(() => {
-    const saved = localStorage.getItem('userData');
+    const saved = localStorage.getItem("userData");
     if (saved) {
-      setUser(JSON.parse(saved));
+      try {
+        setUser(JSON.parse(saved));
+      } catch (error) {
+        console.error("Error parsing user data:", error);
+        localStorage.removeItem("userData");
+      }
     }
     setIsLoading(false);
   }, []);
@@ -27,21 +41,24 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (!isLoading) {
       if (user) {
-        localStorage.setItem('userData', JSON.stringify(user));
+        localStorage.setItem("userData", JSON.stringify(user));
       } else {
-        localStorage.removeItem('userData');
+        localStorage.removeItem("userData");
       }
     }
   }, [user, isLoading]);
 
-  const updateUser = (newData: UserData) => {
+  const updateUser = async (newData: UserProfile) => {
     setUser(newData);
-    initCart();
+    await initCart();
   };
 
-  const resetUser = () => {
+  const resetUser = async () => {
     setUser(null);
-    initCart();
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("cartData");
+    }
+    await initCart();
   };
 
   return (
@@ -54,7 +71,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 export function useUser() {
   const context = useContext(UserContext);
   if (context === undefined) {
-    throw new Error('useUser must be used within UserProvider');
+    throw new Error("useUser must be used within UserProvider");
   }
   return context;
 }

@@ -50,7 +50,7 @@ export default function UserMenu({userContext}) {
               <p className="text-gray-500">{userData.email}</p>
             </DropdownMenuLabel>
             <DropdownMenuItem className="cursor-pointer">
-              <Link onClick={() => setOpen(!open)} href={ROUTES.DASHBOARD} className="w-full h-full">
+              <Link onClick={() => setOpen(!open)} href={ROUTES.PROFILE} className="w-full h-full">
                 Dashboard
               </Link>
             </DropdownMenuItem>

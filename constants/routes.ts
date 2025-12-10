@@ -2,12 +2,13 @@ const ROUTES = {
   HOME: "/",
   SIGNIN: "/sign-in",
   SIGNUP: "/sign-up",
-  DASHBOARD: "/bashboard",
-  ORDERS: "/orders",
+  PROFILE: "/profile",
+  ORDERS: "/profile/orders",
   WALLET: "/wallet",
   CART: "/cart",
-  SETTINGS: "/settings",
+  SETTINGS: "/profile/settings",
   PRODUCTS: "/products",
+  CHECKOUT: "/checkout"
 }
 
 export default ROUTES

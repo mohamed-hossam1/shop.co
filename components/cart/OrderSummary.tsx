@@ -252,7 +252,7 @@ export default function OrderSummary({
             {price ? (
               <Link
                 className="block w-full bg-gradient-to-r from-primary to-[#14274E] text-white py-2.5 md:py-3 px-4 rounded-lg md:rounded-xl font-semibold hover:from-[#14274E] hover:to-[#394867] transition-all duration-300 shadow-lg hover:shadow-xl mb-3 md:mb-4 text-center text-sm md:text-base"
-                href="/checkout"
+                href={ROUTES.CHECKOUT}
               >
                 Proceed to Checkout
               </Link>

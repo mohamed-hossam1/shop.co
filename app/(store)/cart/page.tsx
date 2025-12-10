@@ -2,7 +2,7 @@ import Cart from "@/components/cart/Cart";
 
 export default function page() {
   return (
-    <div className="h-screen">
+    <div className="min-h-screen">
       <Cart />
     </div>
   )

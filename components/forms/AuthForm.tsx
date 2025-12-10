@@ -250,7 +250,7 @@ export default function AuthForm({ fromType }: AuthFormProps) {
           )}
         </button>
       </form>
-      <div className="relative flex justify-center text-sm mt-6">
+      {/* <div className="relative flex justify-center text-sm mt-6">
         <span className="px-2 bg-white text-gray-500">Or continue with</span>
       </div>
       <div className="grid grid-cols-2 gap-3 mt-4">
@@ -281,7 +281,7 @@ export default function AuthForm({ fromType }: AuthFormProps) {
           </svg>
           Facebook
         </button>
-      </div>
+      </div> */}
 
       <div className="mt-6 text-center">
         <p>

@@ -13,8 +13,6 @@ type Props = {
   instapayLink?: string;
   onVodafoneFileChange?: (file: File | null) => void;
   onInstapayFileChange?: (file: File | null) => void;
-  initialVodafoneFile: File | null
-  initialInstapayFile: File | null
 };
 
 export default function PaymentStep({
@@ -24,8 +22,6 @@ export default function PaymentStep({
   instapayLink = "https://instapay.com",
   onVodafoneFileChange,
   onInstapayFileChange,
-  initialVodafoneFile,
-  initialInstapayFile
 }: Props) {
   const payments = ["cash", "vodafone cash", "instapay"];
 

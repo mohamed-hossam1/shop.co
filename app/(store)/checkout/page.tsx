@@ -10,18 +10,18 @@ export default function CheckoutPage() {
   const { cart, isLoading } = useCart();
   const router = useRouter();
 
-  // useEffect(() => {
+  useEffect(() => {
 
-  //   if (!cart || Object.keys(cart).length === 0) {
-  //     router.replace("/cart");
-  //   }
+    if (!cart || Object.keys(cart).length === 0) {
+      router.replace("/cart");
+    }
 
-  // }, [cart, router]);
+  }, []);
 
   
   if (isLoading || cart === null || Object.keys(cart).length === 0) {
-    return <CartSkeleton />;
+    return <div className="min-h-screen"> <CartSkeleton /></div>;
   }
 
-  return <div><CheckoutList /></div>;
+  return <div className="min-h-screen"><CheckoutList /></div>;
 }

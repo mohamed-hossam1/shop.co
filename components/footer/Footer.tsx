@@ -2,7 +2,7 @@ import Categories from "./Categories";
 
 export default function Footer() {
   return (
-    <footer className="bg-primary-hover text-white py-16 mt-16">
+    <footer className="bg-primary-hover text-white py-16">
       <div className="max-w-[1600px] px-5 m-auto">
         <div className="grid grid-cols-1 sm:grid-cols-2  gap-6 lg:gap-8">
           <div>

@@ -131,6 +131,7 @@ export default function CheckoutList() {
         productTitle: item.products.title,
         quantity: item.quantity,
         priceAtPurchase: item.products.price_after,
+        productImage: item.products.image_cover
       }));
 
       const result = await createOrder(

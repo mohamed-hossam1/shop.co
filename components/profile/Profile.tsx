@@ -5,7 +5,11 @@ import SavedAddressList from "./SavedAddressList";
 import ROUTES from "@/constants/routes";
 import Link from "next/link";
 
-export default function Profile({children}) {
+export default function Profile({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   const userContext = useUser();
   const userData = userContext.user;
   if (userContext.isLoading) return <></>;

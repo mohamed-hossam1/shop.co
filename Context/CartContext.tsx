@@ -7,8 +7,7 @@ import {
   removeFromCartSupa,
   updateCartSupa,
 } from "@/app/actions/cartAction";
-import React, { createContext, useState, useContext, useEffect } from "react";
-import type { CartData, CartState, CartContextType } from "@/types/Cart";
+import React, { createContext, useState, useContext, useEffect, useRef } from "react";
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
@@ -17,6 +16,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [cart, setCart] = useState<CartState | null>(null);
   const [quantity, setQuantity] = useState<number>(0);
   const [price, setPrice] = useState<number>(0);
+  const isInitialized = useRef(false);
 
   useEffect(() => {
     if (!cart) {
@@ -42,35 +42,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setPrice(total);
   }, [cart]);
 
-  const updateLocalCache = (cartData: CartState) => {
-    if (typeof window !== "undefined") {
-      try {
-        localStorage.setItem("cartData", JSON.stringify(cartData));
-      } catch (error) {
-        console.error("Error saving to localStorage:", error);
-      }
-    }
-  };
-
-  const getLocalCache = (): CartState | null => {
-    if (typeof window === "undefined") return null;
-    try {
-      const cached = localStorage.getItem("cartData");
-      return cached ? JSON.parse(cached) : null;
-    } catch (error) {
-      console.error("Error reading from localStorage:", error);
-      return null;
-    }
-  };
-
   const initCart = async () => {
-    setIsLoading(true);
+    if (isInitialized.current) return;
     
-    const cached = getLocalCache();
-    if (cached && Object.keys(cached).length > 0) {
-      setCart(cached);
-    }
-
+    setIsLoading(true);
     try {
       const supaCart = (await getCartSupa()) || [];
       const data: CartState = {};
@@ -78,14 +53,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         data[supaCart[index].products.id] = supaCart[index];
       }
       setCart(data);
-      updateLocalCache(data);
+      isInitialized.current = true;
     } catch (error) {
       console.error("Error initializing cart:", error);
-      if (cached) {
-        setCart(cached);
-      } else {
-        setCart({});
-      }
+      setCart({});
     } finally {
       setIsLoading(false);
     }
@@ -110,7 +81,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
 
     setCart(updatedCart);
-    updateLocalCache(updatedCart);
 
     try {
       if (cart && cart[products.id]) {
@@ -129,7 +99,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     delete updatedCart[productId];
     
     setCart(updatedCart);
-    updateLocalCache(updatedCart);
 
     try {
       await removeFromCartSupa(productId);
@@ -141,7 +110,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const clearCart = async () => {
     setCart({});
-    updateLocalCache({});
 
     try {
       await clearCartSupa();

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useState, useContext, useEffect } from "react";
+import React, { createContext, useState, useContext, useEffect, useRef } from "react";
 import { useCart } from "./CartContext";
 
 interface UserProfile {
@@ -24,41 +24,45 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const { initCart } = useCart();
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<UserProfile | null>(null);
+  const isInitialized = useRef(false);
 
   useEffect(() => {
-    const saved = localStorage.getItem("userData");
-    if (saved) {
+    if (isInitialized.current) return;
+    
+    const loadUser = async () => {
       try {
-        setUser(JSON.parse(saved));
+        const { GetUser } = await import("@/app/actions/userAction");
+        const userData = await GetUser();
+        if (userData) {
+          setUser(userData);
+        }
       } catch (error) {
-        console.error("Error parsing user data:", error);
-        localStorage.removeItem("userData");
+        console.error("Error loading user:", error);
+      } finally {
+        setIsLoading(false);
+        isInitialized.current = true;
       }
-    }
-    setIsLoading(false);
+    };
+
+    loadUser();
   }, []);
 
-  useEffect(() => {
-    if (!isLoading) {
-      if (user) {
-        localStorage.setItem("userData", JSON.stringify(user));
-      } else {
-        localStorage.removeItem("userData");
-      }
-    }
-  }, [user, isLoading]);
-
   const updateUser = async (newData: UserProfile) => {
-    setUser(newData);
-    await initCart();
+    try {
+      setUser(newData);
+      await initCart();
+    } catch (error) {
+      console.error("Error updating user:", error);
+    }
   };
 
   const resetUser = async () => {
-    setUser(null);
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("cartData");
+    try {
+      setUser(null);
+      await initCart();
+    } catch (error) {
+      console.error("Error resetting user:", error);
     }
-    await initCart();
   };
 
   return (

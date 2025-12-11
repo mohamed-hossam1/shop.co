@@ -1,4 +1,4 @@
-interface promoCode{
+interface PromoCode{
   id:number,
   code:string,
   discount_percentage:number,

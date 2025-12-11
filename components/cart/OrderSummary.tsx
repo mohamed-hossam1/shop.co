@@ -1,6 +1,6 @@
 "use client";
 
-import { getPromo } from "@/app/actions/promoCodeAction";
+import { validatePromoCode } from "@/app/actions/promoCodeAction";
 import ROUTES from "@/constants/routes";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -13,6 +13,12 @@ interface OrderSummaryProps {
   isLoadingFee?: boolean;
 }
 
+interface AppliedPromo {
+  id: number;
+  code: string;
+  discount_percentage: number;
+}
+
 export default function OrderSummary({
   price,
   isCart,
@@ -20,36 +26,16 @@ export default function OrderSummary({
   hasAddress = false,
   isLoadingFee = false,
 }: OrderSummaryProps) {
-  const [currentPrice, setCurrentPrice] = useState(price);
-  const [promoCode, setPromoCode] = useState("");
-  const [appliedPromo, setAppliedPromo] = useState<promoCode | null>(null);
-  const [promoError, setPromoError] = useState("");
-  const [isApplying, setIsApplying] = useState(false);
-
-  useEffect(() => {
-    try {
-      const savedPromo = localStorage.getItem("promoCode");
-      const savedAppliedPromo = localStorage.getItem("appliedPromo");
-
-      if (savedPromo) {
-        const code = JSON.parse(savedPromo);
-        setPromoCode(code);
-      }
-
-      if (savedAppliedPromo) {
-        const promo = JSON.parse(savedAppliedPromo);
-        setAppliedPromo(promo);
-      }
-    } catch (e) {
-      localStorage.removeItem("promoCode");
-      localStorage.removeItem("appliedPromo");
-    }
-  }, []);
+  const [currentPrice, setCurrentPrice] = useState<number>(price);
+  const [promoCode, setPromoCode] = useState<string>("");
+  const [appliedPromo, setAppliedPromo] = useState<AppliedPromo | null>(null);
+  const [promoError, setPromoError] = useState<string>("");
+  const [isApplying, setIsApplying] = useState<boolean>(false);
 
   useEffect(() => {
     if (appliedPromo) {
       const discount = (price * appliedPromo.discount_percentage) / 100;
-      setCurrentPrice(price - discount);
+      setCurrentPrice(Math.round((price - discount) * 100) / 100);
     } else {
       setCurrentPrice(price);
     }
@@ -62,46 +48,45 @@ export default function OrderSummary({
     setPromoError("");
 
     try {
-      const { data, error } = await getPromo(promoCode.trim());
+      const result = await validatePromoCode(promoCode.trim(), price);
 
-      if (error || !data || data.length === 0) {
-        setPromoError("Invalid promo code");
+      if (!result) {
+        setPromoError("Server did not return a result.");
         setAppliedPromo(null);
-        localStorage.removeItem("appliedPromo");
         return;
       }
 
-      const promo = data[0] as promoCode;
-
-      if (!promo.is_active) {
-        setPromoError("This promo code is not active");
+      if (!result.success) {
+        setPromoError(result.message || "Invalid promo code");
         setAppliedPromo(null);
-        localStorage.removeItem("appliedPromo");
         return;
       }
 
-      if (promo.used_count >= promo.max_uses) {
-        setPromoError("This promo code has reached its usage limit");
+      const coupon = result.coupon ?? null;
+
+      if (!coupon) {
+        setPromoError("Invalid promo response from server.");
         setAppliedPromo(null);
-        localStorage.removeItem("appliedPromo");
         return;
       }
 
-      if (price < promo.min_purchase) {
-        setPromoError(`Minimum purchase amount is EGP ${promo.min_purchase}`);
-        setAppliedPromo(null);
-        localStorage.removeItem("appliedPromo");
-        return;
+      setAppliedPromo({
+        id: coupon.id,
+        code: coupon.code,
+        discount_percentage: coupon.discount_percentage,
+      });
+
+      if (typeof result.finalPrice === "number") {
+        setCurrentPrice(Math.round(result.finalPrice * 100) / 100);
+      } else {
+        const discount = (price * coupon.discount_percentage) / 100;
+        setCurrentPrice(Math.round((price - discount) * 100) / 100);
       }
 
       setPromoError("");
-      setAppliedPromo(promo);
-      localStorage.setItem("promoCode", JSON.stringify(promoCode));
-      localStorage.setItem("appliedPromo", JSON.stringify(promo));
     } catch (err) {
       setPromoError("Error applying promo code. Please try again.");
       setAppliedPromo(null);
-      localStorage.removeItem("appliedPromo");
     } finally {
       setIsApplying(false);
     }
@@ -111,8 +96,7 @@ export default function OrderSummary({
     setAppliedPromo(null);
     setPromoCode("");
     setPromoError("");
-    localStorage.removeItem("promoCode");
-    localStorage.removeItem("appliedPromo");
+    setCurrentPrice(price);
   };
 
   return (
@@ -121,81 +105,77 @@ export default function OrderSummary({
         <h3 className="text-base md:text-lg font-semibold text-gray-900 mb-4">
           Order Summary
         </h3>
-        {isCart ? (
-          <>
-            <div className="mb-4 md:mb-6">
-              <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2">
-                Promo Code
-              </label>
-              <div className="space-y-2">
-                <div className="flex flex-row gap-2">
-                  <input
-                    placeholder="Enter code"
-                    className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary w-full disabled:bg-gray-50 disabled:cursor-not-allowed"
-                    type="text"
-                    value={promoCode}
-                    onChange={(e) => setPromoCode(e.target.value)}
-                    disabled={isApplying || !!appliedPromo}
-                    onKeyDown={(e) => e.key === "Enter" && handleApplyPromo()}
-                  />
-                  {appliedPromo ? (
-                    <button
-                      className="px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors text-xs md:text-sm whitespace-nowrap"
-                      onClick={handleRemovePromo}
-                    >
-                      Remove
-                    </button>
-                  ) : (
-                    <button
-                      disabled={!promoCode.trim() || isApplying}
-                      className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs md:text-sm whitespace-nowrap"
-                      onClick={handleApplyPromo}
-                    >
-                      {isApplying ? (
-                        <div className="h-6 w-6 border-b-2 border-primary rounded-full animate-spin"></div>
-                      ) : (
-                        "Apply"
-                      )}
-                    </button>
-                  )}
-                </div>
-                {promoError && (
-                  <p className="text-red-500 text-xs md:text-sm flex items-center gap-1">
-                    <svg
-                      className="w-4 h-4"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                    {promoError}
-                  </p>
-                )}
-                {appliedPromo && (
-                  <p className="text-green-600 text-xs md:text-sm flex items-center gap-1 font-medium">
-                    <svg
-                      className="w-4 h-4"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                    {appliedPromo.discount_percentage}% discount applied!
-                  </p>
+        {isCart && (
+          <div className="mb-4 md:mb-6">
+            <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2">
+              Promo Code
+            </label>
+            <div className="space-y-2">
+              <div className="flex flex-row gap-2">
+                <input
+                  placeholder="Enter code"
+                  className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary w-full disabled:bg-gray-50 disabled:cursor-not-allowed"
+                  type="text"
+                  value={promoCode}
+                  onChange={(e) => setPromoCode(e.target.value)}
+                  disabled={isApplying || !!appliedPromo}
+                  onKeyDown={(e) => e.key === "Enter" && handleApplyPromo()}
+                />
+                {appliedPromo ? (
+                  <button
+                    className="px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors text-xs md:text-sm whitespace-nowrap"
+                    onClick={handleRemovePromo}
+                  >
+                    Remove
+                  </button>
+                ) : (
+                  <button
+                    disabled={!promoCode.trim() || isApplying}
+                    className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs md:text-sm whitespace-nowrap"
+                    onClick={handleApplyPromo}
+                  >
+                    {isApplying ? (
+                      <div className="h-6 w-6 border-b-2 border-primary rounded-full animate-spin"></div>
+                    ) : (
+                      "Apply"
+                    )}
+                  </button>
                 )}
               </div>
+              {promoError && (
+                <p className="text-red-500 text-xs md:text-sm flex items-center gap-1">
+                  <svg
+                    className="w-4 h-4"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  {promoError}
+                </p>
+              )}
+              {appliedPromo && (
+                <p className="text-green-600 text-xs md:text-sm flex items-center gap-1 font-medium">
+                  <svg
+                    className="w-4 h-4"
+                    fill="currentColor"
+                    viewBox="0 0 20 20"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  {appliedPromo.discount_percentage}% discount applied!
+                </p>
+              )}
             </div>
-          </>
-        ) : (
-          <></>
+          </div>
         )}
 
         <div className="space-y-2 md:space-y-3 mb-4 md:mb-6">
@@ -212,7 +192,9 @@ export default function OrderSummary({
               </span>
               <span className="font-semibold text-sm md:text-base">
                 -EGP{" "}
-                {((price * appliedPromo.discount_percentage) / 100).toFixed(2)}
+                {((price * appliedPromo.discount_percentage) / 100).toFixed(
+                  2
+                )}
               </span>
             </div>
           )}
@@ -256,11 +238,9 @@ export default function OrderSummary({
               >
                 Proceed to Checkout
               </Link>
-            ) : (
-              <></>
-            )}
+            ) : null}
             <Link
-              className="block w-full border py-3  text-center rounded-lg md:rounded-xl text-gray-600 hover:text-primary transition-colors text-sm hover:bg-gray-200 transition-all duration-300 md:text-base"
+              className="block w-full border py-3 text-center rounded-lg md:rounded-xl text-gray-600 hover:text-primary transition-colors text-sm hover:bg-gray-200 transition-all duration-300 md:text-base"
               href={ROUTES.HOME}
             >
               Continue Shopping

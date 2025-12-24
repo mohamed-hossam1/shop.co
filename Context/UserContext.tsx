@@ -1,19 +1,18 @@
 "use client";
 
 import React, { createContext, useState, useContext, useEffect, useRef } from "react";
-import { useCart } from "./CartContext";
 
 interface UserProfile {
-  id: string;
+  id?: string;
   name: string;
   email: string;
   phone: string;
-  role: string;
+  role?: string;
 }
 
 interface UserContextType {
   user: UserProfile | null;
-  updateUser: (newData: UserProfile) => void;
+  updateUser: (newData: UserProfile | null) => void;
   resetUser: () => void;
   isLoading: boolean;
 }
@@ -21,7 +20,6 @@ interface UserContextType {
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
-  const { initCart } = useCart();
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<UserProfile | null>(null);
   const isInitialized = useRef(false);
@@ -47,22 +45,12 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     loadUser();
   }, []);
 
-  const updateUser = async (newData: UserProfile) => {
-    try {
-      setUser(newData);
-      await initCart();
-    } catch (error) {
-      console.error("Error updating user:", error);
-    }
+  const updateUser = (newData: UserProfile | null) => {
+    setUser(newData);
   };
 
-  const resetUser = async () => {
-    try {
-      setUser(null);
-      await initCart();
-    } catch (error) {
-      console.error("Error resetting user:", error);
-    }
+  const resetUser = () => {
+    setUser(null);
   };
 
   return (

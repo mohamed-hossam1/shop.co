@@ -1,5 +1,4 @@
 import { useUser } from "@/Context/UserContext";
-import React from "react";
 
 export default function UserIcon({ isExpanded }: { isExpanded: boolean }) {
   const userContext = useUser();
@@ -7,7 +6,7 @@ export default function UserIcon({ isExpanded }: { isExpanded: boolean }) {
   if (userContext.isLoading) {
     return (
       <div className="flex flex-row-reverse items-center gap-2 font-semibold ">
-        <div>
+        <div className="hidden md:block">
           <p
             className={`${
               isExpanded ? "opacity-100 block" : "opacity-0 hidden"
@@ -19,7 +18,7 @@ export default function UserIcon({ isExpanded }: { isExpanded: boolean }) {
             } transition-all duration-300 text-gray-500 bg-gray-200 w-45 h-6 animate-pulse text-sm`}
           ></p>
         </div>
-        <div className="border-2 flex bg-primary items-center w-10 h-10 flex justify-center items-center rounded-full cursor-pointer border-primary transition-all duration-300">
+        <div className="border-2 flex bg-gradient-to-r from-[#1F1F6F] to-[#14274E] items-center w-10 h-10 flex justify-center items-center rounded-full cursor-pointer border-primary transition-all duration-300">
           
         </div>
       </div>
@@ -47,7 +46,7 @@ export default function UserIcon({ isExpanded }: { isExpanded: boolean }) {
           </p>
         )}
       </div>
-      <div className="border-2 flex bg-primary items-center w-10 h-10 flex justify-center items-center rounded-full cursor-pointer border-primary transition-all duration-300">
+      <div className="border-2 flex bg-gradient-to-r from-[#1F1F6F] to-[#14274E]  items-center w-10 h-10 flex justify-center items-center rounded-full cursor-pointer border-primary transition-all duration-300">
         {userData && (
           <>
             <p className="text-white text-center w-5 cursor-pointer font-bold">

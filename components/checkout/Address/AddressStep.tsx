@@ -6,20 +6,20 @@ import AddressForm from "./AddressForm";
 
 interface AddressStepProps {
   addresses: Address[];
-  onAddressSelected: (address: Address) => void;
+  onAddressSelected: (address: Address|null) => Promise<void>
   onRefresh: () => void;
-  selectedAddress:Address|null
+  selectedAddress: Address | null;
 }
 
 export default function AddressStep({
   addresses,
   onAddressSelected,
   onRefresh,
-  selectedAddress
+  selectedAddress,
 }: AddressStepProps) {
   const [showForm, setShowForm] = useState(false);
   const [selectedAddressId, setSelectedAddressId] = useState<number | null>(
-    selectedAddress?.id
+    selectedAddress?.id || null
   );
 
   const handleSelectAddress = (address: Address) => {
@@ -32,16 +32,16 @@ export default function AddressStep({
     onRefresh();
   };
 
-  const handleAddressDeleted = (addressId:number) => {
+  const handleAddressDeleted = (addressId: number) => {
     setSelectedAddressId(null);
-    onAddressSelected(null)
+    onAddressSelected(null);
     onRefresh();
   };
 
   return (
     <div className="p-6">
       <h2 className="text-2xl font-bold mb-7">Delivery Address</h2>
-      {addresses.length !=0 ? 
+      {addresses.length != 0 ? (
         <>
           <p className="text-lg font-bold mb-3">Saved Addresses</p>
 
@@ -52,9 +52,9 @@ export default function AddressStep({
             onAddressDeleted={handleAddressDeleted}
           />
         </>
-       : 
+      ) : (
         <></>
-      }
+      )}
 
       {!showForm && (
         <button

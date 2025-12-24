@@ -5,7 +5,7 @@ export default function VodafoneCash() {
     <div className="flex-1 flex min-w-0">
       <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg flex items-center justify-center mr-3 md:mr-4 flex-shrink-0">
         <Image
-          src="/vodafone-cash-logo.png"
+          src="/vodafone-cash-logo.webp"
           width={40}
           height={40}
           alt="vodafone cash logo"

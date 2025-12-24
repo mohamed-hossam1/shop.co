@@ -13,12 +13,12 @@ import { usePathname } from "next/navigation";
 import UserIcon from "./UserIcon";
 
 export default function Sidebar() {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
   const pathname = usePathname();
 
   useEffect(() => {
     const handleResize = () => {
-      if (window.innerWidth <= 768) setIsExpanded(false);
+      if (!(window.innerWidth <= 768)) setIsExpanded(true);
     };
     window.addEventListener("resize", handleResize);
     handleResize();
@@ -67,7 +67,7 @@ export default function Sidebar() {
                 href={`/${item.id}`}
                 className={`
                   flex items-center space-x-2 p-3 rounded-lg transition-all duration-200 group
-                  ${isActive ? "bg-primary text-white" : "hover:bg-primary/5"}
+                  ${isActive ? " text-white bg-gradient-to-r from-[#1F1F6F] to-[#14274E] hover:from-[#14274E] hover:to-[#394867] " : "hover:bg-primary/5"}
                 `}
               >
                 <div

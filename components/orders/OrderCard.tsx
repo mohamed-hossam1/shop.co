@@ -1,9 +1,8 @@
 import React from "react";
 import Orderitems from "./Orderitems";
 import { Data } from "@/lib/data";
-
+// 01020097069
 export default function OrderCard({ order }: { order: OrderData }) {
-
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
       <div className="flex items-start justify-between mb-4">
@@ -34,8 +33,8 @@ export default function OrderCard({ order }: { order: OrderData }) {
               {`Order ${order.id ?? ""}`}
             </h3>
 
-            <div className="flex items-center space-x-4 text-sm text-gray-600">
-              <span className="flex items-center">
+            <div className="flex items-center  space-x-4 text-sm text-gray-600">
+              <span className="items-center hidden md:flex ">
                 <svg
                   className="w-4 h-4 mr-1"
                   viewBox="0 0 24 24"
@@ -52,12 +51,11 @@ export default function OrderCard({ order }: { order: OrderData }) {
                   <path d="M3 10h18"></path>
                 </svg>
                 {Data(order?.created_at?.toString())?.["12h"]}
-
               </span>
 
-              <span className="flex items-center">
+              <span className="flex justify-center items-center">
                 <svg
-                  className="w-4 h-4 mr-1"
+                  className="w-4 h-4 mr-1 -translate-y-0.5 md:translate-y-0 "
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -70,7 +68,7 @@ export default function OrderCard({ order }: { order: OrderData }) {
                   <circle cx="12" cy="12" r="2"></circle>
                   <path d="M6 12h.01M18 12h.01"></path>
                 </svg>
-                {order.total_price}
+                <p>{order.total_price} EGP</p>
               </span>
             </div>
           </div>
@@ -83,6 +81,8 @@ export default function OrderCard({ order }: { order: OrderData }) {
                 ? "bg-yellow-100 text-yellow-800"
                 : order.status?.toLowerCase() === "delivered"
                 ? "bg-green-100 text-green-800"
+                : order.status?.toLowerCase() === "cancelled"
+                ? "bg-red-100 text-red-800"
                 : "bg-gray-100 text-gray-800"
             }`}
           >
@@ -96,7 +96,6 @@ export default function OrderCard({ order }: { order: OrderData }) {
           <Orderitems order={order} />
         </div>
       </div>
-      
     </div>
   );
 }

@@ -1,19 +1,21 @@
-export function Data(isoString:string) {
+export function Data(isoString: string) {
   const d = new Date(isoString);
 
-  const opts24 = {
+  const opts24: Intl.DateTimeFormatOptions = {
     timeZone: "Africa/Cairo",
-    weekday: "long",
     year: "numeric",
     month: "long",
     day: "2-digit",
     hour: "2-digit",
     minute: "2-digit",
-    second: "2-digit",
     hour12: false,
   };
 
-  const opts12 = { ...opts24, hour12: true, hour: "numeric" };
+  const opts12: Intl.DateTimeFormatOptions = {
+    ...opts24,
+    hour12: true,
+    hour: "numeric", 
+  };
 
   const fmt24 = new Intl.DateTimeFormat("en-US", opts24);
   const fmt12 = new Intl.DateTimeFormat("en-US", opts12);
@@ -23,4 +25,3 @@ export function Data(isoString:string) {
     "12h": fmt12.format(d),
   };
 }
-

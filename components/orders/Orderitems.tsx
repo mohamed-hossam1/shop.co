@@ -6,7 +6,7 @@ export default async function Orderitems({ order }: { order: OrderData }) {
   if (!items) return <></>;
   return (
     <div>
-      <div className="flex gap-4">
+      <div className="flex flex-wrap gap-4">
 
         {items.map((item) => (
           <div key={item.id}>

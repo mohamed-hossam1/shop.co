@@ -4,6 +4,7 @@ import { validatePromoCode } from "@/app/actions/promoCodeAction";
 import ROUTES from "@/constants/routes";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useCart } from "@/Context/CartContext";
 
 interface OrderSummaryProps {
   price: number;
@@ -13,12 +14,6 @@ interface OrderSummaryProps {
   isLoadingFee?: boolean;
 }
 
-interface AppliedPromo {
-  id: number;
-  code: string;
-  discount_percentage: number;
-}
-
 export default function OrderSummary({
   price,
   isCart,
@@ -26,9 +21,9 @@ export default function OrderSummary({
   hasAddress = false,
   isLoadingFee = false,
 }: OrderSummaryProps) {
+  const { appliedPromo, setAppliedPromo } = useCart();
   const [currentPrice, setCurrentPrice] = useState<number>(price);
-  const [promoCode, setPromoCode] = useState<string>("");
-  const [appliedPromo, setAppliedPromo] = useState<AppliedPromo | null>(null);
+  const [promoCode, setPromoCode] = useState<string>(appliedPromo?.code || "");
   const [promoError, setPromoError] = useState<string>("");
   const [isApplying, setIsApplying] = useState<boolean>(false);
 
@@ -50,19 +45,13 @@ export default function OrderSummary({
     try {
       const result = await validatePromoCode(promoCode.trim(), price);
 
-      if (!result) {
-        setPromoError("Server did not return a result.");
+      if (!result || !result.success) {
+        setPromoError(result?.message || "Invalid promo code");
         setAppliedPromo(null);
         return;
       }
 
-      if (!result.success) {
-        setPromoError(result.message || "Invalid promo code");
-        setAppliedPromo(null);
-        return;
-      }
-
-      const coupon = result.coupon ?? null;
+      const coupon = result.coupon ;
 
       if (!coupon) {
         setPromoError("Invalid promo response from server.");
@@ -70,11 +59,7 @@ export default function OrderSummary({
         return;
       }
 
-      setAppliedPromo({
-        id: coupon.id,
-        code: coupon.code,
-        discount_percentage: coupon.discount_percentage,
-      });
+      setAppliedPromo(coupon);
 
       if (typeof result.finalPrice === "number") {
         setCurrentPrice(Math.round(result.finalPrice * 100) / 100);
@@ -98,6 +83,10 @@ export default function OrderSummary({
     setPromoError("");
     setCurrentPrice(price);
   };
+
+  const discountAmount = appliedPromo
+    ? (price * appliedPromo.discount_percentage) / 100
+    : 0;
 
   return (
     <div className="w-full lg:flex-[2]">
@@ -191,10 +180,7 @@ export default function OrderSummary({
                 Discount ({appliedPromo.discount_percentage}%)
               </span>
               <span className="font-semibold text-sm md:text-base">
-                -EGP{" "}
-                {((price * appliedPromo.discount_percentage) / 100).toFixed(
-                  2
-                )}
+                -EGP {discountAmount.toFixed(2)}
               </span>
             </div>
           )}

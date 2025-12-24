@@ -30,7 +30,7 @@ export default function CartIcon() {
         </svg>
         {
           quantity!=0&&(
-            <div className="absolute bg-primary top-4 left-4 w-5 h-5 rounded-full flex justify-center items-center">
+            <div className="absolute bg-gradient-to-r from-[#1F1F6F] to-[#14274E] top-4 left-4 w-5 h-5 rounded-full flex justify-center items-center">
               <p className="text-white text-sm relative top-[1.5px] -left-[.5px]">{quantity}</p>
             </div>
           )

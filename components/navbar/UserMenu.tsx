@@ -14,15 +14,19 @@ import { useState } from "react";
 import ROUTES from "@/constants/routes";
 import { SignOutSupabase } from "@/app/actions/userAction";
 import { useRouter } from "next/navigation";
+import { useCart } from "@/Context/CartContext";
+import { UserContextType } from "@/types/UserContext";
 
-export default function UserMenu({userContext}) {
+export default function UserMenu({userContext}:{userContext: UserContextType|null}) {
   const [open, setOpen] = useState<boolean>(false);
   const router = useRouter()
   const userData = userContext?.user
+  const {clearCart} = useCart()
   
   const signOut = async ()=>{
     await SignOutSupabase()
-    userContext.resetUser()
+    userContext?.resetUser()
+    clearCart()
     router.replace(ROUTES.SIGNIN)
   }
   return (
@@ -33,7 +37,7 @@ export default function UserMenu({userContext}) {
               {userData && <p>{userData.name}</p>}
 
             </div>
-            <div className="border-2 flex bg-primary items-center w-10 h-10 flex justify-center items-center rounded-full cursor-pointer border-primary transition-all duration-300">
+            <div className="border-2 flex bg-gradient-to-r from-[#1F1F6F] to-[#14274E] items-center w-10 h-10 flex justify-center items-center rounded-full cursor-pointer border-primary transition-all duration-300">
               {userData?<>
                 <p className="text-white w-5 cursor-pointer font-bold" onClick={() => setOpen(!open)}>{userData.name[0]}</p>
               </>:

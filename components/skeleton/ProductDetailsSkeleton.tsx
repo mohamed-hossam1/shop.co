@@ -6,7 +6,7 @@ export default function ProductDetailsSkeleton() {
     <div className="max-w-[1450px] px-5 m-auto mt-12">
       <div className="w-11/12 m-auto">
         <div className="md:flex justify-between mb-6">
-          <div className="flex-8  justify-center items-center bg-white mr-16">
+          <div className="flex-8  justify-center items-center bg-white md:mr-16">
             <div className="flex w-full flex-col gap-4 ">
               <div className="mb-6">
                 <ImageSliderSkeleton />

@@ -4,7 +4,8 @@ import React, { useState, useEffect, useRef } from "react";
 import Cash from "./Cash";
 import VodafoneCash from "./VodafoneCash";
 import Instapay from "./Instapay";
-import { Check } from "lucide-react";
+import { Check, AlertCircle } from "lucide-react";
+import { compressImage, formatFileSize } from "@/lib/Imagecompression";
 
 type Props = {
   onSelectPayment: (p: string) => void;
@@ -32,6 +33,11 @@ export default function PaymentStep({
   const [instapayPreview, setInstapayPreview] = useState<string | null>(null);
 
   const [isCopyed, setIsCopyed] = useState(false);
+  
+  // Compression states
+  const [isCompressingVodafone, setIsCompressingVodafone] = useState(false);
+  const [isCompressingInstapay, setIsCompressingInstapay] = useState(false);
+  const [compressionError, setCompressionError] = useState<string | null>(null);
 
   const vodafoneInputRef = useRef<HTMLInputElement | null>(null);
   const instapayInputRef = useRef<HTMLInputElement | null>(null);
@@ -64,14 +70,56 @@ export default function PaymentStep({
     if (onInstapayFileChange) onInstapayFileChange(instapayImage);
   }, [instapayImage, onInstapayFileChange]);
 
-  const handleVodafoneFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0] ?? null;
-    setVodafoneImage(f);
+  const handleVodafoneFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setCompressionError(null);
+    setIsCompressingVodafone(true);
+
+    try {
+      console.log(`Original size: ${formatFileSize(file.size)}`);
+
+      let processedFile = file;
+      if (file.size > 500 * 1024) {
+        processedFile = await compressImage(file, 0.5, 1920);
+        console.log(`Compressed size: ${formatFileSize(processedFile.size)}`);
+      }
+
+      setVodafoneImage(processedFile);
+    } catch (error) {
+      console.error('Compression error:', error);
+      setCompressionError('Failed to process image. Please try a smaller file.');
+      if (vodafoneInputRef.current) vodafoneInputRef.current.value = '';
+    } finally {
+      setIsCompressingVodafone(false);
+    }
   };
 
-  const handleInstapayFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0] ?? null;
-    setInstapayImage(f);
+  const handleInstapayFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setCompressionError(null);
+    setIsCompressingInstapay(true);
+
+    try {
+      console.log(`Original size: ${formatFileSize(file.size)}`);
+
+      let processedFile = file;
+      if (file.size > 500 * 1024) {
+        processedFile = await compressImage(file, 0.5, 1920);
+        console.log(`Compressed size: ${formatFileSize(processedFile.size)}`);
+      }
+
+      setInstapayImage(processedFile);
+    } catch (error) {
+      console.error('Compression error:', error);
+      setCompressionError('Failed to process image. Please try a smaller file.');
+      if (instapayInputRef.current) instapayInputRef.current.value = '';
+    } finally {
+      setIsCompressingInstapay(false);
+    }
   };
 
   const clearVodafoneFile = () => {
@@ -79,6 +127,7 @@ export default function PaymentStep({
     setVodafonePreview(null);
     if (vodafoneInputRef.current) vodafoneInputRef.current.value = "";
     if (onVodafoneFileChange) onVodafoneFileChange(null);
+    setCompressionError(null);
   };
 
   const clearInstapayFile = () => {
@@ -86,11 +135,23 @@ export default function PaymentStep({
     setInstapayPreview(null);
     if (instapayInputRef.current) instapayInputRef.current.value = "";
     if (onInstapayFileChange) onInstapayFileChange(null);
+    setCompressionError(null);
   };
 
   return (
     <div className="p-6">
       <h2 className="text-2xl font-bold mb-7">Payment Method</h2>
+      <div className="mb-6 p-5 rounded-lg bg-blue-50 border border-blue-200 font-bold text-primary text-xl">
+        🎁 Special gift: Pay using Vodafone Cash or Instapay and get a free
+        gift!
+      </div>
+
+      {compressionError && (
+        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
+          <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+          <p className="text-sm text-red-700">{compressionError}</p>
+        </div>
+      )}
 
       <div className="flex flex-col gap-3">
         <div
@@ -110,7 +171,7 @@ export default function PaymentStep({
               }`}
             >
               {selectedPayment === payments[0] && (
-                <div className="w-2 h-2 rounded-full bg-primary"></div>
+                <div className="w-2 h-2 rounded-full bg-gradient-to-r from-[#1F1F6F] to-[#14274E]"></div>
               )}
             </div>
             <Cash />
@@ -134,7 +195,7 @@ export default function PaymentStep({
               }`}
             >
               {selectedPayment === payments[1] && (
-                <div className="w-2 h-2 rounded-full bg-primary"></div>
+                <div className="w-2 h-2 rounded-full bg-gradient-to-r from-[#1F1F6F] to-[#14274E]"></div>
               )}
             </div>
             <VodafoneCash />
@@ -158,7 +219,7 @@ export default function PaymentStep({
               }`}
             >
               {selectedPayment === payments[2] && (
-                <div className="w-2 h-2 rounded-full bg-primary"></div>
+                <div className="w-2 h-2 rounded-full bg-gradient-to-r from-[#1F1F6F] to-[#14274E]"></div>
               )}
             </div>
             <Instapay />
@@ -187,8 +248,15 @@ export default function PaymentStep({
             </div>
 
             <label className="block text-xs text-gray-600 mb-2">
-              Upload payment screenshot (so we can verify)
+              Upload payment screenshot (will be compressed automatically)
             </label>
+
+            {isCompressingVodafone && (
+              <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center gap-2">
+                <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                <span className="text-sm text-blue-700">Compressing image...</span>
+              </div>
+            )}
 
             <label
               htmlFor="vodafone-upload"
@@ -197,7 +265,7 @@ export default function PaymentStep({
                 vodafoneImage
                   ? "bg-green-50 border-green-200"
                   : "bg-white hover:bg-gray-50"
-              }`}
+              } ${isCompressingVodafone ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -214,7 +282,7 @@ export default function PaymentStep({
                 />
               </svg>
               <span className="text-sm">
-                {vodafoneImage ? vodafoneImage.name : "Upload screenshot"}
+                {vodafoneImage ? `${vodafoneImage.name} (${formatFileSize(vodafoneImage.size)})` : "Upload screenshot"}
               </span>
             </label>
             <input
@@ -224,6 +292,7 @@ export default function PaymentStep({
               accept="image/*"
               onChange={handleVodafoneFile}
               className="sr-only"
+              disabled={isCompressingVodafone}
             />
 
             {vodafonePreview && (
@@ -265,7 +334,11 @@ export default function PaymentStep({
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
-                      window.open(instapayLink, "_blank", "noopener,noreferrer");
+                      window.open(
+                        instapayLink,
+                        "_blank",
+                        "noopener,noreferrer"
+                      );
                     }}
                     className=" font-semibold cursor-pointer px-3 py-1 ml-2 border rounded-md hover:bg-gray-50"
                   >
@@ -280,8 +353,15 @@ export default function PaymentStep({
             </p>
 
             <label className="block text-xs text-gray-600 mb-2">
-              After paying, upload the payment screenshot
+              After paying, upload the payment screenshot (will be compressed automatically)
             </label>
+
+            {isCompressingInstapay && (
+              <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center gap-2">
+                <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                <span className="text-sm text-blue-700">Compressing image...</span>
+              </div>
+            )}
 
             <label
               htmlFor="instapay-upload"
@@ -290,7 +370,7 @@ export default function PaymentStep({
                 instapayImage
                   ? "bg-green-50 border-green-200"
                   : "bg-white hover:bg-gray-50"
-              }`}
+              } ${isCompressingInstapay ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -307,7 +387,7 @@ export default function PaymentStep({
                 />
               </svg>
               <span className="text-sm">
-                {instapayImage ? instapayImage.name : "Upload screenshot"}
+                {instapayImage ? `${instapayImage.name} (${formatFileSize(instapayImage.size)})` : "Upload screenshot"}
               </span>
             </label>
             <input
@@ -317,6 +397,7 @@ export default function PaymentStep({
               accept="image/*"
               onChange={handleInstapayFile}
               className="sr-only"
+              disabled={isCompressingInstapay}
             />
 
             {instapayPreview && (

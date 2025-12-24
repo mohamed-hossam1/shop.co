@@ -1,29 +1,54 @@
 "use client";
 
 import Image from "next/image";
-import { MapPin, CreditCard, Package } from "lucide-react";
+import { MapPin, CreditCard, Package, User } from "lucide-react";
+import { CartState } from "@/types/Cart";
 
 interface ReviewStepProps {
   cart: CartState;
   selectedAddress: Address | null;
+  guestAddress: {
+    name: string;
+    phone: string;
+    city: string;
+    area: string;
+    street: string;
+    building_number: string;
+  } | null;
   selectedPayment: string | null;
   vodafoneFile: File | null;
   instapayFile: File | null;
-
+  isGuest: boolean;
 }
 
 export default function ReviewStep({
   cart,
   selectedAddress,
+  guestAddress,
   selectedPayment,
   vodafoneFile,
   instapayFile,
+  isGuest,
 }: ReviewStepProps) {
   const cartItems = Object.values(cart);
 
   return (
     <div className="p-6">
       <h2 className="text-2xl font-bold mb-7">Review Your Order</h2>
+
+      {isGuest && guestAddress && (
+        <div className="mb-8">
+          <div className="flex items-center gap-2 mb-4">
+            <User className="w-5 h-5 text-primary" />
+            <h3 className="text-lg font-semibold">Contact Information</h3>
+          </div>
+
+          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="font-medium text-gray-900">{guestAddress.name}</p>
+            <p className="text-sm text-gray-700">{guestAddress.phone}</p>
+          </div>
+        </div>
+      )}
 
       <div className="mb-8">
         <div className="flex items-center gap-2 mb-4">
@@ -63,7 +88,6 @@ export default function ReviewStep({
                 <p className="font-bold text-primary text-sm md:text-base">
                   EGP {(item.products.price_after * item.quantity).toFixed(2)}
                 </p>
-
               </div>
             </div>
           ))}
@@ -76,7 +100,17 @@ export default function ReviewStep({
           <h3 className="text-lg font-semibold">Delivery Address</h3>
         </div>
 
-        {selectedAddress ? (
+        {isGuest && guestAddress ? (
+          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="font-medium text-gray-900">{guestAddress.phone}</p>
+            <p className="text-sm text-gray-700 mt-1">
+              {guestAddress.building_number} {guestAddress.street}
+            </p>
+            <p className="text-sm text-gray-700">
+              {guestAddress.area}, {guestAddress.city}
+            </p>
+          </div>
+        ) : selectedAddress ? (
           <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
             <p className="font-medium text-gray-900">{selectedAddress.phone}</p>
             <p className="text-sm text-gray-700 mt-1">
@@ -142,7 +176,6 @@ export default function ReviewStep({
           <p className="text-red-500 text-sm">⚠️ No payment method selected</p>
         )}
       </div>
-
     </div>
   );
 }

@@ -8,7 +8,7 @@ export default async function RelatedProducts({categoryId, prodactId}:{categoryI
   return (
     <div>
       
-      <CardList products={products}/>
+      <CardList products={products??[]}/>
     </div>
   )
 }

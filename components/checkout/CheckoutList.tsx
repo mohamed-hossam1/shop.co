@@ -9,16 +9,37 @@ import AddressStep from "./Address/AddressStep";
 import { getAddresses } from "@/app/actions/addressAction";
 import { getDeliveryFee } from "@/app/actions/deliveryAction";
 import PaymentStep from "./Payment/PaymentStep";
-import ReviewStep from "./ReviewStep";
 import { useRouter } from "next/navigation";
-import { createOrder } from "@/app/actions/ordersAction";
+import { createOrder, createGuestOrder } from "@/app/actions/ordersAction";
 import ROUTES from "@/constants/routes";
+import { useUser } from "@/Context/UserContext";
+import ReviewStep from "./Reviewstep";
+import GuestAddressStep from "./Address/Guestaddressstep";
 
 export default function CheckoutList() {
-  const { cart, price, isLoading: cartLoading, clearCart } = useCart();
+  const {
+    cart,
+    price,
+    isLoading: cartLoading,
+    clearCart,
+    appliedPromo,
+    setAppliedPromo,
+  } = useCart();
+  
+  const { user } = useUser();
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [isLoadingAddresses, setIsLoadingAddresses] = useState(true);
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
+  
+  // Guest address data
+  const [guestAddress, setGuestAddress] = useState({
+    name: "",
+    phone: "",
+    city: "",
+    area: "",
+    street: "",
+    building_number: "",
+  });
 
   const [selectedPayment, onSelectPayment] = useState<string | null>(null);
   const [vodafoneFile, setVodafoneFile] = useState<File | null>(null);
@@ -32,8 +53,12 @@ export default function CheckoutList() {
 
   const router = useRouter();
 
-
   const fetchAddresses = async () => {
+    if (!user) {
+      setIsLoadingAddresses(false);
+      return;
+    }
+    
     setIsLoadingAddresses(true);
     try {
       const data = await getAddresses();
@@ -47,9 +72,9 @@ export default function CheckoutList() {
 
   useEffect(() => {
     fetchAddresses();
-  }, []);
+  }, [user]);
 
-  const handleAddressSelected = async (address: Address) => {
+  const handleAddressSelected = async (address: Address | null) => {
     setSelectedAddress(address);
     setIsLoadingFee(true);
     if (address) {
@@ -66,13 +91,40 @@ export default function CheckoutList() {
     setIsLoadingFee(false);
   };
 
+  const handleGuestAddressChange = async (addressData: typeof guestAddress) => {
+    setGuestAddress(addressData);
+    
+    if (addressData.city) {
+      setIsLoadingFee(true);
+      try {
+        const fee = await getDeliveryFee(addressData.city);
+        setDeliveryFee(fee);
+      } catch (error) {
+        console.error("Error fetching delivery fee:", error);
+        setDeliveryFee(0);
+      }
+      setIsLoadingFee(false);
+    } else {
+      setDeliveryFee(0);
+    }
+  };
+
   if (cartLoading || isLoadingAddresses || cart === null) {
     return <CartSkeleton />;
   }
 
   const isNextDisabled = (() => {
     if (stepNumber === 1) {
-      return selectedAddress === null;
+      if (user) {
+        return selectedAddress === null;
+      } else {
+        return !guestAddress.name || 
+               !guestAddress.phone || 
+               !guestAddress.city || 
+               !guestAddress.area || 
+               !guestAddress.street || 
+               !guestAddress.building_number;
+      }
     }
 
     if (stepNumber === 2) {
@@ -92,32 +144,34 @@ export default function CheckoutList() {
   })();
 
   const handlePlaceOrder = async () => {
-    if (!selectedAddress || !selectedPayment || !cart) {
+    if (!selectedPayment || !cart) {
       alert("Please complete all steps");
       return;
+    }
+
+    if (user && !selectedAddress) {
+      alert("Please select an address");
+      return;
+    }
+
+    if (!user) {
+      if (!guestAddress.name  || !guestAddress.phone || 
+          !guestAddress.city || !guestAddress.area || !guestAddress.street || 
+          !guestAddress.building_number) {
+        alert("Please fill in all address fields");
+        return;
+      }
     }
 
     setIsPlacingOrder(true);
 
     try {
-      const getPromoDiscount = () => {
-        try {
-          const appliedPromo = localStorage.getItem("appliedPromo");
-          if (appliedPromo) {
-            const promo = JSON.parse(appliedPromo);
-            return {
-              amount: (price * promo.discount_percentage) / 100,
-              couponId: promo.id,
-            };
-          }
-        } catch (e) {
-          return { amount: 0, couponId: null };
-        }
-        return { amount: 0, couponId: null };
-      };
+      const discountAmount = appliedPromo
+        ? (price * appliedPromo.discount_percentage) / 100
+        : 0;
 
-      const discount = getPromoDiscount();
-      const total = price - discount.amount + deliveryFee;
+      const subtotalAfterDiscount = price - discountAmount;
+      const total = subtotalAfterDiscount + deliveryFee;
 
       let paymentFile: File | undefined = undefined;
       if (selectedPayment.toLowerCase() === "vodafone cash" && vodafoneFile) {
@@ -131,30 +185,53 @@ export default function CheckoutList() {
         productTitle: item.products.title,
         quantity: item.quantity,
         priceAtPurchase: item.products.price_after,
-        productImage: item.products.image_cover
+        productImage: item.products.image_cover,
       }));
 
-      const result = await createOrder(
-        {
-          addressId: selectedAddress.id,
-          paymentMethod: selectedPayment,
-          paymentImageFile: paymentFile,
-          subtotal: price,
-          deliveryFee: deliveryFee,
-          discountAmount: discount.amount,
-          totalPrice: total,
-          couponId: discount.couponId,
-        },
-        cartItems
-      );
+      let result;
+
+      if (user) {
+        // Logged in user
+        result = await createOrder(
+          {
+            addressId: selectedAddress!.id,
+            paymentMethod: selectedPayment,
+            paymentImageFile: paymentFile,
+            subtotal: price,
+            deliveryFee: deliveryFee,
+            discountAmount: discountAmount,
+            totalPrice: total,
+            couponId: appliedPromo?.id,
+          },
+          cartItems
+        );
+      } else {
+        // Guest user
+        result = await createGuestOrder(
+          {
+            guestInfo: guestAddress,
+            paymentMethod: selectedPayment,
+            paymentImageFile: paymentFile,
+            subtotal: price,
+            deliveryFee: deliveryFee,
+            discountAmount: discountAmount,
+            totalPrice: total,
+            couponId: appliedPromo?.id,
+          },
+          cartItems
+        );
+      }
 
       if (result.success) {
         await clearCart();
-        localStorage.removeItem("checkoutPaymentData");
-        localStorage.removeItem("promoCode");
-        localStorage.removeItem("appliedPromo");
-        router.push(ROUTES.ORDERS);
-
+        setAppliedPromo(null);
+        
+        // Redirect to success page with order details
+        if (user) {
+          router.push(`${ROUTES.ORDER_SUCCESS}?orderId=${result.orderId}&isGuest=false`);
+        } else {
+          router.push(`${ROUTES.ORDER_SUCCESS}?orderId=${result.orderId}&isGuest=true`);
+        }
       } else {
         alert(`Failed to place order: ${result.error}`);
       }
@@ -166,11 +243,18 @@ export default function CheckoutList() {
     }
   };
 
-
   return (
     <div className="max-w-[1450px] px-3 md:px-5 m-auto mt-6 md:mt-12 mb-10 min-h-screen">
       <div className="mb-6 md:mb-10">
         <h1 className="text-2xl md:text-3xl font-bold">Checkout</h1>
+        {!user && (
+          <p className="text-sm text-gray-600 mt-2">
+            Checking out as guest. 
+            <a href={ROUTES.SIGNIN} className="text-primary hover:underline ml-1">
+              Sign in
+            </a> to track your orders.
+          </p>
+        )}
       </div>
 
       <Steps number={stepNumber} />
@@ -179,28 +263,37 @@ export default function CheckoutList() {
         <div className="w-full lg:flex-[4]">
           <div className="border shadow-xl rounded-xl">
             {stepNumber === 1 ? (
-              <AddressStep
-                addresses={addresses}
-                onAddressSelected={handleAddressSelected}
-                onRefresh={fetchAddresses}
-                selectedAddress={selectedAddress}
-              />
+              user ? (
+                <AddressStep
+                  addresses={addresses}
+                  onAddressSelected={handleAddressSelected}
+                  onRefresh={fetchAddresses}
+                  selectedAddress={selectedAddress || null}
+                />
+              ) : (
+                <GuestAddressStep
+                  guestAddress={guestAddress}
+                  onAddressChange={handleGuestAddressChange}
+                />
+              )
             ) : stepNumber === 2 ? (
               <PaymentStep
                 onSelectPayment={onSelectPayment}
                 selectedPayment={selectedPayment}
                 onVodafoneFileChange={setVodafoneFile}
                 onInstapayFileChange={setInstapayFile}
-                vodafoneNumber="0100 123 4567"
-                instapayLink="https://instapay.com"
+                vodafoneNumber="01092288325"
+                instapayLink="https://ipn.eg/S/mahmoud.ashraf3420/instapay/27tw6b"
               />
             ) : (
               <ReviewStep
                 cart={cart}
                 selectedAddress={selectedAddress}
+                guestAddress={user ? null : guestAddress}
                 selectedPayment={selectedPayment}
                 vodafoneFile={vodafoneFile}
                 instapayFile={instapayFile}
+                isGuest={!user}
               />
             )}
           </div>
@@ -232,7 +325,7 @@ export default function CheckoutList() {
             ) : (
               <button
                 disabled={isNextDisabled}
-                className="px-4 md:px-6 py-2.5 md:py-3 bg-primary text-white rounded-xl font-semibold hover:bg-primary-hover transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base cursor-pointer"
+                className="px-4 md:px-6 py-2.5 md:py-3 bg-gradient-to-r from-[#1F1F6F] to-[#14274E] hover:from-[#14274E] hover:to-[#394867]  text-white rounded-xl font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base cursor-pointer"
                 onClick={() => {
                   if (!isNextDisabled) setStepNumber(stepNumber + 1);
                 }}
@@ -247,7 +340,7 @@ export default function CheckoutList() {
           price={price}
           isCart={false}
           deliveryFee={deliveryFee}
-          hasAddress={!!selectedAddress}
+          hasAddress={user ? !!selectedAddress : !!guestAddress.city}
           isLoadingFee={isLoadingFee}
         />
       </div>

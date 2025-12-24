@@ -1,4 +1,3 @@
-import Navbar from "@/components/navbar";
 import ROUTES from "@/constants/routes";
 import Image from "next/image";
 import Link from "next/link";
@@ -21,7 +20,7 @@ export default function AuthLayout({
               >
                 <div className="relative w-28 h-28">
                   <Image
-                    src="/cura-logo.png"
+                    src="/cura-logo.webp"
                     alt="Logo"
                     fill
                     sizes="30"

@@ -68,7 +68,7 @@ export default function SavedAddressList({
               }`}
             >
               {selectedAddressId === address.id && (
-                <div className="w-2 h-2 rounded-full bg-primary"></div>
+                <div className="w-2 h-2 rounded-full bg-gradient-to-r from-[#1F1F6F] to-[#14274E]"></div>
               )}
             </div>
             <div className="flex-1 min-w-0">

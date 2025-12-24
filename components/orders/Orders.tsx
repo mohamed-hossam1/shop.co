@@ -9,7 +9,7 @@ export default function Orders({
       <div className="w-full">
         <div className="mb-6 sm:mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">My Orders</h1>
-          <div className="h-1 w-20 bg-primary rounded-full" />
+          <div className="h-1 w-20 bg-gradient-to-r from-[#1F1F6F] to-[#14274E] rounded-full" />
         </div>
 
         <div className="space-y-6">

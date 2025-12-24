@@ -4,7 +4,9 @@ import { createClient } from "@/lib/supabase/server";
 
 export async function getAllProduct() {
   const supabase = await createClient()
-  const {data, error} = await supabase.from("products").select(`
+  const {data, error} = await supabase
+    .from("products")
+    .select(`
       id,
       title,
       price_before,
@@ -12,8 +14,11 @@ export async function getAllProduct() {
       image_cover,
       stock,
       categories ( title, image, id )
-    `).eq("is_deleted", false)
-  return {data,error}
+    `)
+    .eq("is_deleted", false)
+    .order('category_id', { ascending: true }) 
+  
+  return {data} 
 }
 
 export async function getProductDetails(id:string) {

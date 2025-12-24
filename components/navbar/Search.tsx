@@ -12,7 +12,7 @@ export default function Searchbar() {
         <div className="flex items-center">
           <div className="relative flex-1">
             <input
-              placeholder="Search medicines, pharmacies, categories..."
+              placeholder="Search Skin Care, Hair Care, Bundle..."
               className="w-full px-4 py-3 pl-12 pr-32 border-2 border-gray-200 font-[500] rounded-xl focus:ring-2 focus:ring-primary focus:border-priring-primary transition-all duration-300 hover:shadow-md focus:shadow-lg bg-white/80 backdrop-blur-sm "
               type="text"
               onChange={(e)=>setSearchQuarry(e.target.value)}

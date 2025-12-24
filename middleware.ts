@@ -1,4 +1,3 @@
-// middleware.ts
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import ROUTES from "./constants/routes";
@@ -33,8 +32,6 @@ export async function middleware(request: NextRequest) {
 
   const protectedRoutes = [
     "/profile",
-    "/cart",
-    "/checkout",
     "/orders",
     "/settings",
   ];
@@ -68,5 +65,7 @@ export async function middleware(request: NextRequest) {
 
 
 export const config = {
-  matcher: ["/profile", "/cart", "/checkout", "/orders", "/settings", "/sign-in", "/sign-up"],
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|api).*)",
+  ],
 };

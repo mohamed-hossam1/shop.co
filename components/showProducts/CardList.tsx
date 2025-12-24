@@ -1,7 +1,8 @@
+import { ProductData } from "@/types/Product";
 import ProductCard from "../ProductCard";
 
 interface CardListProp{
-  products: ProductData[]
+  products: ProductData[]|[]
 }
 
 export default function CardList({ products }:CardListProp) {
@@ -9,7 +10,7 @@ export default function CardList({ products }:CardListProp) {
 
   return (
     <div className="relative">
-      <div className="flex overflow-auto custom-scroll mb-20 gap-4">
+      <div className="flex overflow-auto custom-scroll mb-10 gap-4">
         {products.map((product) => (
           <ProductCard key={product.id} product={product} />
         ))}

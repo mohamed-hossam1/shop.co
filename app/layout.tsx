@@ -3,6 +3,8 @@ import "./globals.css";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { UserProvider } from "@/Context/UserContext";
 import { CartProvider } from "@/Context/CartContext";
+import Script from "next/script";
+import { Analytics } from "@vercel/analytics/next"
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -16,10 +18,23 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <head />
+      <head>
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=G-Z9WVGNWS7F"
+          strategy="afterInteractive"
+        />
+        <Script id="ga-script" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-XXXXXXXXXX');
+          `}
+        </Script>
+      </head>
       <body>
-        <CartProvider>
-          <UserProvider>
+        <UserProvider>
+          <CartProvider>
             <ThemeProvider
               attribute="class"
               defaultTheme="system"
@@ -27,9 +42,10 @@ export default function RootLayout({
               disableTransitionOnChange
             >
               {children}
+            <Analytics/>
             </ThemeProvider>
-          </UserProvider>
-        </CartProvider>
+          </CartProvider>
+        </UserProvider>
       </body>
     </html>
   );

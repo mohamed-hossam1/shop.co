@@ -6,8 +6,8 @@ export default function CartSkeleton() {
         <div className="h-5 w-32 bg-gray-200 animate-pulse rounded"></div>
       </div>
 
-      <div className="flex gap-10">
-        <div className="flex-[4]">
+      <div className="md:flex gap-10">
+        <div className="flex-[4] mb-10 md:mb-0">
           <div className="flex justify-between mb-6">
             <div className="h-7 w-32 bg-gray-200 animate-pulse rounded"></div>
             <div className="h-7 w-24 bg-gray-200 animate-pulse rounded"></div>

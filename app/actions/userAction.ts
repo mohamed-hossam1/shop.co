@@ -49,6 +49,7 @@ export async function SignInSupabase({ email, password }: UserData) {
 export async function SignOutSupabase() {
   const supabase = await createClient();
   const { error: signOutError } = await supabase.auth.signOut();
+  
 
   return { signOutError };
 }
@@ -73,3 +74,91 @@ export async function GetUser() {
   return null;
 }
 
+
+export async function UpdateUserProfile({
+  name,
+  email,
+  phone,
+}: {
+  name: string;
+  email: string;
+  phone: string;
+}) {
+  const supabase = await createClient();
+  const { data: authUser, error: authError } = await supabase.auth.getUser();
+
+  if (authError || !authUser.user) {
+    return { error: authError || { message: "User not authenticated" } };
+  }
+
+  const userId = authUser.user.id;
+  let updateErrors: any[] = [];
+
+  const { error: userTableError } = await supabase
+    .from("users")
+    .update({ name, phone })
+    .eq("id", userId);
+
+  if (userTableError) {
+    updateErrors.push({ source: "users_table", error: userTableError });
+  }
+
+  if (email !== authUser.user.email) {
+    const { error: authUpdateError } = await supabase.auth.updateUser({
+      email: email,
+    });
+
+    if (authUpdateError) {
+      updateErrors.push({ source: "auth_email", error: authUpdateError });
+    }
+  }
+
+  if (updateErrors.length > 0) {
+    return { error: updateErrors };
+  }
+
+  return { error: null };
+}
+
+export async function UpdateUserPassword({
+  oldPassword,
+  newPassword,
+}: {
+  oldPassword: string;
+  newPassword: string;
+}) {
+  const supabase = await createClient();
+
+  const { data: authUser, error: authError } = await supabase.auth.getUser();
+
+  if (authError || !authUser.user) {
+    return { error: authError || { message: "User not authenticated" } };
+  }
+
+  const email = authUser.user.email;
+
+  if (!email) {
+    return { error: { message: "User email not found in session." } };
+  }
+
+  const { error: signInError } = await supabase.auth.signInWithPassword({
+    email: email,
+    password: oldPassword,
+  });
+
+  if (signInError) {
+    return { error: { message: "Incorrect old password." } };
+  }
+
+  const { error: updateError } = await supabase.auth.updateUser({
+    password: newPassword,
+  });
+
+  if (updateError) {
+    return { error: updateError };
+  }
+
+  await supabase.auth.signOut();
+
+  return { error: null };
+}

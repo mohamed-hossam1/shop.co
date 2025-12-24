@@ -18,23 +18,23 @@ export default function Profile({
       <div className="w-full">
         <div className="mb-6 sm:mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">My Profile</h1>
-          <div className="h-1 w-20 bg-primary rounded-full" />
+          <div className="h-1 w-20 bg-gradient-to-r from-[#1F1F6F] to-[#14274E] rounded-full" />
         </div>
 
         <div className="space-y-6">
           <div className="w-full space-y-4 md:space-y-6 lg:space-y-8">
             <div className="bg-white rounded-xl md:rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-              <div className="h-20 md:h-32 bg-primary relative">
+              <div className="h-20 md:h-32 bg-gradient-to-r from-[#1F1F6F] to-[#14274E] relative">
                 <div className="absolute inset-0 bg-black/10" />
               </div>
 
               <div className="px-3 md:px-4 lg:px-8 py-4 md:py-6 lg:py-8 relative">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 md:space-x-6">
                   <div className="relative mb-3 sm:mb-0 -mt-12 md:-mt-20">
-                    <div className="w-16 h-16 md:w-24 md:h-24 bg-primary rounded-full flex items-center justify-center text-white text-lg md:text-3xl font-bold border-3 md:border-4 border-white shadow-lg">
+                    <div className="w-20 h-20 md:w-24 md:h-24 bg-gradient-to-r from-[#1F1F6F] to-[#14274E] rounded-full flex items-center justify-center text-white text-lg md:text-3xl font-bold border-3 md:border-4 border-white shadow-lg">
                       {userData?.name[0]}
                     </div>
-                    <div className="absolute -bottom-0.5 -right-0.5 md:-bottom-1 md:-right-1 w-4 h-4 md:w-6 md:h-6 bg-green-500 rounded-full border-2 border-white" />
+                    <div className="absolute bottom-1 left-14 md:-bottom-1 md:-right-1 w-4 h-4 md:w-6 md:h-6 bg-green-500 rounded-full border-2 border-white" />
                   </div>
 
                   <div className="flex-1">
@@ -49,7 +49,7 @@ export default function Profile({
                   <div className="flex space-x-2 md:space-x-3 mt-3 sm:mt-0">
                     <Link
                       href={ROUTES.SETTINGS}
-                      className="px-3 md:px-4 py-1.5 md:py-2 bg-primary text-white rounded-lg hover:bg-primary-hover cursor-pointer transition-colors text-xs md:text-sm font-medium"
+                      className="px-3 md:px-4 py-1.5 md:py-2  text-white rounded-lg bg-gradient-to-r from-[#1F1F6F] to-[#14274E] hover:from-[#14274E] hover:to-[#394867]  cursor-pointer transition-colors text-xs md:text-sm font-medium"
                     >
                       Edit Profile
                     </Link>

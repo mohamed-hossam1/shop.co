@@ -1,11 +1,17 @@
 "use client";
 
-import { useState } from "react";
-import { addAddress } from "@/app/actions/addressAction";
+import { useState, useEffect } from "react";
 
-interface AddressFormProps {
-  onSuccess: () => void;
-  onCancel: () => void;
+interface GuestAddressStepProps {
+  guestAddress: {
+    name: string;
+    phone: string;
+    city: string;
+    area: string;
+    street: string;
+    building_number: string;
+  };
+  onAddressChange: (address: GuestAddressStepProps["guestAddress"]) => void;
 }
 
 const egyptCities = [
@@ -38,85 +44,118 @@ const egyptCities = [
   "Sohag",
 ];
 
-export default function AddressForm({ onSuccess, onCancel }: AddressFormProps) {
-  const [isLoading, setIsLoading] = useState(false);
+export default function GuestAddressStep({
+  guestAddress,
+  onAddressChange,
+}: GuestAddressStepProps) {
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
-  const [formData, setFormData] = useState({
-    phone: "",
-    city: "",
-    area: "",
-    street: "",
-    building_number: "",
-  });
+  const [formData, setFormData] = useState(guestAddress);
+
+  useEffect(() => {
+    setFormData(guestAddress);
+  }, [guestAddress]);
+
+
 
   const validatePhone = (phone: string) => {
     const phoneRegex = /^(010|011|012|015)[0-9]{8}$/;
     return phoneRegex.test(phone);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
+  const handleChange = (field: string, value: string) => {
+    const newFormData = { ...formData, [field]: value };
+    setFormData(newFormData);
+
+    // Clear error for this field
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: "" }));
+    }
+
+    // Validate and update parent
     const newErrors: { [key: string]: string } = {};
 
-    if (!formData.phone) {
-      newErrors.phone = "Phone number is required";
-    } else if (!validatePhone(formData.phone)) {
-      newErrors.phone = "Invalid phone number";
+    if (field === "name" && !value) {
+      newErrors.name = "Name is required";
     }
 
-    if (!formData.city) newErrors.city = "City is required";
-    if (!formData.area) newErrors.area = "Area is required";
-    if (!formData.street) newErrors.street = "Street is required";
-    if (!formData.building_number) newErrors.building_number = "Building number is required";
-
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return;
-    }
-
-    setIsLoading(true);
-    setErrors({});
-
-    try {
-      const { error } = await addAddress(formData);
-      
-      if (error) {
-        setErrors({ submit: error.message });
-      } else {
-        onSuccess();
+    if (field === "phone") {
+      if (!value) {
+        newErrors.phone = "Phone number is required";
+      } else if (!validatePhone(value)) {
+        newErrors.phone =
+          "Invalid phone number (must be 11 digits starting with 010, 011, 012, or 015)";
       }
-    } catch (error) {
-      setErrors({ submit: "Failed to add address" });
-    } finally {
-      setIsLoading(false);
     }
+
+    if (Object.keys(newErrors).length === 0) {
+      onAddressChange(newFormData);
+    }
+
+    setErrors((prev) => ({ ...prev, ...newErrors }));
   };
 
-  const handleChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: "" }));
+  const handleBlur = (field: string) => {
+    const newErrors: { [key: string]: string } = {};
+    const value = formData[field as keyof typeof formData];
+
+    if (field === "name" && !value) {
+      newErrors.name = "Name is required";
     }
+
+    if (field === "phone") {
+      if (!value) {
+        newErrors.phone = "Phone number is required";
+      } else if (!validatePhone(value)) {
+        newErrors.phone = "Invalid phone number";
+      }
+    }
+
+    if (field === "city" && !value) {
+      newErrors.city = "City is required";
+    }
+
+    if (field === "area" && !value) {
+      newErrors.area = "Area is required";
+    }
+
+    if (field === "street" && !value) {
+      newErrors.street = "Street is required";
+    }
+
+    if (field === "building_number" && !value) {
+      newErrors.building_number = "Building number is required";
+    }
+
+    setErrors((prev) => ({ ...prev, ...newErrors }));
   };
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-3 md:mb-4 mt-6">
-        <h3 className="text-base md:text-lg font-medium text-gray-900">
-          New Address
-        </h3>
-        <button
-          onClick={onCancel}
-          className="text-gray-500 hover:text-red-600 text-xs md:text-sm cursor-pointer "
-          type="button"
-        >
-          Cancel
-        </button>
-      </div>
+    <div className="p-6">
+      <h2 className="text-2xl font-bold mb-3">Delivery Information</h2>
+      <p className="text-sm text-gray-600 mb-7">
+        Please provide your contact and delivery details
+      </p>
 
-      <form onSubmit={handleSubmit}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+      <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">
+              Full Name *
+            </label>
+            <input
+              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-sm md:text-base ${
+                errors.name ? "border-red-500" : "border-gray-300"
+              }`}
+              placeholder="Enter your full name"
+              type="text"
+              value={formData.name}
+              onChange={(e) => handleChange("name", e.target.value)}
+              onBlur={() => handleBlur("name")}
+            />
+            {errors.name && (
+              <p className="text-red-500 text-xs mt-1">{errors.name}</p>
+            )}
+          </div>
           <div>
             <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">
               Phone Number *
@@ -129,12 +168,15 @@ export default function AddressForm({ onSuccess, onCancel }: AddressFormProps) {
               type="tel"
               value={formData.phone}
               onChange={(e) => handleChange("phone", e.target.value)}
+              onBlur={() => handleBlur("phone")}
             />
             {errors.phone && (
               <p className="text-red-500 text-xs mt-1">{errors.phone}</p>
             )}
           </div>
+        </div>
 
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">
               City *
@@ -145,6 +187,7 @@ export default function AddressForm({ onSuccess, onCancel }: AddressFormProps) {
               }`}
               value={formData.city}
               onChange={(e) => handleChange("city", e.target.value)}
+              onBlur={() => handleBlur("city")}
             >
               <option value="">Select City</option>
               {egyptCities.map((city) => (
@@ -157,7 +200,6 @@ export default function AddressForm({ onSuccess, onCancel }: AddressFormProps) {
               <p className="text-red-500 text-xs mt-1">{errors.city}</p>
             )}
           </div>
-
           <div>
             <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">
               Area/District *
@@ -170,11 +212,16 @@ export default function AddressForm({ onSuccess, onCancel }: AddressFormProps) {
               type="text"
               value={formData.area}
               onChange={(e) => handleChange("area", e.target.value)}
+              onBlur={() => handleBlur("area")}
             />
             {errors.area && (
               <p className="text-red-500 text-xs mt-1">{errors.area}</p>
             )}
           </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          
 
           <div>
             <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">
@@ -188,12 +235,12 @@ export default function AddressForm({ onSuccess, onCancel }: AddressFormProps) {
               type="text"
               value={formData.street}
               onChange={(e) => handleChange("street", e.target.value)}
+              onBlur={() => handleBlur("street")}
             />
             {errors.street && (
               <p className="text-red-500 text-xs mt-1">{errors.street}</p>
             )}
           </div>
-
           <div>
             <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">
               Building Number *
@@ -206,25 +253,17 @@ export default function AddressForm({ onSuccess, onCancel }: AddressFormProps) {
               type="text"
               value={formData.building_number}
               onChange={(e) => handleChange("building_number", e.target.value)}
+              onBlur={() => handleBlur("building_number")}
             />
             {errors.building_number && (
-              <p className="text-red-500 text-xs mt-1">{errors.building_number}</p>
+              <p className="text-red-500 text-xs mt-1">
+                {errors.building_number}
+              </p>
             )}
           </div>
         </div>
 
-        {errors.submit && (
-          <p className="text-red-500 text-sm mt-4">{errors.submit}</p>
-        )}
-
-        <button
-          type="submit"
-          disabled={isLoading}
-          className="w-full mt-6 bg-gradient-to-r from-[#1F1F6F] to-[#14274E] hover:from-[#14274E] hover:to-[#394867]  text-white py-3 rounded-lg font-medium  transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isLoading ? "Saving..." : "Save Address"}
-        </button>
-      </form>
+      </div>
     </div>
   );
 }

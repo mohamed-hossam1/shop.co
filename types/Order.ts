@@ -34,7 +34,9 @@ interface OrderData {
 interface OrderItem {
   id: number;
   product_title: string;
+  product_id: string;
   quantity: number;
   price_at_purchase: number;
   product_image: string;
 }
+

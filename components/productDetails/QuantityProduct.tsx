@@ -5,28 +5,37 @@ import { useCart } from "@/Context/CartContext";
 import { useUser } from "@/Context/UserContext";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { ProductData } from "@/types/Product";
 
-export default function QuantityProduct({
-  product,
-}: {
-  product: ProductData;
-}) {
+export default function QuantityProduct({ product }: { product: ProductData }) {
   const [isLoading, setIsLoading] = useState(false);
   const [quantity, setQuantity] = useState(1);
-  const {addToCart} = useCart()
-  const {user} = useUser()
-  const router = useRouter()
-  console.log(product)
+  const [APIError, setAPIError] = useState("");
+  const { addToCart } = useCart();
+  const { user } = useUser();
+  const router = useRouter();
 
-  const onSubmit = async() => {
-    if(user){
-      setIsLoading(true)
-      const products = product;
-      await addToCart({products , quantity})
-      setIsLoading(false)
+  const isOutOfStock = product.stock === 0;
+  const isMaxQuantity = quantity >= product.stock;
+
+  const handleIncrease = () => {
+    if (quantity < product.stock) {
+      setQuantity(quantity + 1);
     }
-    else{
-      router.replace(ROUTES.SIGNIN)
+  };
+
+  const onSubmit = async () => {
+    if (isOutOfStock) return;
+
+    setIsLoading(true);
+    try {
+      await addToCart({ products: product, quantity });
+    } catch (e) {
+      if (e instanceof Error) {
+        setAPIError(e.message);
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -36,8 +45,9 @@ export default function QuantityProduct({
         <p className="text-xl font-semibold">Quantity:</p>
         <div className="flex w-full justify-center mt-20 gap-5">
           <button
-            className="w-13 h-13 rounded-full hover:bg-primary text-6xl flex justify-center items-center border-2 border-primary text-primary hover:text-white transition-all duration-300 cursor-pointer"
+            className="w-13 h-13 rounded-full hover:bg-gradient-to-r from-[#1F1F6F] to-[#14274E] text-6xl flex justify-center items-center border-2 border-primary text-primary hover:text-white transition-all duration-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={() => quantity > 1 && setQuantity(quantity - 1)}
+            disabled={quantity <= 1}
           >
             <span className="relative -top-[2px]">-</span>
           </button>
@@ -46,12 +56,27 @@ export default function QuantityProduct({
             <p className="text-lg text-gray-700">Unit(s)</p>
           </div>
           <button
-            className="w-13 h-13 rounded-full hover:bg-primary text-3xl font-semibold flex justify-center items-center border-2 border-primary text-primary hover:text-white transition-all duration-300 cursor-pointer"
-            onClick={() => setQuantity(quantity + 1)}
+            className="w-13 h-13 rounded-full hover:bg-gradient-to-r from-[#1F1F6F] to-[#14274E] text-3xl font-semibold flex justify-center items-center border-2 border-primary text-primary hover:text-white transition-all duration-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={handleIncrease}
+            disabled={isMaxQuantity || isOutOfStock}
           >
             <span className="relative -top-[1px]">+</span>
           </button>
         </div>
+        {APIError ? (
+          <p className="text-sm text-center text-red-500 mt-2">
+            You add more than in stock
+          </p>
+        ) : (
+          isMaxQuantity &&
+          product.stock > 0 && (
+            <>
+              <p className="text-sm text-center text-red-500 mt-2">
+                Maximum quantity reached ({product.stock} available)
+              </p>
+            </>
+          )
+        )}
       </div>
 
       <div className="bg-gray-50 rounded-xl  p-4 space-y-2 mb-14">
@@ -62,15 +87,13 @@ export default function QuantityProduct({
           </span>
         </div>
         <div className="flex justify-between items-center text-lg">
-          <span className="font-medium text-lg text-gray-900">Total Price:</span>
+          <span className="font-medium text-lg text-gray-900">
+            Total Price:
+          </span>
           <div className="flex flex-col">
             <span className="font-bold text-2xl text-[#1F1F6F]">
               EGP {product.price_after * quantity}
             </span>
-            <span className="font-bold text-lg text-right text-[#1F1F6F] line-through">
-              EGP {product.price_before * quantity}
-            </span>
-
           </div>
         </div>
       </div>
@@ -78,19 +101,25 @@ export default function QuantityProduct({
       <button
         className={`py-5 px-3 w-full ${
           isLoading
-            ? "bg-green-500 hover:bg-green-600 cursor-not-allowed"
-            : "cursor-pointer bg-primary hover:bg-primary-hover"
+            ? "bg-green-400 cursor-not-allowed"
+            : isOutOfStock
+            ? "bg-gray-400 cursor-not-allowed"
+            : "cursor-pointer bg-gradient-to-r from-[#1F1F6F] to-[#14274E] hover:from-[#14274E] hover:to-[#394867] "
         } rounded-xl mt-2  flex justify-center items-center transition-all duration-300 hover:scale-105`}
-        onClick={() => onSubmit()}
+        onClick={onSubmit}
+        disabled={isLoading || isOutOfStock}
       >
         {isLoading ? (
           <div className="h-6 w-6 border-b-2 border-current border-white rounded-full animate-spin"></div>
         ) : (
           <p className="h-full w-full md:text-xl text-white flex justify-center items-center font-bold transition-all duration-300">
-            {`Add ${quantity} Unit(s) to Cart - EGP ${product.price_after * quantity}`}
-        </p>
+            {isOutOfStock
+              ? "Out of Stock"
+              : `Add ${quantity} Unit(s) to Cart - EGP ${
+                  product.price_after * quantity
+                }`}
+          </p>
         )}
-        
       </button>
     </>
   );

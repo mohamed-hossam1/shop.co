@@ -17,7 +17,7 @@ export default function OrderDetails({
   items: OrderItem[];
 }) {
   const [open, setOpen] = useState(false);
-  const [tracking, setTracking] = useState(false);
+  // const [tracking, setTracking] = useState(false);
 
   return (
     <div>
@@ -50,7 +50,7 @@ export default function OrderDetails({
           <div className="flex  min-h-full justify-center m-auto  text-center items-center p-5">
             <DialogPanel transition className=" rounded-xl w-full">
               <div className=" md:w-[700px] lg:w-[800px] m-auto">
-                <div className="bg-primary w-full rounded-t-xl text-white p-6">
+                <div className="bg-gradient-to-r from-[#1F1F6F] to-[#14274E] w-full rounded-t-xl text-white p-6">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-4">
                       <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
@@ -397,11 +397,11 @@ export default function OrderDetails({
                         </div>
                       </div>
                     </div>
-                  )} */}
+                  )}  */}
 
                   <div className="p-6 h-[60vh] overflow-y-auto">
                     <div className="space-y-6">
-                      <div className="grid grid-cols-2 gap-6">
+                      <div className="grid md:grid-cols-2 gap-6">
                         <div className="bg-gray-50 rounded-xl p-4">
                           <div className="flex items-center space-x-3 mb-3">
                             <svg
@@ -429,7 +429,7 @@ export default function OrderDetails({
                               Order Date
                             </h3>
                           </div>
-                          <p className="text-gray-700">
+                          <p className="text-primary text-left text-xl font-bold">
                             {Data(order?.created_at?.toString())?.["12h"]}
                           </p>
                         </div>
@@ -460,24 +460,63 @@ export default function OrderDetails({
                               Total Amount
                             </h3>
                           </div>
-                          <p className="text-2xl font-bold text-primary text-left">
+                          <p className="text-xl font-bold text-primary text-left">
                             {order.total_price} EGP
                           </p>
                         </div>
 
                         <div className="bg-gray-50 rounded-xl p-4">
                           <div className="flex items-center space-x-3 mb-3">
+                            <svg
+                              className="w-5 h-5 text-primary"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="1.8"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              aria-hidden
+                            >
+                              <path d="M21 10c0 6-9 12-9 12S3 16 3 10a9 9 0 1 1 18 0z"></path>
+                              <circle cx="12" cy="10" r="2.5"></circle>
+                            </svg>
                             <h3 className="font-semibold text-gray-900">
                               Address
                             </h3>
                           </div>
-                          <p className="text-lg font-bold text-primary text-left">
+                          <p className="text-xl font-bold text-primary text-left">
                             {order.addresses.city}, {order.addresses.street}
                           </p>
                         </div>
 
                         <div className="bg-gray-50 rounded-xl p-4">
                           <div className="flex items-center space-x-3 mb-3">
+                            <svg
+                              className="w-5 h-5 text-primary"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="1.8"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              aria-hidden
+                            >
+                              <rect
+                                x="2"
+                                y="5"
+                                width="20"
+                                height="14"
+                                rx="2"
+                              ></rect>
+                              <path d="M2 10h20"></path>
+                              <rect
+                                x="6"
+                                y="12"
+                                width="6"
+                                height="2"
+                                rx="1"
+                              ></rect>
+                            </svg>
                             <h3 className="font-semibold text-gray-900">
                               Payment Method
                             </h3>

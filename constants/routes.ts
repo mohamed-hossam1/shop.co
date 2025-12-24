@@ -8,7 +8,8 @@ const ROUTES = {
   CART: "/cart",
   SETTINGS: "/profile/settings",
   PRODUCTS: "/products",
-  CHECKOUT: "/checkout"
+  CHECKOUT: "/checkout",
+  ORDER_SUCCESS: "/order-success"
 }
 
 export default ROUTES

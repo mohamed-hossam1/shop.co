@@ -5,7 +5,6 @@ const nextConfig: NextConfig = {
   compress: true,
   poweredByHeader: false,
   productionBrowserSourceMaps: false,
-  swcMinify: true,
 
   images: {
     remotePatterns: [

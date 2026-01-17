@@ -3,6 +3,17 @@ import Link from "next/link";
 import { CheckCircle, Home, ShoppingBag } from "lucide-react";
 import ROUTES from "@/constants/routes";
 import { redirect } from "next/navigation";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Order Successful | Cura",
+  description:
+    "Your order has been placed successfully. Track your order and view details.",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 async function getOrderDetails(orderId: string, isGuest: boolean) {
   const { createClient } = await import("@/lib/supabase/server");
@@ -10,7 +21,8 @@ async function getOrderDetails(orderId: string, isGuest: boolean) {
 
   const { data: order, error: orderError } = await supabase
     .from("orders")
-    .select(`
+    .select(
+      `
       *,
       addresses (
         phone,
@@ -19,7 +31,8 @@ async function getOrderDetails(orderId: string, isGuest: boolean) {
         street,
         building_number
       )
-    `)
+    `,
+    )
     .eq("id", orderId)
     .single();
 
@@ -150,14 +163,18 @@ export default async function OrderSuccessPage({
               <div className="flex justify-between">
                 <span className="text-gray-600">Delivery</span>
                 <span className="font-medium">
-                  {order.delivery_fee > 0 ? `${order.delivery_fee} EGP` : "Free"}
+                  {order.delivery_fee > 0
+                    ? `${order.delivery_fee} EGP`
+                    : "Free"}
                 </span>
               </div>
 
               {order.discount_amount > 0 && (
                 <div className="flex justify-between text-green-600">
                   <span>Discount</span>
-                  <span className="font-medium">-{order.discount_amount} EGP</span>
+                  <span className="font-medium">
+                    -{order.discount_amount} EGP
+                  </span>
                 </div>
               )}
 

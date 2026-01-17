@@ -1,7 +1,25 @@
 import Products from "@/components/home/Products";
-import Slider from "@/components/home/Slider";
 import Image from "next/image";
 import Link from "next/link";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Cura - Premium Organic Beauty & Personal Care Products | Shop Now",
+  description:
+    "Shop premium organic beauty products, skincare, shampoos, and personal care items at Cura. Authentic, high-quality cosmetics for natural beauty.",
+  keywords:
+    "organic beauty products, skincare, shampoo, conditioner, natural cosmetics, personal care",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: "Cura - Premium Organic Beauty & Personal Care Products",
+    description:
+      "Shop premium organic beauty products, skincare, shampoos, and personal care items.",
+    url: "/",
+    type: "website",
+  },
+};
 
 export default function Home() {
   return (
@@ -16,7 +34,7 @@ export default function Home() {
               height={700}
               loading="eager"
               className="rounded-2xl w-full h-auto"
-              style={{ maxWidth: '100%', height: 'auto' }}
+              style={{ maxWidth: "100%", height: "auto" }}
             />
           </div>
 
@@ -30,7 +48,7 @@ export default function Home() {
               className="rounded-2xl"
             />
           </div>
-          
+
           <div className="hidden md:flex flex-col gap-3">
             <Link href={"/products/108"}>
               <Image

@@ -1,23 +1,13 @@
-import Categories from "./Categories";
+import Image from "next/image";
 import ContactUs from "./ContactUs";
 
 export default function Footer() {
   return (
-    <footer className="bg-gradient-to-r from-[#1F1F6F] to-[#14274E] text-white py-16">
+    <footer className="bg-gradient-to-r from-[#1F1F6F] to-[#14274E] text-white py-12">
       <div className="max-w-[1600px] px-5 m-auto">
-        <div className="grid grid-cols-1 sm:grid-cols-3  gap-6 lg:gap-8">
-          <div>
-            <h4 className="text-xl font-bold mb-4">CURA</h4>
-          </div>
-
-          <div>
-            <h5 className="font-semibold mb-4">Categories</h5>
-            <Categories />
-          </div>
-
-          <div>
-            <h5 className="font-semibold mb-4">Contact Us</h5>
-            <ContactUs />
+        <div className="flex flex-col items-center gap-8">
+          <div className="flex items-center gap-6">
+            <ContactUs></ContactUs>
           </div>
         </div>
 

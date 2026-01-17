@@ -6,6 +6,7 @@ import { useUser } from "@/Context/UserContext";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ProductData } from "@/types/Product";
+import Swal from "sweetalert2";
 
 export default function QuantityProduct({ product }: { product: ProductData }) {
   const [isLoading, setIsLoading] = useState(false);
@@ -30,9 +31,34 @@ export default function QuantityProduct({ product }: { product: ProductData }) {
     setIsLoading(true);
     try {
       await addToCart({ products: product, quantity });
+      
+      await Swal.fire({
+        position: 'top-end',
+        icon: 'success',
+        title: 'Product has been added to cart',
+        showConfirmButton: false,
+        timer: 2000,
+        timerProgressBar: true,
+        toast: true,
+        background: '#fff',
+        iconColor: '#10b981',
+        customClass: {
+          popup: 'colored-toast'
+        }
+      });
+
+      setQuantity(1);
+      setAPIError("");
     } catch (e) {
       if (e instanceof Error) {
         setAPIError(e.message);
+        
+        Swal.fire({
+          icon: 'error',
+          title: 'error!',
+          text: e.message,
+          confirmButtonColor: '#dc3545',
+        });
       }
     } finally {
       setIsLoading(false);

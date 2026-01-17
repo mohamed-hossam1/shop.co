@@ -1,6 +1,5 @@
 "use client";
 
-import ROUTES from "@/constants/routes";
 import { useCart } from "@/Context/CartContext";
 import { useUser } from "@/Context/UserContext";
 import { useRouter } from "next/navigation";

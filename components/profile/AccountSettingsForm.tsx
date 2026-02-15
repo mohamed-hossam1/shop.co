@@ -4,7 +4,7 @@ import { useFormik } from "formik";
 import { useTransition } from "react";
 import { UpdateUserProfile } from "@/app/actions/userAction";
 import * as Yup from "yup";
-import { useUser } from "@/Context/UserContext";
+import { useUser } from "@/stores/userStore";
 
 interface AccountSettingsFormProps {
   initialName: string;

@@ -78,7 +78,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 │   ├── orders/           # Order management
 │   ├── profile/          # User profile
 │   └── ui/               # Reusable UI components
-├── Context/              # React Context providers
+├── stores/               # Zustand stores
 ├── lib/                  # Utility functions
 │   ├── supabase/         # Supabase client setup
 │   └── validation/       # Form validation schemas

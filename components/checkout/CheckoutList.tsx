@@ -1,6 +1,6 @@
 "use client";
 
-import { useCart } from "@/Context/CartContext";
+import { useCart } from "@/stores/cartStore";
 import { useState, useEffect } from "react";
 import CartSkeleton from "../skeleton/CartSkeleton";
 import OrderSummary from "../cart/OrderSummary";
@@ -12,7 +12,7 @@ import PaymentStep from "./Payment/PaymentStep";
 import { useRouter } from "next/navigation";
 import { createOrder, createGuestOrder } from "@/app/actions/ordersAction";
 import ROUTES from "@/constants/routes";
-import { useUser } from "@/Context/UserContext";
+import { useUser } from "@/stores/userStore";
 import ReviewStep from "./Reviewstep";
 import GuestAddressStep from "./Address/Guestaddressstep";
 

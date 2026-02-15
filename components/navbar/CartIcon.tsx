@@ -1,9 +1,8 @@
 "use client";
 
 import ROUTES from "@/constants/routes";
-import { useCart } from "@/Context/CartContext";
+import { useCart } from "@/stores/cartStore";
 import Link from "next/link";
-import { useEffect, useState } from "react";
 
 export default function CartIcon() {
   const { quantity } = useCart() ;

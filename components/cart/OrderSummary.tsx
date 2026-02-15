@@ -4,7 +4,7 @@ import { validatePromoCode } from "@/app/actions/promoCodeAction";
 import ROUTES from "@/constants/routes";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useCart } from "@/Context/CartContext";
+import { useCart } from "@/stores/cartStore";
 
 interface OrderSummaryProps {
   price: number;

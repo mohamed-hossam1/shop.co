@@ -2,7 +2,7 @@
 
 import CheckoutList from "@/components/checkout/CheckoutList";
 import CartSkeleton from "@/components/skeleton/CartSkeleton";
-import { useCart } from "@/Context/CartContext";
+import { useCart } from "@/stores/cartStore";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 

@@ -1,6 +1,6 @@
 "use client";
 import UserMenu from "./UserMenu";
-import { useUser } from "@/Context/UserContext";
+import { useUser } from "@/stores/userStore";
 import Link from "next/link";
 import ROUTES from "@/constants/routes";
 import React from "react";
@@ -46,7 +46,7 @@ export default function UserControl() {
       <>
         <AuthButtons />
         <div className="flex lg:hidden">
-          <UserMenu userContext={userContext} />
+          <UserMenu />
         </div>
       </>
     );
@@ -54,7 +54,7 @@ export default function UserControl() {
 
   return (
     <div className="flex">
-      <UserMenu userContext={userContext} />
+      <UserMenu />
     </div>
   );
 }

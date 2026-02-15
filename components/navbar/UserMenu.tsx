@@ -14,21 +14,22 @@ import { useState } from "react";
 import ROUTES from "@/constants/routes";
 import { SignOutSupabase } from "@/app/actions/userAction";
 import { useRouter } from "next/navigation";
-import { useCart } from "@/Context/CartContext";
-import { UserContextType } from "@/types/UserContext";
+import { useCart } from "@/stores/cartStore";
+import { useUser } from "@/stores/userStore";
 
-export default function UserMenu({userContext}:{userContext: UserContextType|null}) {
+export default function UserMenu() {
   const [open, setOpen] = useState<boolean>(false);
-  const router = useRouter()
-  const userData = userContext?.user
-  const {clearCart} = useCart()
-  
-  const signOut = async ()=>{
-    await SignOutSupabase()
-    userContext?.resetUser()
-    clearCart()
-    router.replace(ROUTES.SIGNIN)
-  }
+  const router = useRouter();
+  const userContext = useUser();
+  const userData = userContext.user;
+  const { clearCart } = useCart();
+
+  const signOut = async () => {
+    await SignOutSupabase();
+    userContext.resetUser();
+    await clearCart();
+    router.replace(ROUTES.SIGNIN);
+  };
   return (
       <DropdownMenu open={open} onOpenChange={(v: boolean) => setOpen(v)}>
         <DropdownMenuTrigger >

@@ -10,8 +10,8 @@ import {
 } from "@/lib/validation/authValidations";
 import { GetUser, SignInSupabase, SignUpSupabase } from "@/app/actions/userAction";
 import { useRouter } from "next/navigation";
-import { useUser } from "@/Context/UserContext";
-import { useCart } from "@/Context/CartContext";
+import { useUser } from "@/stores/userStore";
+import { useCart } from "@/stores/cartStore";
 
 interface AuthFormProps {
   fromType: string;

@@ -1,7 +1,7 @@
 "use client";
 
 import ROUTES from "@/constants/routes";
-import { useCart } from "@/Context/CartContext";
+import { useCart } from "@/stores/cartStore";
 import Image from "next/image";
 import Link from "next/link";
 import OrderSummary from "./OrderSummary";

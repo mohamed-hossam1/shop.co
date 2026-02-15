@@ -1,4 +1,4 @@
-import { useUser } from "@/Context/UserContext";
+import { useUser } from "@/stores/userStore";
 
 export default function UserIcon({ isExpanded }: { isExpanded: boolean }) {
   const userContext = useUser();

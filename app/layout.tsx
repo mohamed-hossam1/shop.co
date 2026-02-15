@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { ThemeProvider } from "@/providers/theme-provider";
-import { UserProvider } from "@/Context/UserContext";
-import { CartProvider } from "@/Context/CartContext";
+import { StateProvider } from "@/providers/state-provider";
 import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next";
 import {
@@ -90,19 +89,17 @@ export default function RootLayout({
         </Script>
       </head>
       <body>
-        <UserProvider>
-          <CartProvider>
-            <ThemeProvider
-              attribute="class"
-              defaultTheme="system"
-              enableSystem
-              disableTransitionOnChange
-            >
-              {children}
-              <Analytics />
-            </ThemeProvider>
-          </CartProvider>
-        </UserProvider>
+        <StateProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            {children}
+            <Analytics />
+          </ThemeProvider>
+        </StateProvider>
       </body>
     </html>
   );

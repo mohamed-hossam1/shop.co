@@ -1,6 +1,6 @@
 "use client"
 
-import { useUser } from "@/Context/UserContext";
+import { useUser } from "@/stores/userStore";
 import SavedAddressList from "./SavedAddressList";
 import ROUTES from "@/constants/routes";
 import Link from "next/link";

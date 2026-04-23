@@ -6,7 +6,9 @@ export async function getAllCategories() {
   const supabase = await createClient()
   const {data, error} = await supabase.from("categories").select(`
       id,
-      title
+      title,
+      image,
+      slug
     `)
   return {data,error}
 }

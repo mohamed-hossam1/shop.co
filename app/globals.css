@@ -3,7 +3,103 @@
 
 @custom-variant dark (&:is(.dark *));
 html {
-  font-size: 90% !important
+  font-size: 90% !important;
+}
+
+@font-face {
+  font-family: "Satoshi";
+  src: url("/satoshi/Satoshi-Light.otf") format("opentype");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Satoshi";
+  src: url("/satoshi/Satoshi-Regular.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Satoshi";
+  src: url("/satoshi/Satoshi-Italic.otf") format("opentype");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Satoshi";
+  src: url("/satoshi/Satoshi-Medium.otf") format("opentype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Satoshi";
+  src: url("/satoshi/Satoshi-Bold.otf") format("opentype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Satoshi";
+  src: url("/satoshi/Satoshi-Black.otf") format("opentype");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Integral CF";
+  src: url("/Integral-CF/Webfont/IntegralCF-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Integral CF";
+  src: url("/Integral-CF/Webfont/IntegralCF-Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Integral CF";
+  src: url("/Integral-CF/Webfont/IntegralCF-DemiBold.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Integral CF";
+  src: url("/Integral-CF/Webfont/IntegralCF-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Integral CF";
+  src: url("/Integral-CF/Webfont/IntegralCF-ExtraBold.woff2") format("woff2");
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Integral CF";
+  src: url("/Integral-CF/Webfont/IntegralCF-Heavy.woff2") format("woff2");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
 }
 
 @theme inline {
@@ -30,6 +126,7 @@ html {
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
+  --color-hero-background: var(--hero-background);
 
   --font-satoshi: "Satoshi", sans-serif;
   --font-integral: "Integral CF", sans-serif;
@@ -37,7 +134,7 @@ html {
 
 :root {
   --radius: 0.625rem;
-  --background: #ffffff;
+  --background: #F2F0F1;
   --foreground: #000000;
   --primary: #000000;
   --primary-hover: #333333;
@@ -47,6 +144,7 @@ html {
   --muted: #F0F0F0;
   --muted-foreground: #00000099;
   --border: #0000001a;
+  --hero-background: #F2F0F1;
 }
 
 .dark {
@@ -129,7 +227,16 @@ html {
 }
 
 input:-webkit-autofill,
-input:-webkit-autofill:hover,
 input:-webkit-autofill:focus {
     -webkit-text-fill-color: rgb(0, 0, 0) !important;
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 }

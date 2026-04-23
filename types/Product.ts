@@ -11,5 +11,7 @@ export interface ProductData{
   image_cover: string,
   images?: string[],
   stock: number,
+  new_arrival?: boolean,
+  top_selling?: boolean,
   categories: { title: string, image?:string, id:number }
 }

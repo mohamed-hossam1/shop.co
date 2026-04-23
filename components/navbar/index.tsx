@@ -1,27 +1,18 @@
 import Link from "next/link";
-import {
-  ChevronDown,
-  ShoppingCart,
-  UserCircle,
-  Menu,
-  Search as SearchIcon,
-} from "lucide-react";
+import { ChevronDown, Menu, Search as SearchIcon } from "lucide-react";
 
 import ROUTES from "@/constants/routes";
 import Searchbar from "./Search";
 import UserControl from "./UserControl";
 import CartIcon from "./CartIcon";
+import { ModeToggle } from "./ModeToggle";
 
 export default function Navbar() {
   return (
     <nav className="w-full bg-white sticky top-0 z-50">
       <div className="w-full bg-black text-white py-2 px-4 text-center text-xs sm:text-sm font-satoshi">
         <p>
-          <Link href={ROUTES.SIGNUP} className="underline font-bold">
-            Sign Up
-          </Link>
-          {" "}
-          and get 20% off when you use this code{" "}
+          Get 20% off when you use this code{" "}
           <span className="font-bold">SHOP.CO</span>
         </p>
       </div>
@@ -32,9 +23,9 @@ export default function Navbar() {
             <button className="lg:hidden p-1">
               <Menu className="w-6 h-6" />
             </button>
-            <Link href={ROUTES.HOME} className="flex-shrink-0">
-              <span className="text-2xl lg:text-3xl font-integral font-black tracking-tighter">
-                SHOP.CO
+            <Link href={ROUTES.HOME} className="shrink-0">
+              <span className="text-2xl lg:text-3xl font-integral font-black tracking-widest text-black">
+                ELARIS
               </span>
             </Link>
           </div>
@@ -67,6 +58,7 @@ export default function Navbar() {
                 <SearchIcon className="w-6 h-6" />
               </button>
             </div>
+            <ModeToggle />
             <CartIcon />
             <UserControl />
           </div>

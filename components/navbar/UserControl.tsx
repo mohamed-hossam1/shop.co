@@ -1,7 +1,6 @@
 "use client";
 import UserMenu from "./UserMenu";
 import { useUser } from "@/stores/userStore";
-import React from "react";
 
 export default function UserControl() {
   const userContext = useUser();

@@ -1,7 +1,5 @@
-export interface UserProfile {
-  id?: string;
-  name: string;
-  email: string;
-  phone: string;
-  role?: string;
+import { User } from "./User";
+
+export interface UserProfile extends Partial<User> {
+  // Can add extra fields specific to the UI context if needed
 }

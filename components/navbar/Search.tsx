@@ -4,7 +4,7 @@ import { Search } from "lucide-react";
 import React, { useState } from "react";
 
 export default function Searchbar() {
-  const [searchQuarry, setSearchQuarry] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
   return (
     <div className="w-full">
@@ -15,8 +15,8 @@ export default function Searchbar() {
               placeholder="Search for products..."
               className="w-full px-4 py-3 pl-12 pr-10 bg-[#F0F0F0] border-none font-satoshi rounded-full focus:outline-none focus:ring-1 focus:ring-black/10 transition-all duration-300"
               type="text"
-              onChange={(e) => setSearchQuarry(e.target.value)}
-              value={searchQuarry}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              value={searchQuery}
             />
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
               <Search className="h-5 w-5 text-black/40" />

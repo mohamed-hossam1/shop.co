@@ -1,18 +1,28 @@
-import { ProductData } from "./Product";
 
-export interface CartData {
-  products: ProductData;
-  quantity: number;
-}
+import { ProductData, ProductVariant } from "./Product";
 
-export interface CartState {
-  [productId: string]: CartData;
-}
-
-
-export interface AppliedPromo{
-  discount_percentage: number;
+export interface CartItem {
   id: number;
-  code:string
-
+  cart_id: string;
+  variant_id: number;
+  quantity: number;
+  lineTotal?: number;
+  
+  // Relations
+  variant?: ProductVariant & {
+    product?: ProductData;
+  };
 }
+
+export interface Cart {
+  id: string;
+  user_id?: string;
+  created_at?: string;
+  items?: CartItem[];
+  
+  // UI fields / Calculated
+  subtotal?: number;
+  itemCount?: number;
+}
+
+

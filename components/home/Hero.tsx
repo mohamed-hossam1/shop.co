@@ -8,7 +8,7 @@ export default function Hero() {
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-10 lg:pt-0 overflow-hidden">
         <div className="flex flex-col lg:flex-row items-center lg:items-end">
           <div className="w-full lg:w-1/2 flex flex-col gap-6 lg:gap-8 py-10 lg:py-24 z-10">
-            <h1 className="text-4xl sm:text-5xl lg:text-[64px] font-integral font-bold tracking-[0.04em] leading-tight sm:leading-none">
+            <h1 className="text-4xl sm:text-5xl lg:text-[64px] font-integral font-black tracking-[0.04em] leading-tight sm:leading-none">
               FIND CLOTHES <br /> THAT MATCHES <br /> YOUR STYLE
             </h1>
             <p className="text-black/60 font-satoshi text-sm sm:text-base max-w-[545px]">
@@ -64,7 +64,7 @@ export default function Hero() {
               />
             </div>
 
-            <div className="absolute top-[35%] left-[-50px] sm:left-[100px] w-11 h-11 lg:w-14 lg:h-14 animate-pulse">
+            <div className="absolute top-[35%] left-[-50px] sm:left-[100px] w-11 h-11 lg:w-14 lg:h-14 animate-spin-slow">
               <Image
                 src="/star2.png"
                 alt="Star"
@@ -72,7 +72,7 @@ export default function Hero() {
                 className="object-contain"
               />
             </div>
-            <div className="absolute top-[10%] right-2 sm:right-6 w-20 h-20 lg:w-24 lg:h-24 animate-pulse duration-1000">
+            <div className="absolute top-[10%] right-2 sm:right-6 w-20 h-20 lg:w-24 lg:h-24 animate-spin-slow">
               <Image
                 src="/star1.png"
                 alt="Star"

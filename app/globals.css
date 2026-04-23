@@ -197,6 +197,7 @@ html {
 
 @theme {
   --animate-wiggle: wiggle 1s ease-in-out infinite;
+  --animate-spin-slow: spin 10s linear infinite;
   @keyframes wiggle {
     0%,
     100% {

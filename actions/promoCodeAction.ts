@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { PromoCode } from "@/types/PromoCode";
 
 export async function validatePromoCode(promoCode: string, price: number) {
   const supabase = await createClient();
@@ -46,10 +47,18 @@ export async function validatePromoCode(promoCode: string, price: number) {
       };
     }
 
-    if (
-      typeof coupon.min_purchase === "number" &&
-      price < coupon.min_purchase
-    ) {
+    if (coupon.expires_at && new Date(coupon.expires_at) < new Date()) {
+      return {
+        success: false,
+        message: "Promo code has expired.",
+        originalPrice: price,
+        finalPrice: null,
+        discountApplied: null,
+        coupon,
+      };
+    }
+
+    if (price < coupon.min_purchase) {
       return {
         success: false,
         message: `Minimum purchase is ${coupon.min_purchase}.`,
@@ -60,10 +69,7 @@ export async function validatePromoCode(promoCode: string, price: number) {
       };
     }
 
-    if (
-      typeof coupon.max_uses === "number" &&
-      coupon.used_count >= coupon.max_uses
-    ) {
+    if (coupon.used_count >= coupon.max_uses) {
       return {
         success: false,
         message: "Promo code usage limit reached.",
@@ -74,38 +80,28 @@ export async function validatePromoCode(promoCode: string, price: number) {
       };
     }
 
-    const pct = Math.max(0, Math.min(100, coupon.discount_percentage || 0));
-    const discountAmount = (price * pct) / 100;
-    const finalPrice = Math.round((price - discountAmount) * 100) / 100;
-
-    let updateQuery = supabase
-      .from("coupons")
-      .update({ used_count: coupon.used_count + 1 })
-      .eq("id", coupon.id);
-
-    if (typeof coupon.max_uses === "number") {
-      updateQuery = updateQuery.lt("used_count", coupon.max_uses);
+    let discountAmount = 0;
+    if (coupon.type === "percentage") {
+      const pct = Math.max(0, Math.min(100, coupon.value));
+      discountAmount = (price * pct) / 100;
+    } else {
+      discountAmount = Math.min(price, coupon.value);
     }
 
-    const { data: updateData, error: updateError } = await updateQuery
+    const finalPrice = Math.round((price - discountAmount) * 100) / 100;
+
+    const { data: updateData, error: updateError } = await supabase
+      .from("coupons")
+      .update({ used_count: coupon.used_count + 1 })
+      .eq("id", coupon.id)
+      .lt("used_count", coupon.max_uses)
       .select()
       .maybeSingle();
 
-    if (updateError) {
+    if (updateError || !updateData) {
       return {
         success: false,
-        message: "Error applying promo code.",
-        originalPrice: price,
-        finalPrice: null,
-        discountApplied: null,
-        coupon,
-      };
-    }
-
-    if (!updateData) {
-      return {
-        success: false,
-        message: "Promo code could not be applied.",
+        message: "Error applying promo code or usage limit reached.",
         originalPrice: price,
         finalPrice: null,
         discountApplied: null,
@@ -118,10 +114,14 @@ export async function validatePromoCode(promoCode: string, price: number) {
       message: "Promo code applied.",
       originalPrice: price,
       finalPrice,
-      discountApplied: pct,
-      coupon: { ...coupon, used_count: coupon.used_count + 1 },
+      discountApplied: discountAmount,
+      coupon: {
+        ...updateData,
+        discount_percentage: updateData.type === "percentage" ? updateData.value : undefined,
+      } as PromoCode,
     };
   } catch (error) {
+    console.error("validatePromoCode unexpected error", error);
     return {
       success: false,
       message: "Unexpected error.",

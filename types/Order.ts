@@ -1,42 +1,39 @@
-interface CreateOrderData {
-  addressId: number;
-  paymentMethod: string;
-  paymentImageFile?: File;
-  subtotal: number;
-  deliveryFee: number;
-  discountAmount: number;
-  totalPrice: number;
-  couponId?: number;
-}
-
-interface OrderData {
+export interface OrderItem {
   id: number;
-  created_at: string;
-  address_id: number;
-  total_price: number;
-  status: string;
-  user_id: string;
-  payment_image?: string;
-  payment_method: string;
-  delivery_fee: number;
-  discount_amount: number;
-  subtotal: number;
-  coupon_id: 1;
-  addresses: {
-    area: string;
-    city: string;
-    phone: string;
-    street: string;
-    building_number: string;
-  };
-}
-
-interface OrderItem {
-  id: number;
-  product_title: string;
-  product_id: string;
+  order_id: number;
+  variant_id: number;
   quantity: number;
   price_at_purchase: number;
+  product_title: string;
   product_image: string;
+  variant_snapshot: any;
 }
 
+export interface Order {
+  id: number;
+  user_id: string;
+  status: string;
+  subtotal: number;
+  discount_amount: number;
+  total_price: number;
+  payment_method: string;
+  payment_image: string;
+  delivery_fee: number;
+  guest_info: any;
+  created_at: string;
+  
+  // Relations
+  items?: OrderItem[];
+}
+
+export interface CreateOrderData {
+  user_id?: string;
+  status?: string;
+  subtotal: number;
+  discount_amount: number;
+  total_price: number;
+  payment_method: string;
+  payment_image?: string;
+  delivery_fee: number;
+  guest_info?: any;
+}

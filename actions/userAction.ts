@@ -3,14 +3,19 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
-
+type UserData = {
+  name: string;
+  email: string;
+  password: string;
+  phone: string;
+};
 
 export async function SignUpSupabase({
   name,
   email,
   password,
   phone,
-}: UserData) {
+}: UserData ) {
   const supabase = await createClient();
 
   const { data: authUser, error: signUpError } = await supabase.auth.signUp({
@@ -36,7 +41,7 @@ export async function SignUpSupabase({
   return { signUpError: null, addUserError: null };
 }
 
-export async function SignInSupabase({ email, password }: UserData) {
+export async function SignInSupabase({ email, password }: any) {
   const supabase = await createClient();
   const { error: signInError } = await supabase.auth.signInWithPassword({
     email,
@@ -49,7 +54,6 @@ export async function SignInSupabase({ email, password }: UserData) {
 export async function SignOutSupabase() {
   const supabase = await createClient();
   const { error: signOutError } = await supabase.auth.signOut();
-  
 
   return { signOutError };
 }
@@ -62,8 +66,12 @@ export async function DeleteUser(id: string) {
 export async function GetUser() {
   const subabase = await createClient();
   const response = await subabase.auth.getUser();
-  if(response.data.user?.id){
-    const { data: userProfile, error } = await subabase.from("users").select("*").eq("id",response.data.user?.id).single();
+  if (response.data.user?.id) {
+    const { data: userProfile, error } = await subabase
+      .from("users")
+      .select("*")
+      .eq("id", response.data.user?.id)
+      .single();
     if (error) {
       console.error("Error fetching user profile:", error);
       return null;
@@ -73,7 +81,6 @@ export async function GetUser() {
   }
   return null;
 }
-
 
 export async function UpdateUserProfile({
   name,

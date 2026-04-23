@@ -1,5 +1,6 @@
-interface DeliveryFee {
+export interface Delivery {
   id: number;
-  city: string;
   delivery_fee: number;
+  city: string;
+  created_at: string;
 }

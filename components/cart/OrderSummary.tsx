@@ -29,7 +29,12 @@ export default function OrderSummary({
 
   useEffect(() => {
     if (appliedPromo) {
-      const discount = (price * appliedPromo.discount_percentage) / 100;
+      let discount = 0;
+      if (appliedPromo.type === "percentage") {
+        discount = (price * appliedPromo.value) / 100;
+      } else {
+        discount = Math.min(price, appliedPromo.value);
+      }
       setCurrentPrice(Math.round((price - discount) * 100) / 100);
     } else {
       setCurrentPrice(price);
@@ -64,7 +69,12 @@ export default function OrderSummary({
       if (typeof result.finalPrice === "number") {
         setCurrentPrice(Math.round(result.finalPrice * 100) / 100);
       } else {
-        const discount = (price * coupon.discount_percentage) / 100;
+        let discount = 0;
+        if (coupon.type === "percentage") {
+          discount = (price * coupon.value) / 100;
+        } else {
+          discount = Math.min(price, coupon.value);
+        }
         setCurrentPrice(Math.round((price - discount) * 100) / 100);
       }
 
@@ -85,7 +95,9 @@ export default function OrderSummary({
   };
 
   const discountAmount = appliedPromo
-    ? (price * appliedPromo.discount_percentage) / 100
+    ? appliedPromo.type === "percentage"
+      ? (price * appliedPromo.value) / 100
+      : Math.min(price, appliedPromo.value)
     : 0;
 
   return (
@@ -160,7 +172,7 @@ export default function OrderSummary({
                       clipRule="evenodd"
                     />
                   </svg>
-                  {appliedPromo.discount_percentage}% discount applied!
+                  {appliedPromo.type === "percentage" ? `${appliedPromo.value}%` : `EGP ${appliedPromo.value}`} discount applied!
                 </p>
               )}
             </div>
@@ -177,7 +189,7 @@ export default function OrderSummary({
           {appliedPromo && (
             <div className="flex justify-between text-green-600">
               <span className="text-sm md:text-base">
-                Discount ({appliedPromo.discount_percentage}%)
+                Discount ({appliedPromo.type === "percentage" ? `${appliedPromo.value}%` : "Fixed"})
               </span>
               <span className="font-semibold text-sm md:text-base">
                 -EGP {discountAmount.toFixed(2)}

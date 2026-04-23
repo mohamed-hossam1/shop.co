@@ -8,7 +8,7 @@ import {
   signInValidationSchema,
   signUpValidationSchema,
 } from "@/lib/validation/authValidations";
-import { GetUser, SignInSupabase, SignUpSupabase } from "@/app/actions/userAction";
+import { GetUser, SignInSupabase, SignUpSupabase } from "@/actions/userAction";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/stores/userStore";
 import { useCart } from "@/stores/cartStore";

@@ -1,4 +1,4 @@
-import { GetUser } from "@/app/actions/userAction";
+import { GetUser } from "@/actions/userAction";
 import AccountSettingsForm from "@/components/profile/AccountSettingsForm";
 import { redirect } from "next/navigation";
 import ROUTES from "@/constants/routes";

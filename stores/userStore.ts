@@ -23,7 +23,7 @@ export const useUserStore = create<UserStoreState>((set, get) => ({
     set({ isLoading: true });
 
     try {
-      const { GetUser } = await import("@/app/actions/userAction");
+      const { GetUser } = await import("@/actions/userAction");
       const userData = await GetUser();
       if (userData) {
         set({ user: userData });

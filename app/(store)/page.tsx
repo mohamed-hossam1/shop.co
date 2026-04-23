@@ -1,25 +1,6 @@
 import Products from "@/components/home/Products";
 import Image from "next/image";
 import Link from "next/link";
-import type { Metadata } from "next";
-
-export const metadata: Metadata = {
-  title: "Cura - Premium Organic Beauty & Personal Care Products | Shop Now",
-  description:
-    "Shop premium organic beauty products, skincare, shampoos, and personal care items at Cura. Authentic, high-quality cosmetics for natural beauty.",
-  keywords:
-    "organic beauty products, skincare, shampoo, conditioner, natural cosmetics, personal care",
-  alternates: {
-    canonical: "/",
-  },
-  openGraph: {
-    title: "Cura - Premium Organic Beauty & Personal Care Products",
-    description:
-      "Shop premium organic beauty products, skincare, shampoos, and personal care items.",
-    url: "/",
-    type: "website",
-  },
-};
 
 export default function Home() {
   return (

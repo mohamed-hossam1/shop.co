@@ -1,4 +1,4 @@
-import { getOrderItems } from "@/app/actions/ordersAction";
+import { getOrderItems } from "@/actions/ordersAction";
 import OrderDetails from "./OrderDetails";
 
 export default async function Orderitems({ order }: { order: OrderData }) {

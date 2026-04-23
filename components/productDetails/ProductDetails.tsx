@@ -1,4 +1,4 @@
-import { getProductDetails } from "@/app/actions/productsAction";
+import { getProductDetails } from "@/actions/productsAction";
 import QuantityProduct from "./QuantityProduct";
 import RelatedProducts from "./RelatedProducts";
 import { Suspense } from "react";

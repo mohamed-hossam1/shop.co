@@ -6,13 +6,12 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel
-
 } from "@/components/ui/dropdown-menu";
-import { User2 } from "lucide-react";
+import { CircleUser } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import ROUTES from "@/constants/routes";
-import { SignOutSupabase } from "@/app/actions/userAction";
+import { SignOutSupabase } from "@/actions/userAction";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/stores/cartStore";
 import { useUser } from "@/stores/userStore";
@@ -29,67 +28,54 @@ export default function UserMenu() {
     userContext.resetUser();
     await clearCart();
     router.replace(ROUTES.SIGNIN);
+    setOpen(false);
   };
+
   return (
-      <DropdownMenu open={open} onOpenChange={(v: boolean) => setOpen(v)}>
-        <DropdownMenuTrigger >
-          <div className="flex flex-row-reverse items-center gap-2 font-semibold" onClick={() => setOpen(!open)}>
-            <div>
-              {userData && <p>{userData.name}</p>}
-
-            </div>
-            <div className="border-2 flex bg-gradient-to-r from-[#1F1F6F] to-[#14274E] items-center w-10 h-10 flex justify-center items-center rounded-full cursor-pointer border-primary transition-all duration-300">
-              {userData?<>
-                <p className="text-white w-5 cursor-pointer font-bold" onClick={() => setOpen(!open)}>{userData.name[0]}</p>
-              </>:
-              <User2 className="text-white w-5 cursor-pointer" onClick={() => setOpen(!open)}/>}
-            </div>
-
-          </div>
-          
-        </DropdownMenuTrigger>
-        <DropdownMenuContent className="mr-4 p-3 rounded-2xl">
-          {userData?(<>
-            <DropdownMenuLabel className="border-b mb-2">
-              <p>{userData.name}</p>
-              <p className="text-gray-500">{userData.email}</p>
+    <DropdownMenu open={open} onOpenChange={setOpen}>
+      <DropdownMenuTrigger asChild>
+        <button className="flex items-center gap-2 outline-none">
+          <CircleUser className="w-6 h-6 text-black hover:text-black/70 transition-colors" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-56 mt-2 rounded-xl p-2 font-satoshi">
+        {userData ? (
+          <>
+            <DropdownMenuLabel className="px-2 py-1.5 border-b mb-1">
+              <p className="font-bold">{userData.name}</p>
+              <p className="text-xs text-black/50">{userData.email}</p>
             </DropdownMenuLabel>
-            <DropdownMenuItem className="cursor-pointer">
-              <Link onClick={() => setOpen(!open)} href={ROUTES.PROFILE} className="w-full h-full">
+            <DropdownMenuItem asChild>
+              <Link href={ROUTES.PROFILE} className="w-full cursor-pointer rounded-lg px-2 py-1.5 hover:bg-gray-100 block">
                 Dashboard
               </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem className="cursor-pointer" >
-              <Link onClick={() => setOpen(!open)} href={ROUTES.CART} className="w-full h-full">
-                Cart
-              </Link>
-            </DropdownMenuItem>
-
-            <DropdownMenuItem className="cursor-pointer" >
-              <Link onClick={() => setOpen(!open)} href={ROUTES.ORDERS} className="w-full h-full">
+            <DropdownMenuItem asChild>
+              <Link href={ROUTES.ORDERS} className="w-full cursor-pointer rounded-lg px-2 py-1.5 hover:bg-gray-100 block">
                 Orders
               </Link>
             </DropdownMenuItem>
-
-            <DropdownMenuItem className="cursor-pointer mt-3" >
-              <button className="w-full h-full text-red-500 text-left" onClick={()=>signOut()}>
+            <DropdownMenuItem className="mt-1">
+              <button className="w-full text-left text-red-500 cursor-pointer rounded-lg px-2 py-1.5 hover:bg-red-50" onClick={signOut}>
                 Sign Out
               </button>
             </DropdownMenuItem>
-          
-          </>):<>
-            <DropdownMenuItem className="cursor-pointer">
-              <Link onClick={() => setOpen(!open)} href={ROUTES.SIGNIN} className="w-full h-full">
+          </>
+        ) : (
+          <>
+            <DropdownMenuItem asChild>
+              <Link href={ROUTES.SIGNIN} className="w-full cursor-pointer rounded-lg px-2 py-1.5 hover:bg-gray-100 block">
                 Login
               </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem className="cursor-pointer" >
-              <Link onClick={() => setOpen(!open)} href={ROUTES.SIGNUP} className="w-full h-full">
+            <DropdownMenuItem asChild>
+              <Link href={ROUTES.SIGNUP} className="w-full cursor-pointer rounded-lg px-2 py-1.5 hover:bg-gray-100 block">
                 Sign Up
               </Link>
             </DropdownMenuItem>
-          </>}
-        </DropdownMenuContent>
-      </DropdownMenu>
+          </>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }

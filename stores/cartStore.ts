@@ -8,7 +8,7 @@ import {
   getCartSupa,
   removeFromCartSupa,
   updateCartSupa,
-} from "@/app/actions/cartAction";
+} from "@/actions/cartAction";
 import { CartState, CartData, AppliedPromo } from "@/types/Cart";
 import { useUserStore } from "@/stores/userStore";
 

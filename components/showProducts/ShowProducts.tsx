@@ -1,4 +1,4 @@
-import { getAllProduct } from "@/app/actions/productsAction";
+import { getAllProduct } from "@/actions/productsAction";
 import SubTitle from "./SubTitle";
 import CardList from "./CardList";
 import { ProductData } from "@/types/Product";

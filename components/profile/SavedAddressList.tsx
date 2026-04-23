@@ -1,4 +1,4 @@
-import { getAddresses } from "@/app/actions/addressAction";
+import { getAddresses } from "@/actions/addressAction";
 
 export default async function SavedAddressList() {
   const addresses = await getAddresses();

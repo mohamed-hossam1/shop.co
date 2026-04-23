@@ -87,8 +87,12 @@ export default function RootLayout({
             gtag('config', 'G-XXXXXXXXXX');
           `}
         </Script>
+        <link
+          href="https://api.fontshare.com/v2/css?f[]=satoshi@900,700,500,300,400&display=swap"
+          rel="stylesheet"
+        />
       </head>
-      <body>
+      <body className="font-satoshi">
         <StateProvider>
           <ThemeProvider
             attribute="class"

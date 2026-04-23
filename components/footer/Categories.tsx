@@ -1,4 +1,4 @@
-import { getAllCategories } from "@/app/actions/categoriesAction";
+import { getAllCategories } from "@/actions/categoriesAction";
 import ROUTES from "@/constants/routes";
 import Link from "next/link";
 

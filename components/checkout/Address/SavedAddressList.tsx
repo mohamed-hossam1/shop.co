@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { deleteAddress } from "@/app/actions/addressAction";
+import { deleteAddress } from "@/actions/addressAction";
 
 interface SavedAddressListProps {
   addresses: Address[];

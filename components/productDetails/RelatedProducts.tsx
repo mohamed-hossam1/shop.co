@@ -1,4 +1,4 @@
-import { getRelatedProducts } from "@/app/actions/productsAction"
+import { getRelatedProducts } from "@/actions/productsAction"
 import CardList from "../showProducts/CardList"
 
 

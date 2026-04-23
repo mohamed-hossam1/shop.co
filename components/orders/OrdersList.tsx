@@ -1,4 +1,4 @@
-import { getUserOrders } from "@/app/actions/ordersAction";
+import { getUserOrders } from "@/actions/ordersAction";
 import OrderCard from "./OrderCard";
 
 export default async function OrdersList() {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { addAddress } from "@/app/actions/addressAction";
+import { addAddress } from "@/actions/addressAction";
 
 interface AddressFormProps {
   onSuccess: () => void;

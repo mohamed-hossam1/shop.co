@@ -2,7 +2,7 @@
 
 import { useFormik } from "formik";
 import { useTransition } from "react";
-import { UpdateUserPassword } from "@/app/actions/userAction";
+import { UpdateUserPassword } from "@/actions/userAction";
 import * as Yup from "yup";
 import { useRouter } from "next/navigation";
 import ROUTES from "@/constants/routes";

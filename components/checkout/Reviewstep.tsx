@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { MapPin, CreditCard, Package, User } from "lucide-react";
 import { CartState } from "@/types/Cart";
+import { Address } from "@/types/Address";
 
 interface ReviewStepProps {
   cart: CartState;
@@ -59,13 +60,13 @@ export default function ReviewStep({
         <div className="space-y-3 max-h-[400px] overflow-y-auto custom-scroll">
           {cartItems.map((item) => (
             <div
-              key={item.products.id}
+              key={item.variant.id}
               className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg border border-gray-200"
             >
               <div className="relative w-16 h-16 md:w-20 md:h-20 bg-white rounded-lg flex-shrink-0">
                 <Image
-                  src={item.products.image_cover}
-                  alt={item.products.title}
+                  src={item.variant.product.image_cover}
+                  alt={item.variant.product.title}
                   fill
                   className="object-contain p-1"
                   sizes="80px"
@@ -74,11 +75,15 @@ export default function ReviewStep({
 
               <div className="flex-1 min-w-0">
                 <h4 className="font-medium text-gray-900 truncate text-sm md:text-base">
-                  {item.products.title}
+                  {item.variant.product.title}
                 </h4>
                 <p className="text-xs md:text-sm text-gray-600">
-                  {item.products.categories.title}
+                  {item.variant.product.category?.title}
                 </p>
+                <div className="flex flex-wrap gap-x-2 text-[10px] md:text-xs text-gray-500 mt-0.5">
+                  <span className="capitalize">Size: {item.variant.size}</span>
+                  <span className="capitalize">Color: {item.variant.color}</span>
+                </div>
                 <p className="text-xs md:text-sm text-gray-600 mt-1">
                   Qty: {item.quantity}
                 </p>
@@ -86,7 +91,10 @@ export default function ReviewStep({
 
               <div className="text-right">
                 <p className="font-bold text-primary text-sm md:text-base">
-                  EGP {(item.products.price_after * item.quantity).toFixed(2)}
+                  EGP {(item.variant.product.price_after * item.quantity).toFixed(2)}
+                </p>
+                <p className="text-[10px] md:text-xs text-gray-400">
+                  EGP {item.variant.price.toFixed(2)} each
                 </p>
               </div>
             </div>

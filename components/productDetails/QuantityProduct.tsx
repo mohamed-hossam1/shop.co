@@ -4,148 +4,198 @@ import { useCart } from "@/stores/cartStore";
 import { useUser } from "@/stores/userStore";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { ProductData } from "@/types/Product";
+import { ProductData, ProductVariant } from "@/types/Product";
 import Swal from "sweetalert2";
 
 export default function QuantityProduct({ product }: { product: ProductData }) {
+  const variants = product.variants || [];
+  const [selectedColor, setSelectedColor] = useState<string>(variants[0]?.color || "");
+  const [selectedSize, setSelectedSize] = useState<string>(variants[0]?.size || "");
   const [isLoading, setIsLoading] = useState(false);
   const [quantity, setQuantity] = useState(1);
-  const [APIError, setAPIError] = useState("");
   const { addToCart } = useCart();
-  const { user } = useUser();
   const router = useRouter();
+  
+  const colors = Array.from(new Set(variants.map((v: ProductVariant) => v.color)));
+  
+  // Get available sizes for the currently selected color
+  const availableSizes = variants
+    .filter((v: ProductVariant) => v.color === selectedColor)
+    .map((v: ProductVariant) => v.size);
 
-  const isOutOfStock = product.stock === 0;
-  const isMaxQuantity = quantity >= product.stock;
+  const handleColorChange = (color: string) => {
+    setSelectedColor(color);
+    const sizesForColor = variants
+      .filter((v: ProductVariant) => v.color === color)
+      .map((v: ProductVariant) => v.size);
+    
+    // If current selected size is not available for new color, select first available size
+    if (!sizesForColor.includes(selectedSize)) {
+      setSelectedSize(sizesForColor[0]);
+    }
+    setQuantity(1);
+  };
+
+  const handleSizeChange = (size: string) => {
+    setSelectedSize(size);
+    setQuantity(1);
+  };
+
+  const selectedVariant = variants.find(
+    (v: ProductVariant) => v.color === selectedColor && v.size === selectedSize
+  );
+
+  const stock = selectedVariant?.stock || 0;
+  const price = selectedVariant?.price || 0;
+  const isOutOfStock = stock === 0;
+  const isMaxQuantity = quantity >= stock;
 
   const handleIncrease = () => {
-    if (quantity < product.stock) {
+    if (quantity < stock) {
       setQuantity(quantity + 1);
     }
   };
 
   const onSubmit = async () => {
-    if (isOutOfStock) return;
+    if (isOutOfStock || !selectedVariant) return;
 
     setIsLoading(true);
     try {
-      await addToCart({ products: product, quantity });
+      await addToCart({ 
+        variant: { ...selectedVariant, product }, 
+        quantity 
+      });
       
       await Swal.fire({
         position: 'top-end',
         icon: 'success',
-        title: 'Product has been added to cart',
+        title: 'Added to cart',
         showConfirmButton: false,
-        timer: 2000,
+        timer: 1500,
         timerProgressBar: true,
         toast: true,
-        background: '#fff',
-        iconColor: '#10b981',
-        customClass: {
-          popup: 'colored-toast'
-        }
       });
 
       setQuantity(1);
-      setAPIError("");
-    } catch (e) {
-      if (e instanceof Error) {
-        setAPIError(e.message);
-        
-        Swal.fire({
-          icon: 'error',
-          title: 'error!',
-          text: e.message,
-          confirmButtonColor: '#dc3545',
-        });
-      }
+    } catch (e: any) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: e.message,
+        confirmButtonColor: '#000',
+      });
     } finally {
       setIsLoading(false);
     }
   };
 
   return (
-    <>
-      <div className=" mb-10">
-        <p className="text-xl font-semibold">Quantity:</p>
-        <div className="flex w-full justify-center mt-20 gap-5">
-          <button
-            className="w-13 h-13 rounded-full hover:bg-gradient-to-r from-[#1F1F6F] to-[#14274E] text-6xl flex justify-center items-center border-2 border-primary text-primary hover:text-white transition-all duration-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-            onClick={() => quantity > 1 && setQuantity(quantity - 1)}
-            disabled={quantity <= 1}
-          >
-            <span className="relative -top-[2px]">-</span>
-          </button>
-          <div className="flex flex-col items-center justify-center relative -top-1">
-            <p className="font-bold text-4xl">{quantity}</p>
-            <p className="text-lg text-gray-700">Unit(s)</p>
+    <div className="font-satoshi">
+      <div className="space-y-6 mb-8">
+        {colors.length > 0 && (
+          <div>
+            <p className="text-gray-500 mb-3 font-medium uppercase text-sm tracking-wider">Select Color</p>
+            <div className="flex flex-wrap gap-3">
+              {colors.map(color => (
+                <button
+                  key={color}
+                  onClick={() => handleColorChange(color)}
+                  title={color}
+                  className={`w-9 h-9 rounded-full border-2 transition-all flex items-center justify-center ${
+                    selectedColor === color 
+                    ? 'border-black ring-2 ring-black/10' 
+                    : 'border-gray-200 hover:border-gray-400'
+                  }`}
+                  style={{ backgroundColor: color }}
+                >
+                  {selectedColor === color && (
+                    <div className={`w-3 h-3 rounded-full ${
+                      // Darker colors get white check, lighter colors get black check
+                      color.toLowerCase() === '#ffffff' || color.toLowerCase() === 'white' ? 'bg-black' : 'bg-white'
+                    }`} />
+                  )}
+                </button>
+              ))}
+            </div>
           </div>
+        )}
+
+        {availableSizes.length > 0 && (
+          <div>
+            <p className="text-gray-500 mb-3 font-medium uppercase text-sm tracking-wider">Choose Size</p>
+            <div className="flex flex-wrap gap-3">
+              {availableSizes.map(size => (
+                <button
+                  key={size}
+                  onClick={() => handleSizeChange(size)}
+                  className={`px-6 py-2 rounded-full border-2 transition-all font-bold text-sm ${
+                    selectedSize === size 
+                    ? 'border-black bg-black text-white' 
+                    : 'border-gray-100 bg-gray-50 text-gray-500 hover:border-gray-300'
+                  }`}
+                >
+                  {size}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="h-px bg-gray-100 w-full mb-8" />
+
+      {/* Quantity & Actions */}
+      <div className="flex flex-col sm:flex-row items-center gap-6 mb-8">
+        <div className="flex items-center bg-gray-100 rounded-full px-6 py-3 space-x-8">
           <button
-            className="w-13 h-13 rounded-full hover:bg-gradient-to-r from-[#1F1F6F] to-[#14274E] text-3xl font-semibold flex justify-center items-center border-2 border-primary text-primary hover:text-white transition-all duration-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            className="text-2xl font-bold flex items-center justify-center hover:opacity-70 transition-opacity disabled:opacity-20 disabled:cursor-not-allowed"
+            onClick={() => quantity > 1 && setQuantity(quantity - 1)}
+            disabled={quantity <= 1 || isOutOfStock}
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M20 12H4" />
+            </svg>
+          </button>
+          
+          <span className="font-bold text-lg text-black w-4 text-center select-none">
+            {isOutOfStock ? 0 : quantity}
+          </span>
+          
+          <button
+            className="text-2xl font-bold flex items-center justify-center hover:opacity-70 transition-opacity disabled:opacity-20 disabled:cursor-not-allowed"
             onClick={handleIncrease}
             disabled={isMaxQuantity || isOutOfStock}
           >
-            <span className="relative -top-[1px]">+</span>
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+            </svg>
           </button>
         </div>
-        {APIError ? (
-          <p className="text-sm text-center text-red-500 mt-2">
-            You add more than in stock
-          </p>
-        ) : (
-          isMaxQuantity &&
-          product.stock > 0 && (
-            <>
-              <p className="text-sm text-center text-red-500 mt-2">
-                Maximum quantity reached ({product.stock} available)
-              </p>
-            </>
-          )
-        )}
+
+        <button
+          className={`flex-1 py-4 px-8 rounded-full font-bold text-lg transition-all flex justify-center items-center shadow-lg active:scale-95 ${
+            isOutOfStock
+              ? "bg-gray-200 text-gray-400 cursor-not-allowed shadow-none"
+              : "bg-black text-white hover:bg-gray-800 shadow-black/10"
+          }`}
+          onClick={onSubmit}
+          disabled={isLoading || isOutOfStock}
+        >
+          {isLoading ? (
+            <div className="h-6 w-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+          ) : isOutOfStock ? (
+            "Out of Stock"
+          ) : (
+            `Add to Cart - EGP ${(price * quantity).toFixed(2)}`
+          )}
+        </button>
       </div>
 
-      <div className="bg-gray-50 rounded-xl  p-4 space-y-2 mb-14">
-        <div className="flex justify-between items-center">
-          <span className="text-gray-600">Unit Price:</span>
-          <span className="font-semibold  text-gray-900">
-            EGP {product.price_after}
-          </span>
-        </div>
-        <div className="flex justify-between items-center text-lg">
-          <span className="font-medium text-lg text-gray-900">
-            Total Price:
-          </span>
-          <div className="flex flex-col">
-            <span className="font-bold text-2xl text-[#1F1F6F]">
-              EGP {product.price_after * quantity}
-            </span>
-          </div>
-        </div>
-      </div>
-
-      <button
-        className={`py-5 px-3 w-full ${
-          isLoading
-            ? "bg-green-400 cursor-not-allowed"
-            : isOutOfStock
-            ? "bg-gray-400 cursor-not-allowed"
-            : "cursor-pointer bg-gradient-to-r from-[#1F1F6F] to-[#14274E] hover:from-[#14274E] hover:to-[#394867] "
-        } rounded-xl mt-2  flex justify-center items-center transition-all duration-300 hover:scale-105`}
-        onClick={onSubmit}
-        disabled={isLoading || isOutOfStock}
-      >
-        {isLoading ? (
-          <div className="h-6 w-6 border-b-2 border-current border-white rounded-full animate-spin"></div>
-        ) : (
-          <p className="h-full w-full md:text-xl text-white flex justify-center items-center font-bold transition-all duration-300">
-            {isOutOfStock
-              ? "Out of Stock"
-              : `Add ${quantity} Unit(s) to Cart - EGP ${
-                  product.price_after * quantity
-                }`}
-          </p>
-        )}
-      </button>
-    </>
+      {!isOutOfStock && isMaxQuantity && (
+        <p className="text-sm text-red-500 font-bold mb-4 animate-pulse">
+           Only {stock} available in stock for this variant!
+        </p>
+      )}
+    </div>
   );
 }

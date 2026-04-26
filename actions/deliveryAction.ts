@@ -9,7 +9,7 @@ export async function getDeliveryFee(city: string) {
     .from("delivery")
     .select("delivery_fee")
     .eq("city", city)
-    .single();
+    .maybeSingle();
 
   if (error || !data) {
     console.error("Error fetching delivery fee:", error);

@@ -1,7 +1,6 @@
 "use client"
 
 import { useUser } from "@/stores/userStore";
-import SavedAddressList from "./SavedAddressList";
 import ROUTES from "@/constants/routes";
 import Link from "next/link";
 
@@ -13,6 +12,7 @@ export default function Profile({
   const userContext = useUser();
   const userData = userContext.user;
   if (userContext.isLoading) return <></>;
+  if (!userData) return <div className="p-10 text-center">User not found. Please log in.</div>;
   return (
     <div className="flex-1 p-4 sm:p-6">
       <div className="w-full">
@@ -32,7 +32,7 @@ export default function Profile({
                 <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 md:space-x-6">
                   <div className="relative mb-3 sm:mb-0 -mt-12 md:-mt-20">
                     <div className="w-20 h-20 md:w-24 md:h-24 bg-gradient-to-r from-[#1F1F6F] to-[#14274E] rounded-full flex items-center justify-center text-white text-lg md:text-3xl font-bold border-3 md:border-4 border-white shadow-lg">
-                      {userData?.name[0]}
+                      {userData?.name?.[0] ?? "U"}
                     </div>
                     <div className="absolute bottom-1 left-14 md:-bottom-1 md:-right-1 w-4 h-4 md:w-6 md:h-6 bg-green-500 rounded-full border-2 border-white" />
                   </div>

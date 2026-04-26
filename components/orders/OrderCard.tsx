@@ -1,8 +1,9 @@
 import React from "react";
 import Orderitems from "./Orderitems";
 import { Data } from "@/lib/data";
-// 01020097069
-export default function OrderCard({ order }: { order: OrderData }) {
+import { Order } from "@/types/Order";
+
+export default function OrderCard({ order }: { order: Order }) {
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
       <div className="flex items-start justify-between mb-4">

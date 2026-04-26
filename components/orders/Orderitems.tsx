@@ -1,7 +1,8 @@
 import { getOrderItems } from "@/actions/ordersAction";
 import OrderDetails from "./OrderDetails";
+import { Order } from "@/types/Order";
 
-export default async function Orderitems({ order }: { order: OrderData }) {
+export default async function Orderitems({ order }: { order: Order }) {
   const items = (await getOrderItems(order.id)) || [];
   if (!items) return <></>;
   return (

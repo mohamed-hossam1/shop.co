@@ -19,7 +19,9 @@ export async function getAllProduct() {
     .eq("is_deleted", false)
     .order("category_id", { ascending: true });
 
-  const mappedData = data?.map((item: any) => {
+  const typedData = data as unknown as ProductData[] | null;
+
+  const mappedData = typedData?.map((item) => {
     const firstVariant = item.variants?.[0];
     return {
       ...item,
@@ -27,7 +29,7 @@ export async function getAllProduct() {
       price_before: firstVariant?.price_before || 0,
       price_after: firstVariant?.price || 0,
       stock: firstVariant?.stock || 0,
-    };
+    } as ProductData;
   });
 
   return { data: mappedData, error };
@@ -55,8 +57,9 @@ export async function getNewArrivals(limit: number = 4) {
   }
 
   const { data, error } = await query;
+  const typedData = data as unknown as ProductData[] | null;
 
-  const mappedData = data?.map((item: any) => {
+  const mappedData = typedData?.map((item) => {
     const firstVariant = item.variants?.[0];
     return {
       ...item,
@@ -64,7 +67,7 @@ export async function getNewArrivals(limit: number = 4) {
       price_before: firstVariant?.price_before || 0,
       price_after: firstVariant?.price || 0,
       stock: firstVariant?.stock || 0,
-    };
+    } as ProductData;
   });
 
   return { data: mappedData, error };
@@ -91,8 +94,9 @@ export async function getTopSelling(limit: number = 4) {
   }
 
   const { data, error } = await query;
+  const typedData = data as unknown as ProductData[] | null;
 
-  const mappedData = data?.map((item: any) => {
+  const mappedData = typedData?.map((item) => {
     const firstVariant = item.variants?.[0];
     return {
       ...item,
@@ -100,10 +104,9 @@ export async function getTopSelling(limit: number = 4) {
       price_before: firstVariant?.price_before || 0,
       price_after: firstVariant?.price || 0,
       stock: firstVariant?.stock || 0,
-    };
+    } as ProductData;
   });
 
-  // Sort by price manually if needed or by some other metric
   return { data: mappedData, error };
 }
 
@@ -118,17 +121,19 @@ export async function getProductDetails(id: string) {
       images:product_images ( * )
     `)
     .eq("id", id)
-    .single();
+    .maybeSingle();
 
-  if (data) {
-    data.category = Array.isArray(data.category) ? data.category[0] : data.category;
-    const firstVariant = data.variants?.[0];
-    data.price_before = firstVariant?.price_before || 0;
-    data.price_after = firstVariant?.price || 0;
-    data.stock = firstVariant?.stock || 0;
+  const product = data as unknown as ProductData | null;
+
+  if (product) {
+    product.category = Array.isArray(product.category) ? product.category[0] : product.category;
+    const firstVariant = product.variants?.[0];
+    product.price_before = firstVariant?.price_before || 0;
+    product.price_after = firstVariant?.price || 0;
+    product.stock = firstVariant?.stock || 0;
   }
 
-  return { data, error };
+  return { data: product, error };
 }
 
 export async function getRelatedProducts(
@@ -148,15 +153,18 @@ export async function getRelatedProducts(
     .neq("id", productId)
     .limit(4);
 
-  const mappedData = data?.map((item: any) => {
+  const typedData = data as unknown as ProductData[] | null;
+
+  const mappedData = typedData?.map((item) => {
     const firstVariant = item.variants?.[0];
     return {
       ...item,
       price_before: firstVariant?.price_before || 0,
       price_after: firstVariant?.price || 0,
       stock: firstVariant?.stock || 0,
-    };
+    } as ProductData;
   });
 
   return { data: mappedData, error };
 }
+

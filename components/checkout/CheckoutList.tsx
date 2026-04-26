@@ -10,11 +10,12 @@ import { getAddresses } from "@/actions/addressAction";
 import { getDeliveryFee } from "@/actions/deliveryAction";
 import PaymentStep from "./Payment/PaymentStep";
 import { useRouter } from "next/navigation";
-import { createOrder, createGuestOrder } from "@/actions/ordersAction";
+import { createOrder } from "@/actions/ordersAction";
 import ROUTES from "@/constants/routes";
 import { useUser } from "@/stores/userStore";
 import ReviewStep from "./Reviewstep";
 import GuestAddressStep from "./Address/Guestaddressstep";
+import { Address } from "@/types/Address";
 
 export default function CheckoutList() {
   const {
@@ -155,7 +156,7 @@ export default function CheckoutList() {
     }
 
     if (!user) {
-      if (!guestAddress.name  || !guestAddress.phone || 
+      if (!guestAddress.name || !guestAddress.phone || 
           !guestAddress.city || !guestAddress.area || !guestAddress.street || 
           !guestAddress.building_number) {
         alert("Please fill in all address fields");
@@ -167,71 +168,69 @@ export default function CheckoutList() {
 
     try {
       const discountAmount = appliedPromo
-        ? (price * appliedPromo.discount_percentage) / 100
+        ? appliedPromo.type === "percentage"
+          ? (price * (appliedPromo.value || 0)) / 100
+          : Math.min(price, appliedPromo.value || 0)
         : 0;
 
-      const subtotalAfterDiscount = price - discountAmount;
+      const subtotalAfterDiscount = Math.max(0, price - discountAmount);
       const total = subtotalAfterDiscount + deliveryFee;
 
       let paymentFile: File | undefined = undefined;
-      if (selectedPayment.toLowerCase() === "vodafone cash" && vodafoneFile) {
+      const p = selectedPayment.toLowerCase();
+      if (p === "vodafone cash" && vodafoneFile) {
         paymentFile = vodafoneFile;
-      } else if (selectedPayment.toLowerCase() === "instapay" && instapayFile) {
+      } else if (p === "instapay" && instapayFile) {
         paymentFile = instapayFile;
       }
 
-      const cartItems = Object.values(cart).map((item) => ({
-        productId: item.products.id,
-        productTitle: item.products.title,
+      const orderItems = Object.values(cart).map((item) => ({
+        variant_id: item.variant.id,
         quantity: item.quantity,
-        priceAtPurchase: item.products.price_after,
-        productImage: item.products.image_cover,
+        price_at_purchase: item.variant.price,
+        product_title: item.variant.product.title,
+        product_image: item.variant.product.image_cover,
+        variant_snapshot: {
+          color: item.variant.color,
+          size: item.variant.size,
+          sku: item.variant.sku
+        }
       }));
 
-      let result;
+      // For logged in users, we Snapshot the address into guest_info as well if needed, 
+      // or just pass it as is. 
+      // The createOrder action currently takes guest_info.
+      const finalGuestInfo = user 
+        ? {
+            name: user.name,
+            phone: selectedAddress?.phone || user.phone,
+            city: selectedAddress?.city,
+            area: selectedAddress?.area,
+            street: selectedAddress?.street,
+            building_number: selectedAddress?.building_number
+          }
+        : guestAddress;
 
-      if (user) {
-        // Logged in user
-        result = await createOrder(
-          {
-            addressId: selectedAddress!.id,
-            paymentMethod: selectedPayment,
-            paymentImageFile: paymentFile,
-            subtotal: price,
-            deliveryFee: deliveryFee,
-            discountAmount: discountAmount,
-            totalPrice: total,
-            couponId: appliedPromo?.id,
-          },
-          cartItems
-        );
-      } else {
-        // Guest user
-        result = await createGuestOrder(
-          {
-            guestInfo: guestAddress,
-            paymentMethod: selectedPayment,
-            paymentImageFile: paymentFile,
-            subtotal: price,
-            deliveryFee: deliveryFee,
-            discountAmount: discountAmount,
-            totalPrice: total,
-            couponId: appliedPromo?.id,
-          },
-          cartItems
-        );
-      }
+      const result = await createOrder(
+        {
+          subtotal: price,
+          discount_amount: discountAmount,
+          total_price: total,
+          delivery_fee: deliveryFee,
+          payment_method: selectedPayment,
+          payment_image_file: paymentFile,
+          coupon_id: appliedPromo?.id,
+          guest_info: finalGuestInfo,
+        },
+        orderItems,
+        !user // isGuest
+      );
 
       if (result.success) {
         await clearCart();
         setAppliedPromo(null);
         
-        // Redirect to success page with order details
-        if (user) {
-          router.push(`${ROUTES.ORDER_SUCCESS}?orderId=${result.orderId}&isGuest=false`);
-        } else {
-          router.push(`${ROUTES.ORDER_SUCCESS}?orderId=${result.orderId}&isGuest=true`);
-        }
+        router.push(`${ROUTES.ORDER_SUCCESS}?orderId=${result.orderId}&isGuest=${!user}`);
       } else {
         alert(`Failed to place order: ${result.error}`);
       }

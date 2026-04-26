@@ -3,19 +3,19 @@
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 
-type UserData = {
-  name: string;
+interface UserData {
+  name?: string;
   email: string;
   password: string;
-  phone: string;
-};
+  phone?: string;
+}
 
 export async function SignUpSupabase({
   name,
   email,
   password,
   phone,
-}: UserData ) {
+}: UserData) {
   const supabase = await createClient();
 
   const { data: authUser, error: signUpError } = await supabase.auth.signUp({
@@ -41,7 +41,7 @@ export async function SignUpSupabase({
   return { signUpError: null, addUserError: null };
 }
 
-export async function SignInSupabase({ email, password }: any) {
+export async function SignInSupabase({ email, password }: Pick<UserData, "email" | "password">) {
   const supabase = await createClient();
   const { error: signInError } = await supabase.auth.signInWithPassword({
     email,
@@ -71,7 +71,7 @@ export async function GetUser() {
       .from("users")
       .select("*")
       .eq("id", response.data.user?.id)
-      .single();
+      .maybeSingle();
     if (error) {
       console.error("Error fetching user profile:", error);
       return null;
@@ -99,7 +99,7 @@ export async function UpdateUserProfile({
   }
 
   const userId = authUser.user.id;
-  let updateErrors: any[] = [];
+  let updateErrors: { source: string; error: any }[] = [];
 
   const { error: userTableError } = await supabase
     .from("users")

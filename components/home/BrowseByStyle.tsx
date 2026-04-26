@@ -12,6 +12,13 @@ export default function BrowseByStyle({ categories }: { categories: Category[] }
   if (!categories || categories.length === 0) return null;
 
   const featuredCategories = categories.slice(0, 4);
+
+  const localImages: Record<string, string> = {
+    'jacket': '/images/categories/jacket.png',
+    'shirt': '/images/categories/shirt.png',
+    'sweatshirt': '/images/categories/sweatshirt.png',
+    't-shirt': '/images/categories/tshirt.png',
+  };
   
   const styles = [
     "col-span-12 md:col-span-4",
@@ -28,29 +35,36 @@ export default function BrowseByStyle({ categories }: { categories: Category[] }
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-12 gap-4 sm:gap-5">
-          {featuredCategories.map((category, index) => (
-            <div
-              key={category.id}
-              className={`${styles[index]} relative bg-white rounded-[20px] overflow-hidden group h-[190px] sm:h-[289px]`}
-            >
-              <Link href={`/products?category=${category.slug}`} className="block w-full h-full p-6 sm:p-8">
-                <span className="text-2xl sm:text-4xl font-bold font-satoshi relative z-10">
-                  {category.title}
-                </span>
-                
-                {category.image && (
-                  <div className="absolute inset-0 z-0">
-                    <Image
-                      src={category.image}
-                      alt={category.title}
-                      fill
-                      className="object-cover object-right sm:object-center transition-transform duration-500 group-hover:scale-110"
-                    />
-                  </div>
-                )}
-              </Link>
-            </div>
-          ))}
+          {featuredCategories.map((category, index) => {
+            const displayImage = localImages[category.slug.toLowerCase()] || category.image;
+            
+            return (
+              <div
+                key={category.id}
+                className={`${styles[index]} relative bg-white rounded-[20px] overflow-hidden group h-[200px] sm:h-[289px] transition-all hover:shadow-xl`}
+              >
+                <Link href={`/products?category=${category.slug}`} className="block w-full h-full p-6 sm:p-8">
+                  <span className="text-2xl sm:text-4xl font-bold font-satoshi relative z-10 block transition-transform group-hover:translate-x-2">
+                    {category.title}
+                  </span>
+                  
+                  {displayImage && (
+                    <div className="absolute inset-0 z-0 pointer-events-none">
+                      <div className="relative w-full h-full">
+                        <Image
+                          src={displayImage}
+                          alt={category.title}
+                          fill
+                          className="object-cover object-center sm:object-top-right transition-all duration-700 group-hover:scale-110"
+                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </Link>
+              </div>
+            );
+          })}
         </div>
       </div>
     </section>

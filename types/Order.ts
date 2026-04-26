@@ -1,3 +1,5 @@
+import { Address } from "./Address";
+
 export interface OrderItem {
   id: number;
   order_id: number;
@@ -24,6 +26,7 @@ export interface Order {
   
   // Relations
   items?: OrderItem[];
+  addresses?: Address;
 }
 
 export interface CreateOrderData {

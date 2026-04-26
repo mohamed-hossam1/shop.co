@@ -9,11 +9,13 @@ import {
 } from "@headlessui/react";
 import { Data } from "@/lib/data";
 
+import { Order, OrderItem } from "@/types/Order";
+
 export default function OrderDetails({
   order,
   items,
 }: {
-  order: OrderData;
+  order: Order;
   items: OrderItem[];
 }) {
   const [open, setOpen] = useState(false);
@@ -485,7 +487,7 @@ export default function OrderDetails({
                             </h3>
                           </div>
                           <p className="text-xl font-bold text-primary text-left">
-                            {order.addresses.city}, {order.addresses.street}
+                            {order.addresses?.city || "N/A"}, {order.addresses?.street || ""}
                           </p>
                         </div>
 

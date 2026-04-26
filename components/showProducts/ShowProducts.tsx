@@ -16,7 +16,7 @@ export default async function ShowProducts() {
 
   const grouped: GroupedProducts = products?.reduce<GroupedProducts>((acc, item) => {
     const product = item as unknown as ProductData;
-    const category = product.categories;
+    const category = product.category;
     const categoryName = category?.title || "Unknown";
 
     if (!acc[categoryName]) {

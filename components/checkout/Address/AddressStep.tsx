@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Address } from "@/types/Address";
 import SavedAddressList from "./SavedAddressList";
 import AddressForm from "./AddressForm";
 

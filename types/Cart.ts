@@ -24,5 +24,23 @@ export interface Cart {
   subtotal?: number;
   itemCount?: number;
 }
+export interface CartState {
+  [variantId: number]: {
+    id?: number;
+    quantity: number;
+    variant: ProductVariant & {
+      product: ProductData;
+    };
+  }
+}
 
+export interface CartData {
+  variant: ProductVariant & {
+    product: ProductData;
+  };
+  quantity?: number;
+}
 
+import { PromoCode } from "./PromoCode";
+
+export type AppliedPromo = PromoCode;

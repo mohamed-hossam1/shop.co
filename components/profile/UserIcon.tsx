@@ -50,7 +50,7 @@ export default function UserIcon({ isExpanded }: { isExpanded: boolean }) {
         {userData && (
           <>
             <p className="text-white text-center w-5 cursor-pointer font-bold">
-              {userData.name[0]}
+              {userData.name?.[0] || userData.email?.[0] || "U"}
             </p>
           </>
         )}

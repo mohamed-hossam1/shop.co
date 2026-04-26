@@ -22,24 +22,18 @@ export default function OrderSummary({
   isLoadingFee = false,
 }: OrderSummaryProps) {
   const { appliedPromo, setAppliedPromo } = useCart();
-  const [currentPrice, setCurrentPrice] = useState<number>(price);
   const [promoCode, setPromoCode] = useState<string>(appliedPromo?.code || "");
   const [promoError, setPromoError] = useState<string>("");
   const [isApplying, setIsApplying] = useState<boolean>(false);
 
-  useEffect(() => {
-    if (appliedPromo) {
-      let discount = 0;
-      if (appliedPromo.type === "percentage") {
-        discount = (price * appliedPromo.value) / 100;
-      } else {
-        discount = Math.min(price, appliedPromo.value);
-      }
-      setCurrentPrice(Math.round((price - discount) * 100) / 100);
-    } else {
-      setCurrentPrice(price);
-    }
-  }, [price, appliedPromo]);
+  const discountAmount = appliedPromo
+    ? appliedPromo.type === "percentage"
+      ? (price * appliedPromo.value) / 100
+      : Math.min(price, appliedPromo.value)
+    : 0;
+
+  const finalPrice = Math.max(0, price - discountAmount);
+  const totalWithDelivery = finalPrice + (hasAddress ? deliveryFee : 0);
 
   const handleApplyPromo = async () => {
     if (!promoCode.trim()) return;
@@ -56,28 +50,7 @@ export default function OrderSummary({
         return;
       }
 
-      const coupon = result.coupon ;
-
-      if (!coupon) {
-        setPromoError("Invalid promo response from server.");
-        setAppliedPromo(null);
-        return;
-      }
-
-      setAppliedPromo(coupon);
-
-      if (typeof result.finalPrice === "number") {
-        setCurrentPrice(Math.round(result.finalPrice * 100) / 100);
-      } else {
-        let discount = 0;
-        if (coupon.type === "percentage") {
-          discount = (price * coupon.value) / 100;
-        } else {
-          discount = Math.min(price, coupon.value);
-        }
-        setCurrentPrice(Math.round((price - discount) * 100) / 100);
-      }
-
+      setAppliedPromo(result.coupon || null);
       setPromoError("");
     } catch (err) {
       setPromoError("Error applying promo code. Please try again.");
@@ -91,40 +64,38 @@ export default function OrderSummary({
     setAppliedPromo(null);
     setPromoCode("");
     setPromoError("");
-    setCurrentPrice(price);
   };
 
-  const discountAmount = appliedPromo
-    ? appliedPromo.type === "percentage"
-      ? (price * appliedPromo.value) / 100
-      : Math.min(price, appliedPromo.value)
-    : 0;
-
   return (
-    <div className="w-full lg:flex-[2]">
-      <div className="bg-white rounded-lg md:rounded-2xl shadow-lg border border-gray-100 p-4 md:p-6 lg:sticky lg:top-24">
-        <h3 className="text-base md:text-lg font-semibold text-gray-900 mb-4">
+    <div className="w-full lg:flex-[2] font-satoshi">
+      <div className="bg-white rounded-2xl md:rounded-3xl shadow-xl border border-gray-100 p-6 md:p-8 lg:sticky lg:top-24">
+        <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-6 font-integral uppercase">
           Order Summary
         </h3>
+        
         {isCart && (
-          <div className="mb-4 md:mb-6">
-            <label className="block text-xs md:text-sm font-medium text-gray-700 mb-2">
-              Promo Code
-            </label>
-            <div className="space-y-2">
-              <div className="flex flex-row gap-2">
-                <input
-                  placeholder="Enter code"
-                  className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary w-full disabled:bg-gray-50 disabled:cursor-not-allowed"
-                  type="text"
-                  value={promoCode}
-                  onChange={(e) => setPromoCode(e.target.value)}
-                  disabled={isApplying || !!appliedPromo}
-                  onKeyDown={(e) => e.key === "Enter" && handleApplyPromo()}
-                />
+          <div className="mb-8">
+            <div className="relative group">
+              <div className="flex flex-row gap-3">
+                <div className="relative flex-1">
+                  <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                    </svg>
+                  </div>
+                  <input
+                    placeholder="Add promo code"
+                    className="w-full pl-12 pr-4 py-3 bg-gray-100 border-none rounded-full focus:ring-2 focus:ring-black transition-all text-sm md:text-base outline-none disabled:opacity-50"
+                    type="text"
+                    value={promoCode}
+                    onChange={(e) => setPromoCode(e.target.value)}
+                    disabled={isApplying || !!appliedPromo}
+                    onKeyDown={(e) => e.key === "Enter" && handleApplyPromo()}
+                  />
+                </div>
                 {appliedPromo ? (
                   <button
-                    className="px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors text-xs md:text-sm whitespace-nowrap"
+                    className="px-6 py-3 bg-red-50 text-red-600 rounded-full hover:bg-red-100 transition-all font-bold text-sm md:text-base cursor-pointer"
                     onClick={handleRemovePromo}
                   >
                     Remove
@@ -132,118 +103,104 @@ export default function OrderSummary({
                 ) : (
                   <button
                     disabled={!promoCode.trim() || isApplying}
-                    className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs md:text-sm whitespace-nowrap"
+                    className="px-8 py-3 bg-black text-white rounded-full hover:bg-gray-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-bold text-sm md:text-base cursor-pointer"
                     onClick={handleApplyPromo}
                   >
                     {isApplying ? (
-                      <div className="h-6 w-6 border-b-2 border-primary rounded-full animate-spin"></div>
+                      <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                     ) : (
                       "Apply"
                     )}
                   </button>
                 )}
               </div>
+              
               {promoError && (
-                <p className="text-red-500 text-xs md:text-sm flex items-center gap-1">
-                  <svg
-                    className="w-4 h-4"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
+                <p className="text-red-500 text-xs md:text-sm mt-2 flex items-center gap-1.5 font-medium animate-in fade-in slide-in-from-top-1">
+                  <span className="w-1.5 h-1.5 bg-red-500 rounded-full" />
                   {promoError}
                 </p>
               )}
               {appliedPromo && (
-                <p className="text-green-600 text-xs md:text-sm flex items-center gap-1 font-medium">
-                  <svg
-                    className="w-4 h-4"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  {appliedPromo.type === "percentage" ? `${appliedPromo.value}%` : `EGP ${appliedPromo.value}`} discount applied!
+                <p className="text-green-600 text-xs md:text-sm mt-2 flex items-center gap-1.5 font-bold animate-in fade-in slide-in-from-top-1">
+                  <span className="w-1.5 h-1.5 bg-green-600 rounded-full" />
+                  {appliedPromo.type === "percentage" ? `${appliedPromo.value}%` : `EGP ${appliedPromo.value}`} discount applied
                 </p>
               )}
             </div>
           </div>
         )}
 
-        <div className="space-y-2 md:space-y-3 mb-4 md:mb-6">
-          <div className="flex justify-between">
-            <span className="text-gray-600 text-sm md:text-base">Subtotal</span>
-            <span className="font-semibold text-sm md:text-base">
+        <div className="space-y-4 mb-8">
+          <div className="flex justify-between items-center text-gray-500">
+            <span className="text-base md:text-lg">Subtotal</span>
+            <span className="font-bold text-gray-900 text-base md:text-lg">
               EGP {price.toFixed(2)}
             </span>
           </div>
+          
           {appliedPromo && (
-            <div className="flex justify-between text-green-600">
-              <span className="text-sm md:text-base">
+            <div className="flex justify-between items-center">
+              <span className="text-base md:text-lg text-gray-500">
                 Discount ({appliedPromo.type === "percentage" ? `${appliedPromo.value}%` : "Fixed"})
               </span>
-              <span className="font-semibold text-sm md:text-base">
+              <span className="font-bold text-red-500 text-base md:text-lg">
                 -EGP {discountAmount.toFixed(2)}
               </span>
             </div>
           )}
-          <div className="flex justify-between">
-            <span className="text-gray-600 text-sm md:text-base">
+          
+          <div className="flex justify-between items-center">
+            <span className="text-base md:text-lg text-gray-500">
               Delivery Fee
             </span>
-            <span className="font-semibold text-sm md:text-base">
+            <span className="font-bold text-gray-900 text-base md:text-lg">
               {isLoadingFee ? (
-                <div className="h-5 w-16 bg-gray-200 animate-pulse rounded"></div>
+                <div className="h-6 w-20 bg-gray-100 animate-pulse rounded-md"></div>
               ) : isCart ? (
-                "On Checkout"
+                <span className="text-gray-400 font-medium">Calculated later</span>
               ) : !hasAddress ? (
-                "Select address"
+                <span className="text-gray-400 font-medium">Add address</span>
               ) : (
                 `EGP ${deliveryFee.toFixed(2)}`
               )}
             </span>
           </div>
-          <div className="border-t border-gray-200 pt-2 md:pt-3">
-            <div className="flex justify-between">
-              <span className="text-base md:text-lg font-semibold">Total</span>
-              <span className="text-base md:text-lg font-bold text-primary">
+          
+          <div className="border-t border-gray-100 pt-6 mt-6">
+            <div className="flex justify-between items-center">
+              <span className="text-lg md:text-xl font-bold text-gray-900">Total</span>
+              <span className="text-2xl md:text-3xl font-bold text-black font-integral">
                 {isLoadingFee ? (
-                  <div className="h-6 w-20 bg-gray-200 animate-pulse rounded"></div>
+                  <div className="h-8 w-24 bg-gray-100 animate-pulse rounded-md"></div>
                 ) : (
-                  `EGP ${(
-                    currentPrice + (hasAddress ? deliveryFee : 0)
-                  ).toFixed(2)}`
+                  `EGP ${totalWithDelivery.toFixed(2)}`
                 )}
               </span>
             </div>
           </div>
         </div>
+
         {isCart && (
-          <>
-            {price ? (
+          <div className="space-y-4">
+            {price > 0 && (
               <Link
-                className="block w-full bg-gradient-to-r from-primary to-[#14274E] text-white py-2.5 md:py-3 px-4 rounded-lg md:rounded-xl font-semibold hover:from-[#14274E] hover:to-[#394867] transition-all duration-300 shadow-lg hover:shadow-xl mb-3 md:mb-4 text-center text-sm md:text-base"
+                className="flex items-center justify-center w-full bg-black text-white py-4 md:py-5 px-6 rounded-full font-bold hover:bg-gray-800 transition-all shadow-lg hover:shadow-black/20 group uppercase tracking-tight"
                 href={ROUTES.CHECKOUT}
               >
-                Proceed to Checkout
+                Go to Checkout
+                <svg className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
               </Link>
-            ) : null}
+            )}
             <Link
-              className="block w-full border py-3 text-center rounded-lg md:rounded-xl text-gray-600 hover:text-primary transition-colors text-sm hover:bg-gray-200 transition-all duration-300 md:text-base"
+              className="flex items-center justify-center w-full border-2 border-transparent hover:border-gray-100 py-4 text-center rounded-full text-gray-500 hover:text-black font-bold transition-all"
               href={ROUTES.HOME}
             >
               Continue Shopping
             </Link>
-          </>
+          </div>
         )}
       </div>
     </div>

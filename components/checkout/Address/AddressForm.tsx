@@ -220,7 +220,7 @@ export default function AddressForm({ onSuccess, onCancel }: AddressFormProps) {
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full mt-6 bg-gradient-to-r from-[#1F1F6F] to-[#14274E] hover:from-[#14274E] hover:to-[#394867]  text-white py-3 rounded-lg font-medium  transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full mt-6 bg-linear-to-r from-[#1F1F6F] to-[#14274E] hover:from-[#14274E] hover:to-[#394867]  text-white py-3 rounded-lg font-medium  transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isLoading ? "Saving..." : "Save Address"}
         </button>

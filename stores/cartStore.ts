@@ -3,12 +3,12 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import {
-  addToCartSupa,
-  clearCartSupa,
-  getCartSupa,
-  removeFromCartSupa,
-  updateCartSupa,
-} from "@/actions/cartAction";
+  addToCart,
+  clearCart,
+  getCart,
+  removeFromCart,
+  updateCartItemQuantity,
+} from "@/actions/cart";
 import { CartState, CartData, AppliedPromo } from "@/types/Cart";
 import { useUserStore } from "@/stores/userStore";
 
@@ -24,7 +24,7 @@ const calculateTotals = (cart: CartState | null) => {
 
   const quantity = entries.reduce((total, item) => total + item.quantity, 0);
   const price = entries.reduce(
-    (total, item) => total + item.quantity * item.products.price_after,
+    (total, item) => total + item.quantity * item.variant.price,
     0
   );
 
@@ -42,7 +42,8 @@ interface CartStoreState {
   syncTotals: () => void;
   initCart: () => Promise<void>;
   addToCart: (data: CartData) => Promise<void>;
-  removeFromCart: (productId: number) => Promise<void>;
+  removeFromCart: (variantId: number) => Promise<void>;
+  updateQuantity: (variantId: number, quantity: number) => Promise<void>;
   clearCart: () => Promise<void>;
   setAppliedPromo: (promo: AppliedPromo | null) => void;
 }
@@ -60,8 +61,8 @@ export const useCartStore = create<CartStoreState>()(
         if (!user || Object.keys(guestCart).length === 0) return;
 
         try {
-          for (const [productId, item] of Object.entries(guestCart)) {
-            await addToCartSupa(parseInt(productId, 10), item.quantity);
+          for (const [variantId, item] of Object.entries(guestCart)) {
+            await addToCart(Number(variantId), item.quantity);
           }
           set({ cart: {}, quantity: 0, price: 0 });
         } catch (error) {
@@ -93,11 +94,19 @@ export const useCartStore = create<CartStoreState>()(
                 await mergeGuestCartWithUser(guestCart);
               }
 
-              const supaCart = (await getCartSupa()) || [];
+              const supaCart = (await getCart()) as any;
               const data: CartState = {};
 
-              for (const entry of supaCart) {
-                data[entry.products.id] = entry;
+              if (supaCart && supaCart.items) {
+                for (const item of supaCart.items) {
+                  if (item.variant?.product) {
+                    data[item.variant_id] = {
+                      id: item.id,
+                      quantity: item.quantity,
+                      variant: item.variant
+                    };
+                  }
+                }
               }
 
               applyCart(data);
@@ -113,29 +122,29 @@ export const useCartStore = create<CartStoreState>()(
             set({ isLoading: false });
           }
         },
-        addToCart: async ({ products, quantity = 1 }) => {
+        addToCart: async ({ variant, quantity = 1 }) => {
           const user = useUserStore.getState().user;
           const originalCart = get().cart;
           const updatedCart = { ...((originalCart ?? {}) as CartState) };
-          const currentItem = updatedCart[products.id];
+          const currentItem = updatedCart[variant.id];
           const currentQuantity = currentItem ? currentItem.quantity : 0;
           const totalRequestedQuantity = currentQuantity + quantity;
 
-          if (totalRequestedQuantity > products.stock) {
+          if (totalRequestedQuantity > variant.stock) {
             throw new Error(
-              `You cannot add ${quantity} of ${products.title}. Only ${products.stock} left in stock.`
+              `You cannot add ${quantity} of ${variant.product.title}. Only ${variant.stock} left in stock.`
             );
           }
 
-          let isNewItem = false;
-          if (currentItem) {
-            updatedCart[products.id] = {
+          if (totalRequestedQuantity <= 0) {
+            delete updatedCart[variant.id];
+          } else if (currentItem) {
+            updatedCart[variant.id] = {
               ...currentItem,
-              quantity: currentItem.quantity + quantity,
+              quantity: totalRequestedQuantity,
             };
           } else {
-            updatedCart[products.id] = { products, quantity };
-            isNewItem = true;
+            updatedCart[variant.id] = { variant, quantity };
           }
 
           applyCart(updatedCart);
@@ -143,16 +152,17 @@ export const useCartStore = create<CartStoreState>()(
           try {
             if (user) {
               let result;
-              if (isNewItem) {
-                result = await addToCartSupa(products.id, quantity);
-              } else {
-                result = await updateCartSupa(products.id, totalRequestedQuantity);
+              if (!currentItem) {
+                result = await addToCart(variant.id, quantity);
+              } else if (totalRequestedQuantity <= 0) {
+                if (currentItem.id) result = await removeFromCart(currentItem.id);
+              } else if (currentItem.id) {
+                result = await updateCartItemQuantity(currentItem.id, totalRequestedQuantity);
               }
 
               if (result?.error) {
                 applyCart(originalCart);
                 await get().initCart();
-                console.error("Backend stock check failed:", result.error);
               }
             }
           } catch (error) {
@@ -161,17 +171,54 @@ export const useCartStore = create<CartStoreState>()(
             console.error("Error updating cart:", error);
           }
         },
-        removeFromCart: async (productId) => {
+        updateQuantity: async (variantId, quantity) => {
           const user = useUserStore.getState().user;
           const originalCart = get().cart;
           const updatedCart = { ...((originalCart ?? {}) as CartState) };
-          delete updatedCart[productId];
+          const item = updatedCart[variantId];
+
+          if (!item) return;
+
+          if (quantity > item.variant.stock) {
+             throw new Error(`Only ${item.variant.stock} left in stock.`);
+          }
+
+          if (quantity <= 0) {
+            delete updatedCart[variantId];
+          } else {
+            updatedCart[variantId] = { ...item, quantity };
+          }
 
           applyCart(updatedCart);
 
           try {
-            if (user) {
-              await removeFromCartSupa(productId);
+            if (user && item.id) {
+               const result = quantity <= 0 
+                ? await removeFromCart(item.id)
+                : await updateCartItemQuantity(item.id, quantity);
+              
+              if (result?.error) {
+                applyCart(originalCart);
+                await get().initCart();
+              }
+            }
+          } catch (error) {
+             applyCart(originalCart);
+             await get().initCart();
+          }
+        },
+        removeFromCart: async (variantId) => {
+          const user = useUserStore.getState().user;
+          const originalCart = get().cart;
+          const updatedCart = { ...((originalCart ?? {}) as CartState) };
+          const itemToRemove = updatedCart[variantId];
+          delete updatedCart[variantId];
+
+          applyCart(updatedCart);
+
+          try {
+            if (user && itemToRemove?.id) {
+              await removeFromCart(itemToRemove.id);
             }
           } catch (error) {
             applyCart(originalCart);
@@ -188,7 +235,7 @@ export const useCartStore = create<CartStoreState>()(
 
           try {
             if (user) {
-              await clearCartSupa();
+              await clearCart();
             }
           } catch (error) {
             applyCart(originalCart);

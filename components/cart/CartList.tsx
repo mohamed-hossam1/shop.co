@@ -18,16 +18,25 @@ export default function CartList() {
     isLoading,
   } = useCart();
 
-  const handleRemove = (variantId: number) => {
-    removeFromCart(variantId);
+  const handleRemove = async (variantId: number) => {
+    const res = await removeFromCart(variantId);
+    if (res && !res.success) {
+      alert(res.message || "Failed to remove item.");
+    }
   };
 
-  const handleUpdateQuantity = (variantId: number, currentQty: number, delta: number) => {
-    updateQuantity(variantId, currentQty + delta);
+  const handleUpdateQuantity = async (variantId: number, currentQty: number, delta: number) => {
+    const res = await updateQuantity(variantId, currentQty + delta);
+    if (res && !res.success) {
+      alert(res.message || "Failed to update quantity.");
+    }
   };
 
-  const handleClearCart = () => {
-    clearCart();
+  const handleClearCart = async () => {
+    const res = await clearCart();
+    if (res && !res.success) {
+      alert(res.message || "Failed to clear cart.");
+    }
   };
 
   if (isLoading || cart === null) {

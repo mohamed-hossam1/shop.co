@@ -1,10 +1,10 @@
-import { ProductData } from "@/types/Product";
+import { ProductListItem } from "@/types/Product";
 import ProductCard from "../ProductCard";
 import Link from "next/link";
 
 interface ProductSectionProps {
   title: string;
-  products: ProductData[];
+  products: ProductListItem[];
   viewAllLink: string;
 }
 

@@ -1,22 +1,25 @@
-import { getAllProduct } from "@/actions/productsAction";
+import { getProducts } from "@/actions/productsAction";
+import { getAllCategories } from "@/actions/categoriesAction";
 import SubTitle from "./SubTitle";
 import CardList from "./CardList";
-import { ProductData } from "@/types/Product";
+import { ProductListItem } from "@/types/Product";
 
 interface GroupedProducts {
-  [categoryName: string]: ProductData[];
+  [categoryName: string]: ProductListItem[];
 }
 
 export default async function ShowProducts() {
-  const { data: products } = (await getAllProduct()) || { data: [] };
+  const productsRes = await getProducts();
+  const categoriesRes = await getAllCategories();
+  
+  const products = productsRes.success ? productsRes.data : [];
+  const categories = categoriesRes.data || [];
 
   const categoryId: number[] = [];
-
   const categoryImage: string[] = [];
 
-  const grouped: GroupedProducts = products?.reduce<GroupedProducts>((acc, item) => {
-    const product = item as unknown as ProductData;
-    const category = product.category;
+  const grouped: GroupedProducts = products.reduce<GroupedProducts>((acc: GroupedProducts, product: ProductListItem) => {
+    const category = categories.find((c) => c.id === product.category_id);
     const categoryName = category?.title || "Unknown";
 
     if (!acc[categoryName]) {
@@ -28,7 +31,7 @@ export default async function ShowProducts() {
     acc[categoryName].push(product);
 
     return acc;
-  }, {}) || {};
+  }, {});
 
   return (
     <div className="max-w-[1600px] px-5 m-auto">

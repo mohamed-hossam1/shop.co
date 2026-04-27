@@ -7,9 +7,10 @@ import {
   clearCart,
   getCart,
   removeFromCart,
-  updateCartItemQuantity,
-} from "@/actions/cart";
+  updateQuantity,
+} from "@/actions/cartAction";
 import { CartState, CartData, AppliedPromo } from "@/types/Cart";
+import { ProductDetails, ProductVariant } from "@/types/Product";
 import { useUserStore } from "@/stores/userStore";
 
 const calculateTotals = (cart: CartState | null) => {
@@ -40,11 +41,11 @@ interface CartStoreState {
   hasHydrated: boolean;
   setHasHydrated: (value: boolean) => void;
   syncTotals: () => void;
-  initCart: () => Promise<void>;
-  addToCart: (data: CartData) => Promise<void>;
-  removeFromCart: (variantId: number) => Promise<void>;
-  updateQuantity: (variantId: number, quantity: number) => Promise<void>;
-  clearCart: () => Promise<void>;
+  initCart: () => Promise<{ success: boolean; message?: string }>;
+  addToCart: (data: CartData) => Promise<{ success: boolean; message?: string }>;
+  removeFromCart: (variantId: number) => Promise<{ success: boolean; message?: string }>;
+  updateQuantity: (variantId: number, quantity: number) => Promise<{ success: boolean; message?: string }>;
+  clearCart: () => Promise<{ success: boolean; message?: string }>;
   setAppliedPromo: (promo: AppliedPromo | null) => void;
 }
 
@@ -94,7 +95,8 @@ export const useCartStore = create<CartStoreState>()(
                 await mergeGuestCartWithUser(guestCart);
               }
 
-              const supaCart = (await getCart()) as any;
+              const cartResponse = await getCart();
+              const supaCart = cartResponse.success ? cartResponse.data : null;
               const data: CartState = {};
 
               if (supaCart && supaCart.items) {
@@ -103,7 +105,7 @@ export const useCartStore = create<CartStoreState>()(
                     data[item.variant_id] = {
                       id: item.id,
                       quantity: item.quantity,
-                      variant: item.variant
+                      variant: item.variant as ProductVariant & { product: ProductDetails }
                     };
                   }
                 }
@@ -113,11 +115,13 @@ export const useCartStore = create<CartStoreState>()(
             } else {
               applyCart(guestCart);
             }
-          } catch (error) {
+            return { success: true };
+          } catch (error: any) {
             console.error("Error initializing cart:", error);
             if (!user) {
               applyCart({});
             }
+            return { success: false, message: error.message };
           } finally {
             set({ isLoading: false });
           }
@@ -131,9 +135,10 @@ export const useCartStore = create<CartStoreState>()(
           const totalRequestedQuantity = currentQuantity + quantity;
 
           if (totalRequestedQuantity > variant.stock) {
-            throw new Error(
-              `You cannot add ${quantity} of ${variant.product.title}. Only ${variant.stock} left in stock.`
-            );
+            return {
+              success: false,
+              message: `You cannot add ${quantity} of ${variant.product.title}. Only ${variant.stock} left in stock.`
+            };
           }
 
           if (totalRequestedQuantity <= 0) {
@@ -157,18 +162,21 @@ export const useCartStore = create<CartStoreState>()(
               } else if (totalRequestedQuantity <= 0) {
                 if (currentItem.id) result = await removeFromCart(currentItem.id);
               } else if (currentItem.id) {
-                result = await updateCartItemQuantity(currentItem.id, totalRequestedQuantity);
+                result = await updateQuantity(currentItem.id, totalRequestedQuantity);
               }
 
-              if (result?.error) {
+              if (result && !result.success) {
                 applyCart(originalCart);
                 await get().initCart();
+                return result;
               }
             }
-          } catch (error) {
+            return { success: true, message: "Added to cart" };
+          } catch (error: any) {
             applyCart(originalCart);
             await get().initCart();
             console.error("Error updating cart:", error);
+            return { success: false, message: error.message };
           }
         },
         updateQuantity: async (variantId, quantity) => {
@@ -177,10 +185,10 @@ export const useCartStore = create<CartStoreState>()(
           const updatedCart = { ...((originalCart ?? {}) as CartState) };
           const item = updatedCart[variantId];
 
-          if (!item) return;
+          if (!item) return { success: false, message: "Item not found" };
 
           if (quantity > item.variant.stock) {
-             throw new Error(`Only ${item.variant.stock} left in stock.`);
+             return { success: false, message: `Only ${item.variant.stock} left in stock.` };
           }
 
           if (quantity <= 0) {
@@ -195,16 +203,19 @@ export const useCartStore = create<CartStoreState>()(
             if (user && item.id) {
                const result = quantity <= 0 
                 ? await removeFromCart(item.id)
-                : await updateCartItemQuantity(item.id, quantity);
+                : await updateQuantity(item.id, quantity);
               
-              if (result?.error) {
+              if (result && !result.success) {
                 applyCart(originalCart);
                 await get().initCart();
+                return result;
               }
             }
-          } catch (error) {
+            return { success: true, message: "Quantity updated" };
+          } catch (error: any) {
              applyCart(originalCart);
              await get().initCart();
+             return { success: false, message: error.message };
           }
         },
         removeFromCart: async (variantId) => {
@@ -218,12 +229,19 @@ export const useCartStore = create<CartStoreState>()(
 
           try {
             if (user && itemToRemove?.id) {
-              await removeFromCart(itemToRemove.id);
+              const result = await removeFromCart(itemToRemove.id);
+              if (result && !result.success) {
+                applyCart(originalCart);
+                await get().initCart();
+                return result;
+              }
             }
-          } catch (error) {
+            return { success: true, message: "Item removed" };
+          } catch (error: any) {
             applyCart(originalCart);
             await get().initCart();
             console.error("Error removing from cart:", error);
+            return { success: false, message: error.message };
           }
         },
         clearCart: async () => {
@@ -235,12 +253,19 @@ export const useCartStore = create<CartStoreState>()(
 
           try {
             if (user) {
-              await clearCart();
+              const result = await clearCart();
+              if (result && !result.success) {
+                applyCart(originalCart);
+                await get().initCart();
+                return result;
+              }
             }
-          } catch (error) {
+            return { success: true, message: "Cart cleared" };
+          } catch (error: any) {
             applyCart(originalCart);
             await get().initCart();
             console.error("Error clearing cart:", error);
+            return { success: false, message: error.message };
           }
         },
       };

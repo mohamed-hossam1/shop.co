@@ -1,12 +1,12 @@
-import { ProductData } from "@/types/Product";
+import { ProductListItem } from "@/types/Product";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 
-const ProductCard = React.memo(({ product }: { product: ProductData }) => {
-  const discount = product.price_before
+const ProductCard = React.memo(({ product }: { product: ProductListItem }) => {
+  const discount = product.min_price_before
     ? Math.round(
-        ((product.price_before - product.price_after) / product.price_before) *
+        ((product.min_price_before - product.min_price) / product.min_price_before) *
           100,
       )
     : 0;
@@ -51,7 +51,7 @@ const ProductCard = React.memo(({ product }: { product: ProductData }) => {
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 300px"
           className="object-contain p-4 group-hover:scale-105 transition-transform duration-500"
-          src={product.image_cover}
+          src={product.image_cover || '/images/default-fallback.png'}
           alt={product.title}
           loading="lazy"
         />
@@ -64,13 +64,13 @@ const ProductCard = React.memo(({ product }: { product: ProductData }) => {
 
         <div className="flex items-center gap-2 sm:gap-3">
           <span className="text-xl sm:text-2xl font-bold font-satoshi">
-            ${product.price_after}
+            ${product.min_price}
           </span>
-          {product.price_before &&
-            product.price_before > product.price_after && (
+          {product.min_price_before &&
+            product.min_price_before > product.min_price && (
               <>
                 <span className="text-xl sm:text-2xl font-bold font-satoshi text-black/40 line-through">
-                  ${product.price_before}
+                  ${product.min_price_before}
                 </span>
                 <span className="bg-[#FF3333]/10 text-[#FF3333] text-[10px] sm:text-xs font-medium px-2 py-1 rounded-full">
                   -{discount}%

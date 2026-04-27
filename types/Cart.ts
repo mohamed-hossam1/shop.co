@@ -1,5 +1,4 @@
-
-import { ProductData, ProductVariant } from "./Product";
+import { ProductDetails, ProductVariant } from "./Product";
 
 export interface CartItem {
   id: number;
@@ -8,9 +7,8 @@ export interface CartItem {
   quantity: number;
   lineTotal?: number;
   
-  // Relations
   variant?: ProductVariant & {
-    product?: ProductData;
+    product?: ProductDetails;
   };
 }
 
@@ -20,7 +18,6 @@ export interface Cart {
   created_at?: string;
   items?: CartItem[];
   
-  // UI fields / Calculated
   subtotal?: number;
   itemCount?: number;
 }
@@ -29,14 +26,14 @@ export interface CartState {
     id?: number;
     quantity: number;
     variant: ProductVariant & {
-      product: ProductData;
+      product: ProductDetails;
     };
   }
 }
 
 export interface CartData {
   variant: ProductVariant & {
-    product: ProductData;
+    product: ProductDetails;
   };
   quantity?: number;
 }

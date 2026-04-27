@@ -4,7 +4,6 @@ import { useCart } from "@/stores/cartStore";
 import { useState, useEffect } from "react";
 import CartSkeleton from "../skeleton/CartSkeleton";
 import OrderSummary from "../cart/OrderSummary";
-import Steps from "./Steps";
 import AddressStep from "./Address/AddressStep";
 import { getAddresses } from "@/actions/addressAction";
 import { getDeliveryFee } from "@/actions/deliveryAction";
@@ -13,7 +12,6 @@ import { useRouter } from "next/navigation";
 import { createOrder } from "@/actions/ordersAction";
 import ROUTES from "@/constants/routes";
 import { useUser } from "@/stores/userStore";
-import ReviewStep from "./Reviewstep";
 import GuestAddressStep from "./Address/Guestaddressstep";
 import { Address } from "@/types/Address";
 
@@ -26,20 +24,19 @@ export default function CheckoutList() {
     appliedPromo,
     setAppliedPromo,
   } = useCart();
-  
+
   const { user } = useUser();
   const [addresses, setAddresses] = useState<Address[]>([]);
   const [isLoadingAddresses, setIsLoadingAddresses] = useState(true);
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
-  
+
   // Guest address data
   const [guestAddress, setGuestAddress] = useState({
     name: "",
     phone: "",
     city: "",
     area: "",
-    street: "",
-    building_number: "",
+    address_line: "",
   });
 
   const [selectedPayment, onSelectPayment] = useState<string | null>(null);
@@ -59,11 +56,13 @@ export default function CheckoutList() {
       setIsLoadingAddresses(false);
       return;
     }
-    
+
     setIsLoadingAddresses(true);
     try {
-      const data = await getAddresses();
-      setAddresses(data);
+      const res = await getAddresses();
+      if (res.success) {
+        setAddresses(res.data);
+      }
     } catch (error) {
       console.error("Error fetching addresses:", error);
     } finally {
@@ -81,7 +80,11 @@ export default function CheckoutList() {
     if (address) {
       try {
         const fee = await getDeliveryFee(address.city);
-        setDeliveryFee(fee);
+        if (fee && fee.success) {
+          setDeliveryFee(fee.data);
+        } else {
+          setDeliveryFee(0);
+        }
       } catch (error) {
         console.error("Error fetching delivery fee:", error);
         setDeliveryFee(0);
@@ -94,12 +97,16 @@ export default function CheckoutList() {
 
   const handleGuestAddressChange = async (addressData: typeof guestAddress) => {
     setGuestAddress(addressData);
-    
+
     if (addressData.city) {
       setIsLoadingFee(true);
       try {
         const fee = await getDeliveryFee(addressData.city);
-        setDeliveryFee(fee);
+        if (fee && fee.success) {
+          setDeliveryFee(fee.data);
+        } else {
+          setDeliveryFee(0);
+        }
       } catch (error) {
         console.error("Error fetching delivery fee:", error);
         setDeliveryFee(0);
@@ -115,33 +122,18 @@ export default function CheckoutList() {
   }
 
   const isNextDisabled = (() => {
-    if (stepNumber === 1) {
-      if (user) {
-        return selectedAddress === null;
-      } else {
-        return !guestAddress.name || 
-               !guestAddress.phone || 
-               !guestAddress.city || 
-               !guestAddress.area || 
-               !guestAddress.street || 
-               !guestAddress.building_number;
-      }
+    if (user) {
+      return selectedAddress === null || !selectedPayment;
+    } else {
+      return (
+        !guestAddress.name ||
+        !guestAddress.phone ||
+        !guestAddress.city ||
+        !guestAddress.area ||
+        !guestAddress.address_line ||
+        !selectedPayment
+      );
     }
-
-    if (stepNumber === 2) {
-      if (!selectedPayment) return true;
-
-      const p = selectedPayment.toLowerCase();
-      if (p === "vodafone cash") {
-        return vodafoneFile === null;
-      }
-      if (p === "instapay") {
-        return instapayFile === null;
-      }
-      return false;
-    }
-
-    return false;
   })();
 
   const handlePlaceOrder = async () => {
@@ -156,9 +148,13 @@ export default function CheckoutList() {
     }
 
     if (!user) {
-      if (!guestAddress.name || !guestAddress.phone || 
-          !guestAddress.city || !guestAddress.area || !guestAddress.street || 
-          !guestAddress.building_number) {
+      if (
+        !guestAddress.name ||
+        !guestAddress.phone ||
+        !guestAddress.city ||
+        !guestAddress.area ||
+        !guestAddress.address_line
+      ) {
         alert("Please fill in all address fields");
         return;
       }
@@ -167,12 +163,15 @@ export default function CheckoutList() {
     setIsPlacingOrder(true);
 
     try {
-      const isConditionMet = appliedPromo ? price >= appliedPromo.min_purchase : true;
-      const discountAmount = (appliedPromo && isConditionMet)
-        ? appliedPromo.type === "percentage"
-          ? (price * (appliedPromo.value || 0)) / 100
-          : Math.min(price, appliedPromo.value || 0)
-        : 0;
+      const isConditionMet = appliedPromo
+        ? price >= appliedPromo.min_purchase
+        : true;
+      const discountAmount =
+        appliedPromo && isConditionMet
+          ? appliedPromo.type === "percentage"
+            ? (price * (appliedPromo.value || 0)) / 100
+            : Math.min(price, appliedPromo.value || 0)
+          : 0;
 
       const subtotalAfterDiscount = Math.max(0, price - discountAmount);
       const total = subtotalAfterDiscount + deliveryFee;
@@ -185,55 +184,37 @@ export default function CheckoutList() {
         paymentFile = instapayFile;
       }
 
-      const orderItems = Object.values(cart).map((item) => ({
-        variant_id: item.variant.id,
-        quantity: item.quantity,
-        price_at_purchase: item.variant.price,
-        product_title: item.variant.product.title,
-        product_image: item.variant.product.image_cover,
-        variant_snapshot: {
-          color: item.variant.color,
-          size: item.variant.size,
-          sku: item.variant.sku
-        }
-      }));
-
-      // For logged in users, we Snapshot the address into guest_info as well if needed, 
-      // or just pass it as is. 
-      // The createOrder action currently takes guest_info.
-      const finalGuestInfo = user 
-        ? {
-            name: user.name,
-            phone: selectedAddress?.phone || user.phone,
-            city: selectedAddress?.city,
-            area: selectedAddress?.area,
-            street: selectedAddress?.street,
-            building_number: selectedAddress?.building_number
-          }
-        : guestAddress;
-
+      // For logged in users, we Snapshot the address into guest_info as well if needed
       const result = await createOrder(
         {
           subtotal: price,
           discount_amount: discountAmount,
           total_price: total,
           delivery_fee: deliveryFee,
-          payment_method: selectedPayment,
-          payment_image_file: paymentFile,
+          payment_method: selectedPayment as string,
+          payment_image: paymentFile ? paymentFile.name : undefined, // Simplify file upload handling for now if it requires a cloud store step
           coupon_id: appliedPromo?.id,
-          guest_info: finalGuestInfo,
+          user_id: user?.id,
+          guest_id: !user ? "guest_" + Date.now() : undefined,
+          city: user ? selectedAddress?.city! : guestAddress.city,
+          area: user ? selectedAddress?.area! : guestAddress.area,
+          address_line: user
+            ? selectedAddress?.address_line!
+            : guestAddress.address_line,
+          user_name: user ? user.name || "" : guestAddress.name,
         },
-        orderItems,
-        !user // isGuest
+        Object.values(cart),
       );
 
       if (result.success) {
         await clearCart();
         setAppliedPromo(null);
-        
-        router.push(`${ROUTES.ORDER_SUCCESS}?orderId=${result.orderId}&isGuest=${!user}`);
+
+        router.push(
+          `${ROUTES.ORDER_SUCCESS}?orderId=${result.data.id}&isGuest=${!user}`,
+        );
       } else {
-        alert(`Failed to place order: ${result.error}`);
+        alert(`Failed to place order: ${result.message}`);
       }
     } catch (error) {
       console.error("Place order error:", error);
@@ -244,26 +225,38 @@ export default function CheckoutList() {
   };
 
   return (
-    <div className="max-w-[1450px] px-3 md:px-5 m-auto mt-6 md:mt-12 mb-10 min-h-screen">
-      <div className="mb-6 md:mb-10">
-        <h1 className="text-2xl md:text-3xl font-bold">Checkout</h1>
+    <div className="max-w-[1400px] px-4 sm:px-6 lg:px-8 m-auto mt-6 md:mt-12 mb-20 min-h-screen">
+      <div className="mb-8 md:mb-12">
+        <h1 className="text-3xl md:text-5xl font-integral font-black tracking-wider uppercase">
+          Checkout
+        </h1>
         {!user && (
-          <p className="text-sm text-gray-600 mt-2">
-            Checking out as guest. 
-            <a href={ROUTES.SIGNIN} className="text-primary hover:underline ml-1">
+          <p className="text-sm md:text-base text-gray-600 mt-3 font-medium">
+            Checking out as guest.
+            <a
+              href={ROUTES.SIGNIN}
+              className="text-black font-bold hover:underline ml-1"
+            >
               Sign in
-            </a> to track your orders.
+            </a>{" "}
+            to track your orders.
           </p>
         )}
       </div>
 
-      <Steps number={stepNumber} />
-
-      <div className="flex flex-col lg:flex-row gap-6 lg:gap-10">
-        <div className="w-full lg:flex-[4]">
-          <div className="border shadow-xl rounded-xl">
-            {stepNumber === 1 ? (
-              user ? (
+      <div className="flex flex-col lg:flex-row gap-8 lg:gap-14">
+        {/* Left Column - Information */}
+        <div className="w-full lg:flex-[1.5] space-y-10">
+          {/* Delivery Details Section */}
+          <section>
+            <h2 className="text-xl md:text-2xl font-bold mb-6 flex items-center gap-3">
+              <span className="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center text-sm font-bold">
+                1
+              </span>
+              Delivery Details
+            </h2>
+            <div className="border border-black/10 rounded-[20px] p-6 sm:p-8">
+              {user ? (
                 <AddressStep
                   addresses={addresses}
                   onAddressSelected={handleAddressSelected}
@@ -275,8 +268,19 @@ export default function CheckoutList() {
                   guestAddress={guestAddress}
                   onAddressChange={handleGuestAddressChange}
                 />
-              )
-            ) : stepNumber === 2 ? (
+              )}
+            </div>
+          </section>
+
+          {/* Payment Method Section */}
+          <section>
+            <h2 className="text-xl md:text-2xl font-bold mb-6 flex items-center gap-3">
+              <span className="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center text-sm font-bold">
+                2
+              </span>
+              Payment Method
+            </h2>
+            <div className="border border-black/10 rounded-[20px] p-6 sm:p-8">
               <PaymentStep
                 onSelectPayment={onSelectPayment}
                 selectedPayment={selectedPayment}
@@ -285,64 +289,37 @@ export default function CheckoutList() {
                 vodafoneNumber="01092288325"
                 instapayLink="https://ipn.eg/S/mahmoud.ashraf3420/instapay/27tw6b"
               />
-            ) : (
-              <ReviewStep
-                cart={cart}
-                selectedAddress={selectedAddress}
-                guestAddress={user ? null : guestAddress}
-                selectedPayment={selectedPayment}
-                vodafoneFile={vodafoneFile}
-                instapayFile={instapayFile}
-                isGuest={!user}
-              />
-            )}
-          </div>
-
-          <div className="flex justify-between mt-6 md:mt-8 gap-3">
-            <button
-              disabled={stepNumber === 1}
-              className={`px-4 md:px-6 py-2.5 md:py-3 border border-gray-300 text-gray-700 rounded-xl font-semibold hover:bg-gray-50 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base cursor-pointer`}
-              onClick={() => setStepNumber(Math.max(1, stepNumber - 1))}
-            >
-              Previous
-            </button>
-
-            {stepNumber === 3 ? (
-              <button
-                disabled={isPlacingOrder}
-                className="px-4 md:px-6 py-2.5 md:py-3 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base cursor-pointer flex items-center gap-2"
-                onClick={handlePlaceOrder}
-              >
-                {isPlacingOrder ? (
-                  <>
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    <span>Processing...</span>
-                  </>
-                ) : (
-                  "Place Order"
-                )}
-              </button>
-            ) : (
-              <button
-                disabled={isNextDisabled}
-                className="px-4 md:px-6 py-2.5 md:py-3 bg-gradient-to-r from-[#1F1F6F] to-[#14274E] hover:from-[#14274E] hover:to-[#394867]  text-white rounded-xl font-semibold transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed text-sm md:text-base cursor-pointer"
-                onClick={() => {
-                  if (!isNextDisabled) setStepNumber(stepNumber + 1);
-                }}
-              >
-                Next
-              </button>
-            )}
-          </div>
+            </div>
+          </section>
         </div>
 
-        <OrderSummary
-          price={price}
-          isCart={false}
-          deliveryFee={deliveryFee}
-          hasAddress={user ? !!selectedAddress : !!guestAddress.city}
-          isLoadingFee={isLoadingFee}
-        />
+        {/* Right Column - Summary */}
+        <div className="w-full lg:flex-1">
+          <div className="sticky top-28 space-y-6">
+            <OrderSummary
+              price={price}
+              isCart={false}
+              deliveryFee={deliveryFee}
+              hasAddress={user ? !!selectedAddress : !!guestAddress.city}
+              isLoadingFee={isLoadingFee}
+            />
+
+            <button
+              disabled={isPlacingOrder || isNextDisabled}
+              className="w-full py-4 bg-black text-white rounded-full font-bold text-lg hover:bg-black/80 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              onClick={handlePlaceOrder}
+            >
+              {isPlacingOrder ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <span>Processing...</span>
+                </>
+              ) : (
+                "Place Order"
+              )}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

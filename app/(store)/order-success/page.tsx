@@ -21,18 +21,7 @@ async function getOrderDetails(orderId: string, isGuest: boolean) {
 
   const { data: order, error: orderError } = await supabase
     .from("orders")
-    .select(
-      `
-      *,
-      addresses (
-        phone,
-        city,
-        area,
-        street,
-        building_number
-      )
-    `,
-    )
+    .select("*")
     .eq("id", orderId)
     .single();
 
@@ -71,48 +60,52 @@ export default async function OrderSuccessPage({
     redirect(ROUTES.HOME);
   }
 
-  const addressInfo = order.addresses
-    ? {
-        name: order.addresses.phone || "N/A",
-        phone: order.addresses.phone || "N/A",
-        street: order.addresses.street || "N/A",
-        city: order.addresses.city || "N/A",
-        area: order.addresses.area || "",
-        building: order.addresses.building_number || "",
-      }
-    : {
-        name: order.guest_name || "N/A",
-        phone: order.guest_phone || "N/A",
-        street: order.guest_street || "N/A",
-        city: order.guest_city || "N/A",
-        area: order.guest_area || "",
-        building: order.guest_building_number || "",
-      };
+  let phone = "N/A";
+  if (order.user_id) {
+    const { createClient } = await import("@/lib/supabase/server");
+    const supabase = await createClient();
+    const { data: userData } = await supabase
+      .from("users")
+      .select("phone")
+      .eq("id", order.user_id)
+      .single();
+    if (userData?.phone) {
+      phone = userData.phone;
+    }
+  }
+
+  const addressInfo = {
+    name: order.user_name || "N/A",
+    phone: phone,
+    address_line: order.address_line || "N/A",
+    city: order.city || "N/A",
+    area: order.area || "",
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-10">
-      <div className="max-w-4xl mx-auto space-y-6">
-        <div className="bg-white rounded-2xl border p-6 flex items-center gap-4">
-          <div className="w-14 h-14 rounded-xl bg-primary/10 flex items-center justify-center">
-            <CheckCircle className="w-7 h-7 text-primary" />
+      <div className="max-w-4xl mx-auto space-y-8">
+        <div className="bg-white border border-black p-6 sm:p-8 flex items-center gap-4">
+          <div className="w-14 h-14 border border-black bg-black flex items-center justify-center flex-shrink-0">
+            <CheckCircle className="w-7 h-7 text-white" />
           </div>
 
           <div>
-            <h1 className="text-xl md:text-2xl font-bold text-gray-900">
+            <h1 className="text-xl md:text-2xl font-integral font-black tracking-wider uppercase text-black">
               Order placed successfully
             </h1>
-            <p className="text-sm text-gray-600">
-              Order ID: <span className="font-semibold">#{order.id}</span>
+            <p className="text-sm font-medium text-gray-800 mt-1">
+              Order ID: <span className="font-bold">#{order.id}</span>
             </p>
           </div>
 
-          <span className="ml-auto px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+          <span className="ml-auto px-4 py-1.5 border border-black text-xs font-bold tracking-widest uppercase text-black">
             {order.status}
           </span>
         </div>
 
-        <div className="bg-white rounded-2xl border p-6">
-          <h2 className="font-semibold text-lg text-gray-900 mb-4">
+        <div className="bg-white border border-black p-6 sm:p-8">
+          <h2 className="font-integral font-bold text-lg text-black mb-6 uppercase tracking-wider border-b border-black pb-3">
             Order items
           </h2>
 
@@ -120,9 +113,9 @@ export default async function OrderSuccessPage({
             {order.items.map((item: any) => (
               <div
                 key={item.id}
-                className="flex items-center gap-4 border-b last:border-b-0 pb-4 last:pb-0"
+                className="flex items-center gap-4 border-b border-black/10 last:border-b-0 pb-4 last:pb-0"
               >
-                <div className="relative w-20 h-20 rounded-xl border overflow-hidden bg-white">
+                <div className="relative w-20 h-20 border border-black rounded-sm overflow-hidden bg-white">
                   <Image
                     fill
                     src={item.product_image}
@@ -135,12 +128,22 @@ export default async function OrderSuccessPage({
                   <p className="font-semibold text-gray-900 truncate">
                     {item.product_title}
                   </p>
-                  <p className="text-sm text-gray-600">
+                  <div className="flex items-center gap-1.5 mt-1">
+                    <span
+                      className="w-4 h-4 rounded-full border border-black/20"
+                      style={{ backgroundColor: item.variant_color }}
+                      title={item.variant_color}
+                    />
+                    <span className="text-xs text-gray-500 font-bold tracking-wider uppercase">
+                      | {item.variant_size}
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-600 mt-1">
                     Quantity: {item.quantity}
                   </p>
                 </div>
 
-                <p className="font-bold text-primary">
+                <p className="font-bold text-black border border-black px-2 py-1 text-sm">
                   {item.price_at_purchase * item.quantity} EGP
                 </p>
               </div>
@@ -148,9 +151,9 @@ export default async function OrderSuccessPage({
           </div>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6">
-          <div className="bg-white rounded-2xl border p-6">
-            <h2 className="font-semibold text-lg text-gray-900 mb-4">
+        <div className="grid md:grid-cols-2 gap-8">
+          <div className="bg-white border border-black p-6 sm:p-8">
+            <h2 className="font-integral font-bold text-lg text-black mb-6 uppercase tracking-wider border-b border-black pb-3">
               Order summary
             </h2>
 
@@ -170,34 +173,30 @@ export default async function OrderSuccessPage({
               </div>
 
               {order.discount_amount > 0 && (
-                <div className="flex justify-between text-green-600">
+                <div className="flex justify-between text-black font-bold">
                   <span>Discount</span>
-                  <span className="font-medium">
+                  <span className="font-medium bg-black text-white px-2 py-0.5 text-xs">
                     -{order.discount_amount} EGP
                   </span>
                 </div>
               )}
 
-              <div className="border-t pt-2 flex justify-between text-base font-bold">
+              <div className="border-t border-black pt-4 flex justify-between text-base font-black uppercase tracking-wider">
                 <span>Total</span>
-                <span className="text-primary">{order.total_price} EGP</span>
+                <span className="text-black">{order.total_price} EGP</span>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl border p-6">
-            <h2 className="font-semibold text-lg text-gray-900 mb-4">
+          <div className="bg-white border border-black p-6 sm:p-8">
+            <h2 className="font-integral font-bold text-lg text-black mb-6 uppercase tracking-wider border-b border-black pb-3">
               Shipping address
             </h2>
 
             <div className="text-sm text-gray-700 space-y-1">
-              {isGuest === "true" && (
-                <p className="font-semibold">{addressInfo.name}</p>
-              )}
+              <p className="font-semibold">{addressInfo.name}</p>
               <p>{addressInfo.phone}</p>
-              <p>
-                {addressInfo.building} {addressInfo.street}
-              </p>
+              <p>{addressInfo.address_line}</p>
               <p>
                 {addressInfo.area}, {addressInfo.city}
               </p>
@@ -205,13 +204,11 @@ export default async function OrderSuccessPage({
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-3 justify-end">
+        <div className="flex flex-col sm:flex-row gap-4 justify-end mt-4">
           {isGuest !== "true" && (
             <Link
               href={ROUTES.ORDERS}
-              className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold text-white
-              bg-gradient-to-r from-[#1F1F6F] to-[#14274E]
-              hover:from-[#14274E] hover:to-[#394867]"
+              className="flex items-center justify-center gap-2 px-8 py-4 font-bold text-white bg-black border border-black hover:bg-white hover:text-black transition-colors uppercase tracking-widest text-sm"
             >
               <ShoppingBag className="w-5 h-5" />
               View orders
@@ -220,8 +217,7 @@ export default async function OrderSuccessPage({
 
           <Link
             href={ROUTES.HOME}
-            className="flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold
-            border border-gray-300 text-gray-700 hover:bg-gray-100"
+            className="flex items-center justify-center gap-2 px-8 py-4 font-bold bg-white text-black border border-black hover:bg-black hover:text-white transition-colors uppercase tracking-widest text-sm"
           >
             <Home className="w-5 h-5" />
             Continue shopping

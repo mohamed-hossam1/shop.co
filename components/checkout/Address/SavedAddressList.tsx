@@ -25,10 +25,10 @@ export default function SavedAddressList({
     setDeletingId(addressId);
     
     try {
-      const { error } = await deleteAddress(addressId);
+      const res = await deleteAddress(addressId);
       
-      if (error) {
-        console.error("Error deleting address:", error);
+      if (!res.success) {
+        console.error("Error deleting address:", res.message);
       } else {
         onAddressDeleted(addressId);
       }
@@ -54,22 +54,22 @@ export default function SavedAddressList({
         <div
           key={address.id}
           onClick={() => onSelectAddress(address)}
-          className={`flex flex-col md:flex-row md:items-center md:justify-between p-3 md:p-4 border rounded-lg cursor-pointer transition-colors ${
+          className={`flex flex-col md:flex-row md:items-center md:justify-between p-3 md:p-4 border rounded-sm cursor-pointer transition-colors ${
             selectedAddressId === address.id
-              ? "border-primary bg-blue-50"
-              : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+              ? "border-black bg-[#F0EEED]/40"
+              : "border-gray-200 hover:border-black/50 hover:bg-gray-50"
           }`}
         >
           <div className="flex items-center flex-1">
             <div
               className={`w-4 h-4 rounded-full border-2 mr-2 md:mr-3 flex items-center justify-center flex-shrink-0 ${
                 selectedAddressId === address.id
-                  ? "border-primary"
+                  ? "border-black"
                   : "border-gray-300"
               }`}
             >
               {selectedAddressId === address.id && (
-                <div className="w-2 h-2 rounded-full bg-gradient-to-r from-[#1F1F6F] to-[#14274E]"></div>
+                <div className="w-2 h-2 rounded-full bg-black"></div>
               )}
             </div>
             <div className="flex-1 min-w-0">
@@ -77,14 +77,14 @@ export default function SavedAddressList({
                 {address.phone}
               </p>
               <p className="text-xs md:text-sm text-gray-600 truncate">
-                {address.building_number} {address.street}, {address.area}, {address.city}
+                {address.address_line}, {address.area}, {address.city}
               </p>
             </div>
           </div>
           <button
             onClick={(e) => handleDelete(address.id, e)}
             disabled={deletingId === address.id}
-            className="ml-2 text-red-500 hover:text-red-700 text-xs md:text-sm px-2 py-1 hover:bg-red-50 self-end md:self-center mt-2 md:mt-0 disabled:opacity-50 cursor-pointer rounded-xl transition-all duration-300"
+            className="ml-2 text-red-500 hover:text-red-700 text-xs md:text-sm font-bold uppercase tracking-widest px-2 py-1 self-end md:self-center mt-2 md:mt-0 disabled:opacity-50 cursor-pointer transition-all duration-300"
           >
             {deletingId === address.id ? "Deleting..." : "Delete"}
           </button>

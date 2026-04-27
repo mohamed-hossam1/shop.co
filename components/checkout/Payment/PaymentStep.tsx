@@ -139,98 +139,77 @@ export default function PaymentStep({
   };
 
   return (
-    <div className="p-6">
-      <h2 className="text-2xl font-bold mb-7">Payment Method</h2>
-      <div className="mb-6 p-5 rounded-lg bg-blue-50 border border-blue-200 font-bold text-primary text-xl">
-        🎁 Special gift: Pay using Vodafone Cash or Instapay and get a free
-        gift!
+    <div className="space-y-6">
+      <div className="p-4 bg-gray-100 border border-black flex items-start gap-3 rounded-sm">
+        <span className="text-xl">🎁</span>
+        <p className="text-sm font-medium text-black">
+          Special gift: Pay using Vodafone Cash or Instapay and get a free gift!
+        </p>
       </div>
 
       {compressionError && (
-        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2">
+        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-2">
           <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
           <p className="text-sm text-red-700">{compressionError}</p>
         </div>
       )}
 
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-4">
+        {/* Cash on Delivery */}
         <div
           onClick={() => onSelectPayment(payments[0])}
-          className={`flex flex-col md:flex-row md:items-center md:justify-between p-3 md:p-4 border rounded-lg cursor-pointer transition-colors ${
+          className={`flex items-center justify-between p-4 border cursor-pointer transition-all rounded-sm ${
             selectedPayment === payments[0]
-              ? "border-primary bg-blue-50"
-              : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+              ? "border-black border-2 bg-gray-50"
+              : "border-gray-200 hover:border-black/50"
           }`}
         >
-          <div className="flex items-center flex-1">
+          <div className="flex items-center flex-1 gap-3">
             <div
-              className={`w-4 h-4 rounded-full border-2 mr-2 md:mr-3 flex items-center justify-center flex-shrink-0 ${
+              className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
                 selectedPayment === payments[0]
-                  ? "border-primary"
+                  ? "border-black"
                   : "border-gray-300"
               }`}
             >
               {selectedPayment === payments[0] && (
-                <div className="w-2 h-2 rounded-full bg-gradient-to-r from-[#1F1F6F] to-[#14274E]"></div>
+                <div className="w-2.5 h-2.5 rounded-full bg-black"></div>
               )}
             </div>
             <Cash />
           </div>
         </div>
 
+        {/* Vodafone Cash */}
         <div
           onClick={() => onSelectPayment(payments[1])}
-          className={`flex flex-col md:flex-row md:items-center md:justify-between p-3 md:p-4 border rounded-lg cursor-pointer transition-colors ${
+          className={`flex items-center justify-between p-4 border cursor-pointer transition-all rounded-sm ${
             selectedPayment === payments[1]
-              ? "border-primary bg-blue-50"
-              : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+              ? "border-black border-2 bg-gray-50"
+              : "border-gray-200 hover:border-black/50"
           }`}
         >
-          <div className="flex items-center flex-1">
+          <div className="flex items-center flex-1 gap-3">
             <div
-              className={`w-4 h-4 rounded-full border-2 mr-2 md:mr-3 flex items-center justify-center flex-shrink-0 ${
+              className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
                 selectedPayment === payments[1]
-                  ? "border-primary"
+                  ? "border-black"
                   : "border-gray-300"
               }`}
             >
               {selectedPayment === payments[1] && (
-                <div className="w-2 h-2 rounded-full bg-gradient-to-r from-[#1F1F6F] to-[#14274E]"></div>
+                <div className="w-2.5 h-2.5 rounded-full bg-black"></div>
               )}
             </div>
             <VodafoneCash />
           </div>
         </div>
 
-        <div
-          onClick={() => onSelectPayment(payments[2])}
-          className={`flex flex-col md:flex-row md:items-center md:justify-between p-3 md:p-4 border rounded-lg cursor-pointer transition-colors ${
-            selectedPayment === payments[2]
-              ? "border-primary bg-blue-50"
-              : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
-          }`}
-        >
-          <div className="flex items-center flex-1">
-            <div
-              className={`w-4 h-4 rounded-full border-2 mr-2 md:mr-3 flex items-center justify-center flex-shrink-0 ${
-                selectedPayment === payments[2]
-                  ? "border-primary"
-                  : "border-gray-300"
-              }`}
-            >
-              {selectedPayment === payments[2] && (
-                <div className="w-2 h-2 rounded-full bg-gradient-to-r from-[#1F1F6F] to-[#14274E]"></div>
-              )}
-            </div>
-            <Instapay />
-          </div>
-        </div>
-
         {selectedPayment === payments[1] && (
-          <div className="mt-3 p-4 border border-gray-200 rounded-lg bg-white">
-            <p className="text-gray-700 mb-2">Send the amount to:</p>
-            <div className="flex items-center justify-between mb-3">
-              <span className="font-bold text-lg text-gray-900">
+          <div className="mt-2 p-5 border border-black rounded-sm bg-white shadow-sm">
+            <p className="text-sm font-medium text-gray-600 mb-2">Send the amount to:</p>
+            <div className="flex items-center justify-between mb-4 bg-gray-50 p-3 rounded-sm border border-gray-200">
+              <span className="font-bold tracking-wider text-xl text-black">
                 {vodafoneNumber}
               </span>
               <button
@@ -239,37 +218,37 @@ export default function PaymentStep({
                   e.stopPropagation();
                   navigator.clipboard?.writeText(vodafoneNumber);
                   setIsCopyed(true);
-                  setTimeout(() => setIsCopyed(false), 1000);
+                  setTimeout(() => setIsCopyed(false), 1500);
                 }}
-                className="text-sm px-3 py-1 h-9 border rounded-md hover:bg-gray-50 cursor-pointer flex items-center gap-2"
+                className="text-xs font-bold px-4 py-2 border border-black rounded-sm hover:bg-black hover:text-white transition-colors cursor-pointer flex items-center gap-2 uppercase tracking-wider"
               >
                 {isCopyed ? <Check className="w-4 h-4" /> : "Copy"}
               </button>
             </div>
 
-            <label className="block text-xs text-gray-600 mb-2">
-              Upload payment screenshot (will be compressed automatically)
+            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">
+              Upload payment screenshot
             </label>
 
             {isCompressingVodafone && (
-              <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center gap-2">
-                <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                <span className="text-sm text-blue-700">Compressing image...</span>
+              <div className="mb-4 p-3 bg-gray-50 rounded-lg flex items-center gap-3">
+                <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
+                <span className="text-sm font-medium">Compressing...</span>
               </div>
             )}
 
             <label
               htmlFor="vodafone-upload"
               onClick={(e) => e.stopPropagation()}
-              className={`inline-flex items-center gap-2 px-3 py-2 border rounded-md cursor-pointer select-none ${
+              className={`w-full flex items-center justify-center gap-2 px-4 py-3 border border-black border-dashed rounded-sm cursor-pointer transition-colors ${
                 vodafoneImage
-                  ? "bg-green-50 border-green-200"
+                  ? "bg-gray-100"
                   : "bg-white hover:bg-gray-50"
               } ${isCompressingVodafone ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="w-4 h-4"
+                className="w-5 h-5 text-gray-500"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -281,8 +260,8 @@ export default function PaymentStep({
                   d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V7M16 3v4M8 3v4m0 0h8"
                 />
               </svg>
-              <span className="text-sm">
-                {vodafoneImage ? `${vodafoneImage.name} (${formatFileSize(vodafoneImage.size)})` : "Upload screenshot"}
+              <span className="text-sm font-medium text-gray-700">
+                {vodafoneImage ? `${vodafoneImage.name}` : "Browse files"}
               </span>
             </label>
             <input
@@ -296,85 +275,101 @@ export default function PaymentStep({
             />
 
             {vodafonePreview && (
-              <div className="flex items-start gap-3 mt-3">
+              <div className="flex items-center gap-4 mt-4">
                 <img
                   src={vodafonePreview}
-                  alt="vodafone payment preview"
-                  className="w-28 h-28 object-cover rounded-md border"
+                  alt="preview"
+                  className="w-16 h-16 object-cover rounded-lg border border-black/10"
                 />
-                <div className="flex-1">
-                  <p className="text-sm text-gray-700 mb-2">
-                    Preview of uploaded receipt
-                  </p>
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        clearVodafoneFile();
-                      }}
-                      className="px-3 py-1 text-sm border rounded-md hover:bg-gray-50"
-                    >
-                      Remove
-                    </button>
-                  </div>
+                <div>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      clearVodafoneFile();
+                    }}
+                    className="text-xs text-red-500 font-bold hover:underline"
+                  >
+                    Remove image
+                  </button>
                 </div>
               </div>
             )}
           </div>
         )}
 
+        {/* Instapay */}
+        <div
+          onClick={() => onSelectPayment(payments[2])}
+          className={`flex items-center justify-between p-4 border cursor-pointer transition-all rounded-sm ${
+            selectedPayment === payments[2]
+              ? "border-black border-2 bg-gray-50"
+              : "border-gray-200 hover:border-black/50"
+          }`}
+        >
+          <div className="flex items-center flex-1 gap-3">
+            <div
+              className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
+                selectedPayment === payments[2]
+                  ? "border-black"
+                  : "border-gray-300"
+              }`}
+            >
+              {selectedPayment === payments[2] && (
+                <div className="w-2.5 h-2.5 rounded-full bg-black"></div>
+              )}
+            </div>
+            <Instapay />
+          </div>
+        </div>
+
         {selectedPayment === payments[2] && (
-          <div className="mt-3 p-4 border border-gray-200 rounded-lg bg-white ">
-            <p className="text-gray-700 mb-5">
-              Pay using Instapay.{" "}
+          <div className="mt-2 p-5 border border-black rounded-sm bg-white shadow-sm">
+            <div className="flex items-center justify-between mb-4">
+              <p className="text-sm font-medium text-gray-600">
+                Pay using Instapay.
+              </p>
               {instapayLink ? (
-                <>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      window.open(
-                        instapayLink,
-                        "_blank",
-                        "noopener,noreferrer"
-                      );
-                    }}
-                    className=" font-semibold cursor-pointer px-3 py-1 ml-2 border rounded-md hover:bg-gray-50"
-                  >
-                    Open Instapay
-                  </button>
-                </>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    window.open(instapayLink, "_blank", "noopener,noreferrer");
+                  }}
+                  className="text-sm font-bold bg-black text-white px-4 py-2 rounded-sm hover:bg-white hover:text-black border border-black transition-colors uppercase tracking-wider"
+                >
+                  Open App
+                </button>
               ) : (
                 <span className="text-xs text-gray-500">
                   (No link provided)
                 </span>
               )}
-            </p>
+            </div>
 
-            <label className="block text-xs text-gray-600 mb-2">
-              After paying, upload the payment screenshot (will be compressed automatically)
+            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">
+              Upload payment screenshot
             </label>
 
             {isCompressingInstapay && (
-              <div className="mb-3 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center gap-2">
-                <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-                <span className="text-sm text-blue-700">Compressing image...</span>
+              <div className="mb-4 p-3 bg-gray-50 rounded-lg flex items-center gap-3">
+                <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin"></div>
+                <span className="text-sm font-medium">Compressing...</span>
               </div>
             )}
 
             <label
               htmlFor="instapay-upload"
               onClick={(e) => e.stopPropagation()}
-              className={`inline-flex items-center gap-2 px-3 py-2 border rounded-md cursor-pointer select-none ${
+              className={`w-full flex items-center justify-center gap-2 px-4 py-3 border border-black border-dashed rounded-sm cursor-pointer transition-colors ${
                 instapayImage
-                  ? "bg-green-50 border-green-200"
+                  ? "bg-gray-100"
                   : "bg-white hover:bg-gray-50"
               } ${isCompressingInstapay ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="w-4 h-4"
+                className="w-5 h-5 text-gray-500"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -386,8 +381,8 @@ export default function PaymentStep({
                   d="M7 16V4m0 0L3 8m4-4 4 4M17 8v12m0 0l4-4m-4 4-4-4"
                 />
               </svg>
-              <span className="text-sm">
-                {instapayImage ? `${instapayImage.name} (${formatFileSize(instapayImage.size)})` : "Upload screenshot"}
+              <span className="text-sm font-medium text-gray-700">
+                {instapayImage ? `${instapayImage.name}` : "Browse files"}
               </span>
             </label>
             <input
@@ -401,26 +396,23 @@ export default function PaymentStep({
             />
 
             {instapayPreview && (
-              <div className="flex items-start gap-3 mt-3">
+              <div className="flex items-center gap-4 mt-4">
                 <img
                   src={instapayPreview}
-                  alt="instapay payment preview"
-                  className="w-28 h-28 object-cover rounded-md border"
+                  alt="preview"
+                  className="w-16 h-16 object-cover rounded-lg border border-black/10"
                 />
-                <div className="flex-1">
-                  <p className="text-sm text-gray-700 mb-2">Preview</p>
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        clearInstapayFile();
-                      }}
-                      className="px-3 py-1 text-sm border rounded-md hover:bg-gray-50"
-                    >
-                      Remove
-                    </button>
-                  </div>
+                <div>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      clearInstapayFile();
+                    }}
+                    className="text-xs text-red-500 font-bold hover:underline"
+                  >
+                    Remove image
+                  </button>
                 </div>
               </div>
             )}

@@ -7,7 +7,7 @@ import AddressForm from "./AddressForm";
 
 interface AddressStepProps {
   addresses: Address[];
-  onAddressSelected: (address: Address|null) => Promise<void>
+  onAddressSelected: (address: Address | null) => Promise<void>;
   onRefresh: () => void;
   selectedAddress: Address | null;
 }
@@ -20,7 +20,7 @@ export default function AddressStep({
 }: AddressStepProps) {
   const [showForm, setShowForm] = useState(false);
   const [selectedAddressId, setSelectedAddressId] = useState<number | null>(
-    selectedAddress?.id || null
+    selectedAddress?.id || null,
   );
 
   const handleSelectAddress = (address: Address) => {
@@ -40,11 +40,12 @@ export default function AddressStep({
   };
 
   return (
-    <div className="p-6">
-      <h2 className="text-2xl font-bold mb-7">Delivery Address</h2>
-      {addresses.length != 0 ? (
+    <div className="space-y-6">
+      {addresses.length !== 0 ? (
         <>
-          <p className="text-lg font-bold mb-3">Saved Addresses</p>
+          <p className="text-sm font-bold text-black uppercase tracking-wider mb-2">
+            Saved Addresses
+          </p>
 
           <SavedAddressList
             addresses={addresses}
@@ -53,17 +54,15 @@ export default function AddressStep({
             onAddressDeleted={handleAddressDeleted}
           />
         </>
-      ) : (
-        <></>
-      )}
+      ) : null}
 
       {!showForm && (
         <button
           onClick={() => setShowForm(true)}
-          className="w-full p-3 md:p-4 border-2 border-dashed border-gray-300 rounded-lg text-primary font-medium hover:border-primary hover:bg-blue-50 transition-colors flex items-center justify-center text-sm md:text-base mt-6 cursor-pointer"
+          className="w-full p-4 border border-black text-black font-semibold hover:bg-black hover:text-white transition-colors flex items-center justify-center text-sm md:text-base cursor-pointer rounded-sm uppercase tracking-wider"
         >
           <svg
-            className="w-4 h-4 md:w-5 md:h-5 mr-2"
+            className="w-4 h-4 md:w-5 md:h-5 mr-3"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"

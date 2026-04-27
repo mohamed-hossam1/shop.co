@@ -42,11 +42,11 @@ export default function AddressForm({ onSuccess, onCancel }: AddressFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [formData, setFormData] = useState({
+    full_name: "",
     phone: "",
     city: "",
     area: "",
-    street: "",
-    building_number: "",
+    address_line: "",
   });
 
   const validatePhone = (phone: string) => {
@@ -59,6 +59,7 @@ export default function AddressForm({ onSuccess, onCancel }: AddressFormProps) {
     
     const newErrors: { [key: string]: string } = {};
 
+    if (!formData.full_name) newErrors.full_name = "Name is required";
     if (!formData.phone) {
       newErrors.phone = "Phone number is required";
     } else if (!validatePhone(formData.phone)) {
@@ -67,8 +68,7 @@ export default function AddressForm({ onSuccess, onCancel }: AddressFormProps) {
 
     if (!formData.city) newErrors.city = "City is required";
     if (!formData.area) newErrors.area = "Area is required";
-    if (!formData.street) newErrors.street = "Street is required";
-    if (!formData.building_number) newErrors.building_number = "Building number is required";
+    if (!formData.address_line) newErrors.address_line = "Address details are required";
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -79,10 +79,10 @@ export default function AddressForm({ onSuccess, onCancel }: AddressFormProps) {
     setErrors({});
 
     try {
-      const { error } = await addAddress(formData);
+      const res = await addAddress(formData as any); // Type simplified here
       
-      if (error) {
-        setErrors({ submit: error.message });
+      if (!res.success) {
+        setErrors({ submit: res.message });
       } else {
         onSuccess();
       }
@@ -119,11 +119,28 @@ export default function AddressForm({ onSuccess, onCancel }: AddressFormProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
           <div>
             <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">
+              Full Name *
+            </label>
+            <input
+              className={`w-full px-4 py-3 border rounded-sm focus:outline-none focus:border-black text-sm md:text-base bg-transparent ${
+                errors.full_name ? "border-red-500" : "border-black/20"
+              }`}
+              placeholder="Enter your full name"
+              type="text"
+              value={formData.full_name}
+              onChange={(e) => handleChange("full_name", e.target.value)}
+            />
+            {errors.full_name && (
+              <p className="text-red-500 text-xs mt-1">{errors.full_name}</p>
+            )}
+          </div>
+          <div>
+            <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">
               Phone Number *
             </label>
             <input
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-sm md:text-base ${
-                errors.phone ? "border-red-500" : "border-gray-300"
+              className={`w-full px-4 py-3 border rounded-sm focus:outline-none focus:border-black text-sm md:text-base bg-transparent ${
+                errors.phone ? "border-red-500" : "border-black/20"
               }`}
               placeholder="01XX XXX XXXX"
               type="tel"
@@ -140,8 +157,8 @@ export default function AddressForm({ onSuccess, onCancel }: AddressFormProps) {
               City *
             </label>
             <select
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-sm md:text-base ${
-                errors.city ? "border-red-500" : "border-gray-300"
+              className={`w-full px-4 py-3 border rounded-sm focus:outline-none focus:border-black text-sm md:text-base bg-transparent ${
+                errors.city ? "border-red-500" : "border-black/20"
               }`}
               value={formData.city}
               onChange={(e) => handleChange("city", e.target.value)}
@@ -163,8 +180,8 @@ export default function AddressForm({ onSuccess, onCancel }: AddressFormProps) {
               Area/District *
             </label>
             <input
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-sm md:text-base ${
-                errors.area ? "border-red-500" : "border-gray-300"
+              className={`w-full px-4 py-3 border rounded-sm focus:outline-none focus:border-black text-sm md:text-base bg-transparent ${
+                errors.area ? "border-red-500" : "border-black/20"
               }`}
               placeholder="Enter area or district"
               type="text"
@@ -178,37 +195,19 @@ export default function AddressForm({ onSuccess, onCancel }: AddressFormProps) {
 
           <div>
             <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">
-              Street *
+              Address Details *
             </label>
             <input
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-sm md:text-base ${
-                errors.street ? "border-red-500" : "border-gray-300"
+              className={`w-full px-4 py-3 border rounded-sm focus:outline-none focus:border-black text-sm md:text-base bg-transparent ${
+                errors.address_line ? "border-red-500" : "border-black/20"
               }`}
-              placeholder="Enter street name"
+              placeholder="Street name, building number"
               type="text"
-              value={formData.street}
-              onChange={(e) => handleChange("street", e.target.value)}
+              value={formData.address_line}
+              onChange={(e) => handleChange("address_line", e.target.value)}
             />
-            {errors.street && (
-              <p className="text-red-500 text-xs mt-1">{errors.street}</p>
-            )}
-          </div>
-
-          <div>
-            <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">
-              Building Number *
-            </label>
-            <input
-              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-primary text-sm md:text-base ${
-                errors.building_number ? "border-red-500" : "border-gray-300"
-              }`}
-              placeholder="Building number"
-              type="text"
-              value={formData.building_number}
-              onChange={(e) => handleChange("building_number", e.target.value)}
-            />
-            {errors.building_number && (
-              <p className="text-red-500 text-xs mt-1">{errors.building_number}</p>
+            {errors.address_line && (
+              <p className="text-red-500 text-xs mt-1">{errors.address_line}</p>
             )}
           </div>
         </div>
@@ -220,7 +219,7 @@ export default function AddressForm({ onSuccess, onCancel }: AddressFormProps) {
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full mt-6 bg-linear-to-r from-[#1F1F6F] to-[#14274E] hover:from-[#14274E] hover:to-[#394867]  text-white py-3 rounded-lg font-medium  transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full mt-6 bg-black text-white hover:bg-white hover:text-black border border-black py-4 rounded-sm font-bold uppercase tracking-widest transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isLoading ? "Saving..." : "Save Address"}
         </button>

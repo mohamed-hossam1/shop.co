@@ -5,7 +5,6 @@ import {
   Dialog,
   DialogBackdrop,
   DialogPanel,
-  DialogTitle,
 } from "@headlessui/react";
 import { Data } from "@/lib/data";
 
@@ -388,9 +387,22 @@ export default function OrderDetails({
                                     <h4 className="font-semibold text-gray-900">
                                       {item.product_title}
                                     </h4>
-                                    <p className="text-sm text-gray-600">
-                                      Quantity: {item.quantity ?? 1}
-                                    </p>
+                                    <div className="flex items-center gap-4 mt-1">
+                                      <p className="text-sm text-gray-600">
+                                        Size: <span className="font-medium text-gray-900">{item.variant_size}</span>
+                                      </p>
+                                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                                        <span className="font-medium">Color:</span>
+                                        <div
+                                          className="w-3 h-3 rounded-full border border-gray-300"
+                                          style={{ backgroundColor: item.variant_color }}
+                                          title={item.variant_color}
+                                        />
+                                      </div>
+                                      <p className="text-sm text-gray-600">
+                                        Qty: <span className="font-medium text-gray-900">{item.quantity ?? 1}</span>
+                                      </p>
+                                    </div>
                                   </div>
                                 </div>
                               ))

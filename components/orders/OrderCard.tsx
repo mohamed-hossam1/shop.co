@@ -1,4 +1,3 @@
-import React from "react";
 import Orderitems from "./Orderitems";
 import { Data } from "@/lib/data";
 import { Order } from "@/types/Order";

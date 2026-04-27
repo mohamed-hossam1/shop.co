@@ -3,12 +3,13 @@ import CardList from "../showProducts/CardList"
 
 
 export default async function RelatedProducts({categoryId, productId}:{categoryId:number, productId:number}) {
-  const {data:products} = await getRelatedProducts(categoryId, productId)
+  const result = await getRelatedProducts(categoryId, productId);
+  const products = "data" in result ? result.data : [];
 
   return (
     <div>
       
-      <CardList products={products??[]}/>
+      <CardList products={products ?? []} />
     </div>
   )
 }

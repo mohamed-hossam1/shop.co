@@ -82,7 +82,14 @@ export default function ReviewStep({
                 </p>
                 <div className="flex flex-wrap gap-x-2 text-[10px] md:text-xs text-gray-500 mt-0.5">
                   <span className="capitalize">Size: {item.variant.size}</span>
-                  <span className="capitalize">Color: {item.variant.color}</span>
+                  <div className="flex items-center gap-1">
+                    <span className="capitalize">Color:</span>
+                    <div
+                      className="w-3 h-3 rounded-full border border-gray-300"
+                      style={{ backgroundColor: item.variant.color }}
+                      title={item.variant.color}
+                    />
+                  </div>
                 </div>
                 <p className="text-xs md:text-sm text-gray-600 mt-1">
                   Qty: {item.quantity}

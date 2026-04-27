@@ -25,7 +25,7 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="w-full relative bg-[#F0F0F0] pt-3 ">
+    <footer className="w-full relative bg-[#F0F0F0] pt-3 mt-40">
       <Newsletter />
 
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-12">

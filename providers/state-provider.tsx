@@ -10,14 +10,16 @@ export function StateProvider({ children }: { children: ReactNode }) {
   const hasHydrated = useCart((state) => state.hasHydrated);
   const user = useUser((state) => state.user);
 
+  const isUserInitialized = useUser((state) => state.isInitialized);
+
   useEffect(() => {
     initUser();
   }, [initUser]);
 
   useEffect(() => {
-    if (!hasHydrated) return;
+    if (!hasHydrated || !isUserInitialized) return;
     initCart();
-  }, [hasHydrated, initCart, user]);
+  }, [hasHydrated, isUserInitialized, initCart, user]);
 
   return <>{children}</>;
 }

@@ -39,7 +39,7 @@ export default function UserMenu() {
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56 mt-2 rounded-xl p-2 font-satoshi">
-        {userData ? (
+        {userData && (
           <>
             <DropdownMenuLabel className="px-2 py-1.5 border-b mb-1">
               <p className="font-bold">{userData.name}</p>
@@ -59,19 +59,6 @@ export default function UserMenu() {
               <button className="w-full text-left text-red-500 cursor-pointer rounded-lg px-2 py-1.5 hover:bg-red-50" onClick={signOut}>
                 Sign Out
               </button>
-            </DropdownMenuItem>
-          </>
-        ) : (
-          <>
-            <DropdownMenuItem asChild>
-              <Link href={ROUTES.SIGNIN} className="w-full cursor-pointer rounded-lg px-2 py-1.5 hover:bg-gray-100 block">
-                Login
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link href={ROUTES.SIGNUP} className="w-full cursor-pointer rounded-lg px-2 py-1.5 hover:bg-gray-100 block">
-                Sign Up
-              </Link>
             </DropdownMenuItem>
           </>
         )}

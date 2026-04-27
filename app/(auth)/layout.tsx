@@ -1,5 +1,4 @@
 import ROUTES from "@/constants/routes";
-import Image from "next/image";
 import Link from "next/link";
 import React from "react";
 
@@ -9,33 +8,24 @@ export default function AuthLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <>
-      <div className="min-h-screen from-slate-50 via-white to-gray-50 flex items-center justify-center p-4">
-        <div className="max-w-md w-full">
-          <div className="text-center mb-8">
-            <div className="flex justify-center mb-4">
-              <Link
-                href={ROUTES.HOME}
-                className="flex items-center hover:scale-105 transition-transform duration-300 cursor-pointer"
-              >
-                <div className="relative w-28 h-28">
-                  <Image
-                    src="/cura-logo.webp"
-                    alt="Logo"
-                    fill
-                    sizes="30"
-                    loading="eager"
-                    style={{ objectFit: "contain" }}
-                    className="transition-transform duration-300 hover:scale-110"
-                  />
-                </div>
-              </Link>
-            </div>
-          </div>
-
-          {children}
-        </div>
+    <div className="fixed inset-0 z-50 bg-white flex flex-col justify-center py-12 sm:px-6 lg:px-8 font-satoshi overflow-auto">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md text-center">
+        <Link href={ROUTES.HOME} className="inline-block hover:opacity-80 transition-opacity">
+          <span className="text-4xl font-integral font-black tracking-widest text-black">
+            ELARIS
+          </span>
+        </Link>
+        <h2 className="mt-8 text-center text-3xl font-bold tracking-tight text-gray-900">
+          Welcome to Elaris
+        </h2>
+        <p className="mt-2 text-center text-sm text-gray-500 font-satoshi">
+          Sign in to your account or create a new one to continue.
+        </p>
       </div>
-    </>
+
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md px-4 sm:px-0">
+        {children}
+      </div>
+    </div>
   );
 }

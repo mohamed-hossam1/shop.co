@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ChevronDown, Menu, Search as SearchIcon } from "lucide-react";
 
 import ROUTES from "@/constants/routes";
@@ -8,6 +11,15 @@ import CartIcon from "./CartIcon";
 import { ModeToggle } from "./ModeToggle";
 
 export default function Navbar() {
+  const pathname = usePathname();
+
+  const getLinkClass = (path: string) => {
+    const isActive = pathname === path || (pathname.startsWith(path) && path !== ROUTES.HOME);
+    return `transition-colors ${
+      isActive ? "text-black font-bold" : "hover:text-gray-600"
+    }`;
+  };
+
   return (
     <nav className="w-full bg-white sticky top-0 z-50">
       <div className="w-full bg-black text-white py-2 px-4 text-center text-xs sm:text-sm font-satoshi">
@@ -32,18 +44,18 @@ export default function Navbar() {
 
           <div className="hidden lg:flex items-center gap-6 font-satoshi">
             <Link
-              href="#"
-              className="flex items-center gap-1 hover:text-gray-600 transition-colors"
+              href={ROUTES.PRODUCTS}
+              className={`flex items-center gap-1 ${getLinkClass(ROUTES.PRODUCTS)}`}
             >
               Shop <ChevronDown className="w-4 h-4" />
             </Link>
-            <Link href="#" className="hover:text-gray-600 transition-colors">
+            <Link href="/on-sale" className={getLinkClass("/on-sale")}>
               On Sale
             </Link>
-            <Link href="#" className="hover:text-gray-600 transition-colors">
+            <Link href="/new-arrivals" className={getLinkClass("/new-arrivals")}>
               New Arrivals
             </Link>
-            <Link href="#" className="hover:text-gray-600 transition-colors">
+            <Link href="/brands" className={getLinkClass("/brands")}>
               Brands
             </Link>
           </div>

@@ -1,13 +1,13 @@
-import { getProductDetails } from "@/actions/productsAction";
+import { getProductById } from "@/actions/productsAction";
 import QuantityProduct from "./QuantityProduct";
 import RelatedProducts from "./RelatedProducts";
 import { Suspense } from "react";
 import CardListSkeleton from "../skeleton/CardListSkeleton";
 import ImageSlider from "./ImageSlider";
-import { ProductData } from "@/types/Product";
 
 export default async function ProductDetails({ id }: { id: string }) {
-  const { data: product } = await getProductDetails(id);
+  const response = await getProductById(Number(id));
+  const product = response.success ? response.data : null;
 
   if (!product) {
     return (
@@ -26,7 +26,7 @@ export default async function ProductDetails({ id }: { id: string }) {
           <div className="flex-1 md:flex-[0.8] justify-center items-center bg-white">
             <div className="flex w-full flex-col gap-4">
               <div className="mb-6">
-                <ImageSlider images={[product.image_cover, ...(product.images?.map(img => img.url) || [])]} />
+                <ImageSlider images={[...(product.image_cover ? [product.image_cover] : []), ...(product.images?.map((img: any) => img.url) || [])]} />
               </div>
             </div>
           </div>
@@ -55,7 +55,7 @@ export default async function ProductDetails({ id }: { id: string }) {
           <h3 className="text-3xl font-bold mb-10 font-integral uppercase">Related Products</h3>
           <Suspense fallback={<CardListSkeleton />}>
             <RelatedProducts
-              categoryId={product.category?.id || 0}
+              categoryId={product.category_id || 0}
               productId={product.id}
             />
           </Suspense>

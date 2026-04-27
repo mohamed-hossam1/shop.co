@@ -11,35 +11,6 @@ const ProductCard = React.memo(({ product }: { product: ProductListItem }) => {
       )
     : 0;
 
-  const renderStars = (rating: number) => {
-    return [...Array(5)].map((_, i) => {
-      const fillAmount = Math.min(Math.max(rating - i, 0), 1) * 100;
-      return (
-        <div key={i} className="relative w-4 h-4 sm:w-[18px] sm:h-[18px]">
-          <svg
-            viewBox="0 0 24 24"
-            className="absolute inset-0 w-full h-full text-[#FFC633]"
-            fill="currentColor"
-          >
-            <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-          </svg>
-          <div
-            className="absolute inset-0 bg-[#F0EEED] overflow-hidden"
-            style={{ left: `${fillAmount}%` }}
-          >
-            <svg
-              viewBox="0 0 24 24"
-              className="w-[18.5px] h-[18.5px] sm:w-[22px] sm:h-[22px] text-[#F0EEED] relative -left-[0.2px]"
-              fill="currentColor"
-              style={{ left: `-${fillAmount}%` }}
-            >
-              <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-            </svg>
-          </div>
-        </div>
-      );
-    });
-  };
 
   return (
     <Link

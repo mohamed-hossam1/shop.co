@@ -48,7 +48,7 @@ export default function Reviews() {
   };
 
   return (
-    <section className="w-full py-12 sm:py-20 bg-white overflow-hidden mb-20">
+    <section className="w-full py-12 sm:py-20 bg-white overflow-hidden mb-10">
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-end justify-between mb-8 sm:mb-14">
           <h2 className="text-3xl sm:text-5xl font-integral font-black tracking-[0.04em] uppercase">

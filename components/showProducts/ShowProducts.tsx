@@ -8,11 +8,24 @@ interface GroupedProducts {
   [categoryName: string]: ProductListItem[];
 }
 
-export default async function ShowProducts() {
-  const productsRes = await getProducts();
+export default async function ShowProducts({
+  searchQuery,
+  isTopSelling,
+  isNewArrival,
+}: {
+  searchQuery?: string;
+  isTopSelling?: boolean;
+  isNewArrival?: boolean;
+} = {}) {
+  const productsRes = await getProducts({
+    searchQuery,
+    isTopSelling,
+    isNewArrival,
+  });
   const categoriesRes = await getAllCategories();
-  
+
   const products = productsRes.success ? productsRes.data : [];
+
   const categories = categoriesRes.success ? categoriesRes.data : [];
 
   const categoryId: number[] = [];

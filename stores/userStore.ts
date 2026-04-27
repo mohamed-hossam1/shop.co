@@ -24,9 +24,11 @@ export const useUserStore = create<UserStoreState>((set, get) => ({
 
     try {
       const { GetUser } = await import("@/actions/userAction");
-      const userData = await GetUser();
-      if (userData) {
-        set({ user: userData });
+      const response = await GetUser();
+      if (response.success && response.data) {
+        set({ user: response.data });
+      } else {
+        set({ user: null });
       }
     } catch (error) {
       console.error("Error loading user:", error);

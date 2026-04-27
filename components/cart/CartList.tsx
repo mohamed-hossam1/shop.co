@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import OrderSummary from "./OrderSummary";
 import CartSkeleton from "../skeleton/CartSkeleton";
+import { useUser } from "@/stores/userStore";
 
 export default function CartList() {
   const {
@@ -16,6 +17,7 @@ export default function CartList() {
     price,
     clearCart,
     isLoading,
+    hasHydrated,
   } = useCart();
 
   const handleRemove = async (variantId: number) => {
@@ -39,7 +41,9 @@ export default function CartList() {
     }
   };
 
-  if (isLoading || cart === null) {
+  const isUserInitialized = useUser((state) => state.isInitialized);
+
+  if (!hasHydrated || isLoading || cart === null || !isUserInitialized) {
     return <CartSkeleton />;
   }
 
@@ -106,9 +110,14 @@ export default function CartList() {
                             <p className="text-gray-600">
                               <span className="font-medium text-gray-900">Size:</span> {value.variant.size}
                             </p>
-                            <p className="text-gray-600">
-                              <span className="font-medium text-gray-900">Color:</span> {value.variant.color}
-                            </p>
+                            <div className="flex items-center gap-2 text-gray-600">
+                              <span className="font-medium text-gray-900">Color:</span>
+                              <div
+                                className="w-4 h-4 rounded-full border border-gray-300 shadow-sm"
+                                style={{ backgroundColor: value.variant.color }}
+                                title={value.variant.color}
+                              />
+                            </div>
                           </div>
                         </div>
 

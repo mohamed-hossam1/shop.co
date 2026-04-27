@@ -7,16 +7,38 @@ import {
   ProductListItem,
 } from "@/types/Product";
 
-export async function getProducts(): Promise<
+export async function getProducts({
+  searchQuery,
+  isTopSelling,
+  isNewArrival,
+}: {
+  searchQuery?: string;
+  isTopSelling?: boolean;
+  isNewArrival?: boolean;
+} = {}): Promise<
   | { success: true; data: ProductListItem[] }
   | { success: false; message: string }
 > {
   const supabase = await createClient();
 
-  const { data, error } = await supabase
+  let query = supabase
     .from("products_with_min_price")
     .select("*")
     .order("created_at", { ascending: false });
+
+  if (searchQuery) {
+    query = query.ilike("title", `%${searchQuery}%`);
+  }
+
+  if (isTopSelling) {
+    query = query.not("top_selling_rank", "is", null).order("top_selling_rank", { ascending: true });
+  }
+
+  if (isNewArrival) {
+    query = query.not("new_arrival_rank", "is", null).order("new_arrival_rank", { ascending: true });
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     return { success: false, message: "Failed to fetch products" };
@@ -24,6 +46,7 @@ export async function getProducts(): Promise<
 
   return { success: true, data: data as ProductListItem[] };
 }
+
 
 export async function getProductById(
   id: number,
@@ -91,6 +114,30 @@ export async function getTopSelling(
 
   if (error) {
     return { success: false, message: "Failed to fetch top selling" };
+  }
+
+  return { success: true, data: data as ProductListItem[] };
+}
+
+export async function getRelatedProducts(
+  categoryId: number,
+  productId: number,
+  limit = 4,
+): Promise<
+  | { success: true; data: ProductListItem[] }
+  | { success: false; message: string }
+> {
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("products_with_min_price")
+    .select("*")
+    .eq("category_id", categoryId)
+    .neq("id", productId)
+    .limit(limit);
+
+  if (error) {
+    return { success: false, message: "Failed to fetch related products" };
   }
 
   return { success: true, data: data as ProductListItem[] };

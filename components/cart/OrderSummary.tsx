@@ -50,7 +50,7 @@ export default function OrderSummary({
         return;
       }
 
-      setAppliedPromo(result.coupon || null);
+      setAppliedPromo(result.data?.coupon || null);
       setPromoError("");
     } catch (err) {
       setPromoError("Error applying promo code. Please try again.");
@@ -67,20 +67,30 @@ export default function OrderSummary({
   };
 
   return (
-    <div className="w-full lg:flex-[2] font-satoshi">
+    <div className="w-full lg:flex-2 font-satoshi">
       <div className="bg-white rounded-2xl md:rounded-3xl shadow-xl border border-gray-100 p-6 md:p-8 lg:sticky lg:top-24">
         <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-6 font-integral uppercase">
           Order Summary
         </h3>
-        
+
         {isCart && (
           <div className="mb-8">
             <div className="relative group">
               <div className="flex flex-row gap-3">
                 <div className="relative flex-1">
                   <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                    <svg
+                      className="w-5 h-5 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"
+                      />
                     </svg>
                   </div>
                   <input
@@ -114,7 +124,7 @@ export default function OrderSummary({
                   </button>
                 )}
               </div>
-              
+
               {promoError && (
                 <p className="text-red-500 text-xs md:text-sm mt-2 flex items-center gap-1.5 font-medium animate-in fade-in slide-in-from-top-1">
                   <span className="w-1.5 h-1.5 bg-red-500 rounded-full" />
@@ -124,7 +134,10 @@ export default function OrderSummary({
               {appliedPromo && (
                 <p className="text-green-600 text-xs md:text-sm mt-2 flex items-center gap-1.5 font-bold animate-in fade-in slide-in-from-top-1">
                   <span className="w-1.5 h-1.5 bg-green-600 rounded-full" />
-                  {appliedPromo.type === "percentage" ? `${appliedPromo.value}%` : `EGP ${appliedPromo.value}`} discount applied
+                  {appliedPromo.type === "percentage"
+                    ? `${appliedPromo.value}%`
+                    : `EGP ${appliedPromo.value}`}{" "}
+                  discount applied
                 </p>
               )}
             </div>
@@ -138,18 +151,22 @@ export default function OrderSummary({
               EGP {price.toFixed(2)}
             </span>
           </div>
-          
+
           {appliedPromo && (
             <div className="flex justify-between items-center">
               <span className="text-base md:text-lg text-gray-500">
-                Discount ({appliedPromo.type === "percentage" ? `${appliedPromo.value}%` : "Fixed"})
+                Discount (
+                {appliedPromo.type === "percentage"
+                  ? `${appliedPromo.value}%`
+                  : "Fixed"}
+                )
               </span>
               <span className="font-bold text-red-500 text-base md:text-lg">
                 -EGP {discountAmount.toFixed(2)}
               </span>
             </div>
           )}
-          
+
           <div className="flex justify-between items-center">
             <span className="text-base md:text-lg text-gray-500">
               Delivery Fee
@@ -158,7 +175,9 @@ export default function OrderSummary({
               {isLoadingFee ? (
                 <div className="h-6 w-20 bg-gray-100 animate-pulse rounded-md"></div>
               ) : isCart ? (
-                <span className="text-gray-400 font-medium">Calculated later</span>
+                <span className="text-gray-400 font-medium">
+                  Calculated later
+                </span>
               ) : !hasAddress ? (
                 <span className="text-gray-400 font-medium">Add address</span>
               ) : (
@@ -166,10 +185,12 @@ export default function OrderSummary({
               )}
             </span>
           </div>
-          
+
           <div className="border-t border-gray-100 pt-6 mt-6">
             <div className="flex justify-between items-center">
-              <span className="text-lg md:text-xl font-bold text-gray-900">Total</span>
+              <span className="text-lg md:text-xl font-bold text-gray-900">
+                Total
+              </span>
               <span className="text-2xl md:text-3xl font-bold text-black font-integral">
                 {isLoadingFee ? (
                   <div className="h-8 w-24 bg-gray-100 animate-pulse rounded-md"></div>
@@ -189,8 +210,18 @@ export default function OrderSummary({
                 href={ROUTES.CHECKOUT}
               >
                 Go to Checkout
-                <svg className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                <svg
+                  className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2.5"
+                    d="M17 8l4 4m0 0l-4 4m4-4H3"
+                  />
                 </svg>
               </Link>
             )}

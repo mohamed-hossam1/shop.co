@@ -1,10 +1,37 @@
 "use client"
 
 import { Search } from "lucide-react";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import ROUTES from "@/constants/routes";
 
 export default function Searchbar() {
-  const [searchQuery, setSearchQuery] = useState("");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const currentSearchParam = searchParams.get("search") || "";
+  
+  const [searchQuery, setSearchQuery] = useState(currentSearchParam);
+
+  // Sync internal state if the URL changes externally (e.g. clicking a link)
+  useEffect(() => {
+    setSearchQuery(currentSearchParam);
+  }, [currentSearchParam]);
+
+  useEffect(() => {
+    if (searchQuery === currentSearchParam) return;
+
+    const timer = setTimeout(() => {
+      const params = new URLSearchParams(searchParams.toString());
+      if (searchQuery) {
+        params.set("search", searchQuery);
+      } else {
+        params.delete("search");
+      }
+      router.push(`${ROUTES.PRODUCTS}?${params.toString()}`);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery, currentSearchParam, router, searchParams]);
 
   return (
     <div className="w-full">

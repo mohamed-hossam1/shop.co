@@ -1,28 +1,27 @@
 import Products from "@/components/showProducts/ShowProducts";
-import type { Metadata } from "next";
 
-export const metadata: Metadata = {
-  title: "All Products | Cura - Premium Beauty & Personal Care",
-  description:
-    "Browse our complete collection of premium organic beauty products, skincare, shampoos, conditioners, and personal care items.",
-  keywords:
-    "products, beauty products, skincare, cosmetics, personal care, organic products",
-  alternates: {
-    canonical: "/products",
-  },
-  openGraph: {
-    title: "All Products | Cura",
-    description:
-      "Browse our complete collection of premium beauty and personal care products.",
-    url: "/products",
-    type: "website",
-  },
-};
 
-export default function ProductsPage() {
+
+export default async function ProductsPage({
+  searchParams,
+}: {
+  searchParams:
+    | Promise<{ [key: string]: string | string[] | undefined }>
+    | { [key: string]: string | string[] | undefined };
+}) {
+  const params = await searchParams;
+  const search = typeof params?.search === "string" ? params.search : undefined;
+  const isTopSelling = params?.is_top_selling === "true";
+  const isNewArrival = params?.is_new_arrival === "true";
+
   return (
     <div>
-      <Products />
+      <Products
+        searchQuery={search}
+        isTopSelling={isTopSelling}
+        isNewArrival={isNewArrival}
+      />
     </div>
   );
 }
+

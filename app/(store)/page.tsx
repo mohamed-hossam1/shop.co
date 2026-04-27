@@ -1,19 +1,22 @@
+import { getProducts } from "@/actions/productsAction";
 import Hero from "@/components/home/Hero";
-import ProductSection from "@/components/home/ProductSection";
-import { getNewArrivals, getTopSelling } from "@/actions/productsAction";
-import BrowseByStyle from "@/components/home/BrowseByStyle";
-import Reviews from "@/components/home/Reviews";
-import { getAllCategories } from "@/actions/categoriesAction";
+// import ProductSection from "@/components/home/ProductSection";
+// import { getNewArrivals, getTopSelling } from "@/actions/productsAction";
+// import BrowseByStyle from "@/components/home/BrowseByStyle";
+// import Reviews from "@/components/home/Reviews";
+// import { getAllCategories } from "@/actions/categoriesAction";
 
 export default async function Home() {
-  const { data: newArrivals = [] } = await getNewArrivals(4);
-  const { data: topSelling = [] } = await getTopSelling(4);
-  const { data: categories = [] } = (await getAllCategories()) as any;
+  // const { data: newArrivals = [] } = await getNewArrivals(4);
+  const respons = await getProducts();
+  console.log(respons.success ? respons.data : respons.message);
+  // const { data: topSelling = [] } = await getTopSelling(4);
+  // const { data: categories = [] } = (await getAllCategories()) as any;
 
   return (
     <main>
       <Hero />
-      <ProductSection
+      {/* <ProductSection
         title="NEW ARRIVALS"
         products={newArrivals || []}
         viewAllLink="/products?filter=new-arrivals"
@@ -27,7 +30,7 @@ export default async function Home() {
         viewAllLink="/products?filter=top-selling"
       />
       <BrowseByStyle categories={categories || []} />
-      <Reviews />
+      <Reviews /> */}
     </main>
   );
 }

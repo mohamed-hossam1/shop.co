@@ -90,25 +90,6 @@ export async function validatePromoCode(promoCode: string, price: number) {
 
     const finalPrice = Math.round((price - discountAmount) * 100) / 100;
 
-    const { data: updateData, error: updateError } = await supabase
-      .from("coupons")
-      .update({ used_count: coupon.used_count + 1 })
-      .eq("id", coupon.id)
-      .lt("used_count", coupon.max_uses)
-      .select()
-      .maybeSingle();
-
-    if (updateError || !updateData) {
-      return {
-        success: false,
-        message: "Error applying promo code or usage limit reached.",
-        originalPrice: price,
-        finalPrice: null,
-        discountApplied: null,
-        coupon,
-      };
-    }
-
     return {
       success: true,
       message: "Promo code applied.",
@@ -116,8 +97,8 @@ export async function validatePromoCode(promoCode: string, price: number) {
       finalPrice,
       discountApplied: discountAmount,
       coupon: {
-        ...updateData,
-        discount_percentage: updateData.type === "percentage" ? updateData.value : undefined,
+        ...coupon,
+        discount_percentage: coupon.type === "percentage" ? coupon.value : undefined,
       } as PromoCode,
     };
   } catch (error) {
@@ -129,5 +110,71 @@ export async function validatePromoCode(promoCode: string, price: number) {
       finalPrice: null,
       discountApplied: null,
     };
+  }
+}
+
+export async function createPromoCode(promoCodeData: Omit<PromoCode, "id" | "created_at" | "used_count">) {
+  const supabase = await createClient();
+
+  try {
+    const { data, error } = await supabase
+      .from("coupons")
+      .insert([{
+        ...promoCodeData,
+        used_count: 0
+      }])
+      .select()
+      .single();
+
+    if (error) {
+      return { success: false, message: error.message };
+    }
+
+    return { success: true, message: "Promo code created successfully.", data: data as PromoCode };
+  } catch (error) {
+    console.error("createPromoCode unexpected error", error);
+    return { success: false, message: "Unexpected error." };
+  }
+}
+
+export async function updatePromoCode(id: number, promoCodeData: Partial<Omit<PromoCode, "id" | "created_at">>) {
+  const supabase = await createClient();
+
+  try {
+    const { data, error } = await supabase
+      .from("coupons")
+      .update(promoCodeData)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) {
+      return { success: false, message: error.message };
+    }
+
+    return { success: true, message: "Promo code updated successfully.", data: data as PromoCode };
+  } catch (error) {
+    console.error("updatePromoCode unexpected error", error);
+    return { success: false, message: "Unexpected error." };
+  }
+}
+
+export async function deletePromoCode(id: number) {
+  const supabase = await createClient();
+
+  try {
+    const { error } = await supabase
+      .from("coupons")
+      .delete()
+      .eq("id", id);
+
+    if (error) {
+      return { success: false, message: error.message };
+    }
+
+    return { success: true, message: "Promo code deleted successfully." };
+  } catch (error) {
+    console.error("deletePromoCode unexpected error", error);
+    return { success: false, message: "Unexpected error." };
   }
 }

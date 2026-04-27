@@ -1,48 +1,61 @@
-
-export interface Category {
+export type ProductListItem = {
   id: number;
   title: string;
-  slug: string;
-  image: string;
+  image_cover: string | null;
   created_at: string;
-}
 
-export interface ProductImage {
-  id: number;
-  product_id: number;
-  url: string;
-}
+  new_arrival_rank: number | null;
+  top_selling_rank: number | null;
+  category_rank: number | null;
+  category_id: number | null;
 
-export interface ProductVariant {
+  min_price: number;
+  min_price_before: number;
+};
+
+export type ProductVariant = {
   id: number;
   product_id: number;
   color: string;
   size: string;
   price: number;
-  price_before: number;
+  price_before: number | null;
   stock: number;
-  sku: string;
-  created_at: string;
-}
+  sku: string | null;
+};
 
-export interface ProductData {
+export type ProductImage = {
   id: number;
+  product_id: number;
+  url: string;
+};
+
+export type ProductDetails = {
+  id: number;
+  title: string;
+  description: string | null;
+  category_id: number | null;
+  image_cover: string | null;
+  is_deleted: boolean;
+  created_at: string;
+
+  variants: ProductVariant[];
+  images: ProductImage[];
+};
+
+
+export interface CreateProductInput {
   title: string;
   description?: string;
   category_id?: number;
-  image_cover: string;
-  is_deleted?: boolean;
-  new_arrival?: boolean;
-  top_selling?: boolean;
-  created_at?: string;
-  
-  // Relations
-  category?: Category;
-  images?: ProductImage[];
-  variants?: ProductVariant[];
-  
-  // Compatibility / Calculated
-  price_after?: number; // Should be handled via variants but keeping for compatibility
-  price_before?: number;
-  stock?: number;
+  image_cover?: string;
+  variants: {
+    color: string;
+    size: string;
+    price: number;
+    price_before?: number;
+    stock: number;
+    sku?: string;
+  }[];
+  images: string[];
 }

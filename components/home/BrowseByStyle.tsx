@@ -55,8 +55,9 @@ export default function BrowseByStyle({ categories }: { categories: Category[] }
                           src={displayImage}
                           alt={category.title}
                           fill
-                          className="object-cover object-center sm:object-top-right transition-all duration-700 group-hover:scale-110"
+                          className="object-cover object-center transition-all duration-700 group-hover:scale-105"
                           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                          priority={index < 2}
                         />
                       </div>
                     </div>

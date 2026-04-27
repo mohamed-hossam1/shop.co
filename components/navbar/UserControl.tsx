@@ -10,7 +10,7 @@ export default function UserControl() {
   }
 
   return (
-    <div className="flex items-center">
+    <div className="flex items-center ">
       <UserMenu />
     </div>
   );

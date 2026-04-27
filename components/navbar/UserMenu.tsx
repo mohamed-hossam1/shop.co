@@ -35,7 +35,7 @@ export default function UserMenu() {
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger asChild>
         <button className="flex items-center gap-2 outline-none">
-          <CircleUser className="w-6 h-6 text-black hover:text-black/70 transition-colors" />
+          <CircleUser className="w-6 h-6 text-black hover:text-black/70 transition-colors cursor-pointer" />
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56 mt-2 rounded-xl p-2 font-satoshi">

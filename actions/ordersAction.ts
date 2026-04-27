@@ -117,6 +117,30 @@ export async function createOrder(
       user_id = user.id;
     }
 
+    if (data.coupon_id) {
+      const { data: coupon, error: couponError } = await supabase
+        .from("coupons")
+        .select("used_count, max_uses, is_active, expires_at")
+        .eq("id", data.coupon_id)
+        .single();
+        
+      if (couponError || !coupon) {
+        return { success: false, error: "Invalid coupon applied." };
+      }
+      
+      if (!coupon.is_active) {
+        return { success: false, error: "Promo code is no longer active." };
+      }
+
+      if (coupon.used_count >= coupon.max_uses) {
+        return { success: false, error: "Promo code usage limit reached." };
+      }
+
+      if (coupon.expires_at && new Date(coupon.expires_at) < new Date()) {
+        return { success: false, error: "Promo code has expired." };
+      }
+    }
+
     await updateStock(supabase, items);
 
     let payment_image = null;

@@ -9,6 +9,6 @@ export interface Coupon {
   is_active: boolean;
   expires_at: string;
   created_at: string;
-  discount_percentage?: number; // For backward compatibility
+  discount_percentage?: number;
 }
 export type PromoCode = Coupon;

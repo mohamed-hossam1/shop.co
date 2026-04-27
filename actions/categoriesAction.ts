@@ -67,3 +67,19 @@ export async function deleteCategory(id: number): Promise<{ success: true; messa
   if (error) return { success: false, message: error.message };
   return { success: true, message: "Category deleted successfully." };
 }
+export async function getCategoryBySlug(
+  slug: string,
+): Promise<{ success: true; data: Category } | { success: false; message: string }> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("categories")
+    .select("*")
+    .eq("slug", slug)
+    .maybeSingle();
+
+  if (error || !data) {
+    return { success: false, message: error?.message || "Category not found" };
+  }
+
+  return { success: true, data: data as Category };
+}

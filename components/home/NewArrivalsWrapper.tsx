@@ -2,7 +2,7 @@ import { getNewArrivals } from "@/actions/productsAction";
 import ProductSection from "@/components/home/ProductSection";
 
 export default async function NewArrivalsWrapper() {
-  const newArrivalsRes = await getNewArrivals(4);
+  const newArrivalsRes = await getNewArrivals(10);
   const newArrivals =
     newArrivalsRes.success && newArrivalsRes.data ? newArrivalsRes.data : [];
 
@@ -12,7 +12,7 @@ export default async function NewArrivalsWrapper() {
     <ProductSection
       title="NEW ARRIVALS"
       products={newArrivals}
-      viewAllLink="/products"
+      viewAllLink="/products?is_new_arrival=true"
     />
   );
 }

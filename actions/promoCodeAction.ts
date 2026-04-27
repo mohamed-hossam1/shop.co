@@ -11,6 +11,7 @@ export async function validatePromoCode(promoCode: string, price: number): Promi
       finalPrice: number;
       discountApplied: number;
       coupon: PromoCode;
+      isConditionMet: boolean;
     }
   } | {
     success: false;
@@ -44,31 +45,32 @@ export async function validatePromoCode(promoCode: string, price: number): Promi
        return { success: false, message: "Promo code has expired." };
     }
 
-    if (price < coupon.min_purchase) {
-      return { success: false, message: `Minimum purchase is ${coupon.min_purchase}.` };
-    }
-
     if (coupon.used_count >= coupon.max_uses) {
       return { success: false, message: "Promo code usage limit reached." };
     }
 
+    const isConditionMet = price >= coupon.min_purchase;
+    
     let discountAmount = 0;
-    if (coupon.type === "percentage") {
-      const pct = Math.max(0, Math.min(100, coupon.value));
-      discountAmount = (price * pct) / 100;
-    } else {
-      discountAmount = Math.min(price, coupon.value);
+    if (isConditionMet) {
+      if (coupon.type === "percentage") {
+        const pct = Math.max(0, Math.min(100, coupon.value));
+        discountAmount = (price * pct) / 100;
+      } else {
+        discountAmount = Math.min(price, coupon.value);
+      }
     }
 
     const finalPrice = Math.round((price - discountAmount) * 100) / 100;
 
     return {
       success: true,
-      message: "Promo code applied.",
+      message: isConditionMet ? "Promo code applied." : `Minimum purchase of EGP ${coupon.min_purchase} required.`,
       data: {
         originalPrice: price,
         finalPrice,
         discountApplied: discountAmount,
+        isConditionMet,
         coupon: {
           ...coupon,
           discount_percentage: coupon.type === "percentage" ? coupon.value : undefined,

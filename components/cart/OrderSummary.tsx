@@ -3,7 +3,7 @@
 import { validatePromoCode } from "@/actions/promoCodeAction";
 import ROUTES from "@/constants/routes";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useCart } from "@/stores/cartStore";
 
 interface OrderSummaryProps {
@@ -26,7 +26,9 @@ export default function OrderSummary({
   const [promoError, setPromoError] = useState<string>("");
   const [isApplying, setIsApplying] = useState<boolean>(false);
 
-  const discountAmount = appliedPromo
+  const isConditionMet = appliedPromo ? price >= appliedPromo.min_purchase : true;
+
+  const discountAmount = appliedPromo && isConditionMet
     ? appliedPromo.type === "percentage"
       ? (price * appliedPromo.value) / 100
       : Math.min(price, appliedPromo.value)
@@ -131,13 +133,19 @@ export default function OrderSummary({
                   {promoError}
                 </p>
               )}
-              {appliedPromo && (
+              {appliedPromo && isConditionMet && (
                 <p className="text-green-600 text-xs md:text-sm mt-2 flex items-center gap-1.5 font-bold animate-in fade-in slide-in-from-top-1">
                   <span className="w-1.5 h-1.5 bg-green-600 rounded-full" />
                   {appliedPromo.type === "percentage"
                     ? `${appliedPromo.value}%`
                     : `EGP ${appliedPromo.value}`}{" "}
                   discount applied
+                </p>
+              )}
+              {appliedPromo && !isConditionMet && (
+                <p className="text-red-500 text-xs md:text-sm mt-2 flex items-center gap-1.5 font-medium animate-in fade-in slide-in-from-top-1">
+                  <span className="w-1.5 h-1.5 bg-red-500 rounded-full" />
+                  {`Minimum purchase of EGP ${appliedPromo.min_purchase} required.`}
                 </p>
               )}
             </div>
@@ -152,7 +160,7 @@ export default function OrderSummary({
             </span>
           </div>
 
-          {appliedPromo && (
+          {appliedPromo && isConditionMet && (
             <div className="flex justify-between items-center">
               <span className="text-base md:text-lg text-gray-500">
                 Discount (

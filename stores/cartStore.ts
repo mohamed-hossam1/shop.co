@@ -45,6 +45,7 @@ interface CartStoreState {
   addToCart: (data: CartData) => Promise<{ success: boolean; message?: string }>;
   removeFromCart: (variantId: number) => Promise<{ success: boolean; message?: string }>;
   updateQuantity: (variantId: number, quantity: number) => Promise<{ success: boolean; message?: string }>;
+  updateQuantityLocal: (variantId: number, quantity: number) => void;
   clearCart: () => Promise<{ success: boolean; message?: string }>;
   setAppliedPromo: (promo: AppliedPromo | null) => void;
 }
@@ -188,7 +189,7 @@ export const useCartStore = create<CartStoreState>()(
           if (!item) return { success: false, message: "Item not found" };
 
           if (quantity > item.variant.stock) {
-             return { success: false, message: `Only ${item.variant.stock} left in stock.` };
+            return { success: false, message: `Only ${item.variant.stock} left in stock.` };
           }
 
           if (quantity <= 0) {
@@ -201,10 +202,11 @@ export const useCartStore = create<CartStoreState>()(
 
           try {
             if (user && item.id) {
-               const result = quantity <= 0 
-                ? await removeFromCart(item.id)
-                : await updateQuantity(item.id, quantity);
-              
+              const result =
+                quantity <= 0
+                  ? await removeFromCart(item.id)
+                  : await updateQuantity(item.id, quantity);
+
               if (result && !result.success) {
                 applyCart(originalCart);
                 await get().initCart();
@@ -213,10 +215,17 @@ export const useCartStore = create<CartStoreState>()(
             }
             return { success: true, message: "Quantity updated" };
           } catch (error: any) {
-             applyCart(originalCart);
-             await get().initCart();
-             return { success: false, message: error.message };
+            applyCart(originalCart);
+            await get().initCart();
+            return { success: false, message: error.message };
           }
+        },
+        updateQuantityLocal: (variantId, quantity) => {
+          const cart = get().cart;
+          if (!cart || !cart[variantId]) return;
+          const updatedCart = { ...cart, [variantId]: { ...cart[variantId], quantity } };
+          const { quantity: totalQty, price } = calculateTotals(updatedCart);
+          set({ cart: updatedCart, quantity: totalQty, price });
         },
         removeFromCart: async (variantId) => {
           const user = useUserStore.getState().user;

@@ -17,11 +17,11 @@ const ProductCard = React.memo(({ product }: { product: ProductListItem }) => {
       href={`/products/${product.id}`}
       className="group flex flex-col gap-4 w-full"
     >
-      <div className="relative aspect-square w-full bg-[#F0EEED] rounded-[20px] overflow-hidden">
+      <div className="relative aspect-square w-full bg-[#f8f8f8] rounded-[20px] overflow-hidden">
         <Image
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 300px"
-          className="object-contain p-4 group-hover:scale-105 transition-transform duration-500"
+          className="object-contain group-hover:scale-105 transition-transform duration-500"
           src={product.image_cover || '/images/default-fallback.png'}
           alt={product.title}
           loading="lazy"

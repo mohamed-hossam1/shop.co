@@ -18,9 +18,14 @@ export default function ProductSection({ title, products, viewAllLink }: Product
           {title}
         </h2>
         
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-          {products.slice(0, 4).map((product) => (
-            <ProductCard key={product.id} product={product} />
+        <div className="flex gap-4 sm:gap-5 overflow-x-auto no-scrollbar pb-4 -mx-4 px-4 sm:mx-0 sm:px-0">
+          {products.map((product) => (
+            <div 
+              key={product.id} 
+              className="min-w-[190px] sm:min-w-[280px] md:min-w-[300px] shrink-0"
+            >
+              <ProductCard product={product} />
+            </div>
           ))}
         </div>
 

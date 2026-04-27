@@ -11,10 +11,12 @@ export async function getProducts({
   searchQuery,
   isTopSelling,
   isNewArrival,
+  categoryId,
 }: {
   searchQuery?: string;
   isTopSelling?: boolean;
   isNewArrival?: boolean;
+  categoryId?: number;
 } = {}): Promise<
   | { success: true; data: ProductListItem[] }
   | { success: false; message: string }
@@ -36,6 +38,10 @@ export async function getProducts({
 
   if (isNewArrival) {
     query = query.not("new_arrival_rank", "is", null).order("new_arrival_rank", { ascending: true });
+  }
+
+  if (categoryId) {
+    query = query.eq("category_id", categoryId);
   }
 
   const { data, error } = await query;

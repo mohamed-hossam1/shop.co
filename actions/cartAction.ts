@@ -54,12 +54,26 @@ export async function addToCart(
   quantity: number,
   guestId?: string
 ): Promise<| { success: true; message: string } | { success: false; message: string }> {
+  const supabase = await createClient();
+
+  // 1. Check variant stock
+  const { data: variant, error: variantError } = await supabase
+    .from("product_variants")
+    .select("stock, products(title)")
+    .eq("id", variantId)
+    .single();
+
+  if (variantError || !variant) {
+    return { success: false, message: "Product variant not found" };
+  }
+
+  const stock = variant.stock;
+
   const cartRes = await getOrCreateCart(guestId);
   if (!cartRes.success) return cartRes;
   if (!cartRes.data) return { success: false, message: "Cart data not found" };
 
   const cartId = cartRes.data.id;
-  const supabase = await createClient();
 
   const { data: existingItem } = await supabase
     .from("cart_items")
@@ -68,8 +82,17 @@ export async function addToCart(
     .eq("variant_id", variantId)
     .maybeSingle();
 
+  const currentQty = existingItem ? existingItem.quantity : 0;
+  const newQty = currentQty + quantity;
+
+  if (newQty > stock) {
+    return {
+      success: false,
+      message: `Only ${stock} items available in stock.`,
+    };
+  }
+
   if (existingItem) {
-    const newQty = existingItem.quantity + quantity;
     const { error } = await supabase
       .from("cart_items")
       .update({ quantity: newQty })
@@ -145,6 +168,34 @@ export async function updateQuantity(itemId: number, quantity: number): Promise<
   | { success: false; message: string }
 > {
   const supabase = await createClient();
+
+  const { data: item, error: itemError } = await supabase
+    .from("cart_items")
+    .select("variant_id")
+    .eq("id", itemId)
+    .single();
+
+  if (itemError || !item) {
+    return { success: false, message: "Item not found in cart" };
+  }
+
+  const { data: variant, error: variantError } = await supabase
+    .from("product_variants")
+    .select("stock")
+    .eq("id", item.variant_id)
+    .single();
+
+  if (variantError || !variant) {
+    return { success: false, message: "Product variant not found" };
+  }
+
+  if (quantity > variant.stock) {
+    return {
+      success: false,
+      message: `Only ${variant.stock} items available in stock.`,
+    };
+  }
+
   const { error } = await supabase
     .from("cart_items")
     .update({ quantity })

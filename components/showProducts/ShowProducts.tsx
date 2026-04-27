@@ -1,5 +1,5 @@
 import { getProducts } from "@/actions/productsAction";
-import { getAllCategories } from "@/actions/categoriesAction";
+import { getAllCategories, getCategoryBySlug } from "@/actions/categoriesAction";
 import SubTitle from "./SubTitle";
 import CardList from "./CardList";
 import { ProductListItem } from "@/types/Product";
@@ -12,15 +12,27 @@ export default async function ShowProducts({
   searchQuery,
   isTopSelling,
   isNewArrival,
+  categorySlug,
 }: {
   searchQuery?: string;
   isTopSelling?: boolean;
   isNewArrival?: boolean;
+  categorySlug?: string;
 } = {}) {
+  let effectiveCategoryId: number | undefined;
+
+  if (categorySlug) {
+    const categoryRes = await getCategoryBySlug(categorySlug);
+    if (categoryRes.success) {
+      effectiveCategoryId = categoryRes.data.id;
+    }
+  }
+
   const productsRes = await getProducts({
     searchQuery,
     isTopSelling,
     isNewArrival,
+    categoryId: effectiveCategoryId,
   });
   const categoriesRes = await getAllCategories();
 

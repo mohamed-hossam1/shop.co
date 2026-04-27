@@ -7,6 +7,8 @@ import Link from "next/link";
 import OrderSummary from "./OrderSummary";
 import CartSkeleton from "../skeleton/CartSkeleton";
 import { useUser } from "@/stores/userStore";
+import { useMutation } from "@tanstack/react-query";
+import { useEffect, useRef } from "react";
 
 export default function CartList() {
   const {
@@ -14,11 +16,39 @@ export default function CartList() {
     quantity,
     removeFromCart,
     updateQuantity,
+    updateQuantityLocal,
     price,
     clearCart,
     isLoading,
     hasHydrated,
   } = useCart();
+
+  const debounceTimer = useRef<{ [key: number]: NodeJS.Timeout }>({});
+
+  useEffect(() => {
+    return () => {
+      Object.values(debounceTimer.current).forEach(clearTimeout);
+    };
+  }, []);
+
+  const { mutate: syncQuantity } = useMutation({
+    mutationFn: async ({
+      variantId,
+      newQty,
+    }: {
+      variantId: number;
+      newQty: number;
+    }) => {
+      const res = await updateQuantity(variantId, newQty);
+      if (res && !res.success) {
+        throw new Error(res.message || "Failed to update quantity.");
+      }
+      return res;
+    },
+    onError: (error: any) => {
+      alert(error.message);
+    },
+  });
 
   const handleRemove = async (variantId: number) => {
     const res = await removeFromCart(variantId);
@@ -27,11 +57,24 @@ export default function CartList() {
     }
   };
 
-  const handleUpdateQuantity = async (variantId: number, currentQty: number, delta: number) => {
-    const res = await updateQuantity(variantId, currentQty + delta);
-    if (res && !res.success) {
-      alert(res.message || "Failed to update quantity.");
+  const handleUpdateQuantity = (
+    variantId: number,
+    currentQty: number,
+    delta: number
+  ) => {
+    const newQty = currentQty + delta;
+    if (newQty < 1) return;
+
+    updateQuantityLocal(variantId, newQty);
+
+    if (debounceTimer.current[variantId]) {
+      clearTimeout(debounceTimer.current[variantId]);
     }
+
+    debounceTimer.current[variantId] = setTimeout(() => {
+      syncQuantity({ variantId, newQty });
+      delete debounceTimer.current[variantId];
+    }, 500);
   };
 
   const handleClearCart = async () => {
@@ -215,7 +258,7 @@ export default function CartList() {
               <p className="text-gray-900 text-xl font-bold mb-2">Your cart is empty</p>
               <p className="text-gray-500 mb-8 max-w-xs mx-auto">Looks like you haven't added anything to your cart yet.</p>
               <Link
-                href={ROUTES.HOME}
+                href={ROUTES.PRODUCTS}
                 className="inline-block bg-black text-white px-8 py-3 rounded-full font-bold hover:bg-gray-800 transition-all hover:px-10"
               >
                 Start Shopping

@@ -167,7 +167,8 @@ export default function CheckoutList() {
     setIsPlacingOrder(true);
 
     try {
-      const discountAmount = appliedPromo
+      const isConditionMet = appliedPromo ? price >= appliedPromo.min_purchase : true;
+      const discountAmount = (appliedPromo && isConditionMet)
         ? appliedPromo.type === "percentage"
           ? (price * (appliedPromo.value || 0)) / 100
           : Math.min(price, appliedPromo.value || 0)

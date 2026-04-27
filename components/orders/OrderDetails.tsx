@@ -578,6 +578,32 @@ export default function OrderDetails({
                         </div>
                       </div>
 
+                      <div className="bg-gray-50 rounded-xl p-6">
+                        <h3 className="text-lg font-semibold text-gray-900 mb-4 text-left">
+                          Price Summary
+                        </h3>
+                        <div className="space-y-3">
+                          <div className="flex justify-between text-gray-600">
+                            <span>Subtotal</span>
+                            <span className="font-semibold">{order.subtotal?.toFixed(2) || order.total_price?.toFixed(2)} EGP</span>
+                          </div>
+                          {order.discount_amount > 0 && (
+                            <div className="flex justify-between text-red-600">
+                              <span>Discount</span>
+                              <span className="font-semibold">- {order.discount_amount.toFixed(2)} EGP</span>
+                            </div>
+                          )}
+                          <div className="flex justify-between text-gray-600">
+                            <span>Delivery Fee</span>
+                            <span className="font-semibold">{order.delivery_fee.toFixed(2)} EGP</span>
+                          </div>
+                          <div className="pt-3 border-t border-gray-200 flex justify-between text-primary text-xl font-bold">
+                            <span>Total</span>
+                            <span>{order.total_price.toFixed(2)} EGP</span>
+                          </div>
+                        </div>
+                      </div>
+
                       <div>
                         <h3 className="text-lg font-semibold text-gray-900 mb-4 text-left">
                           Order Items

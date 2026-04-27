@@ -2,7 +2,7 @@ import { getTopSelling } from "@/actions/productsAction";
 import ProductSection from "@/components/home/ProductSection";
 
 export default async function TopSellingWrapper() {
-  const topSellingRes = await getTopSelling(4);
+  const topSellingRes = await getTopSelling(10);
   const topSelling =
     topSellingRes.success && topSellingRes.data ? topSellingRes.data : [];
 

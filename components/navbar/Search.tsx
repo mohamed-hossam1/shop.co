@@ -1,18 +1,17 @@
 "use client"
 
 import { Search } from "lucide-react";
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import ROUTES from "@/constants/routes";
 
-export default function Searchbar() {
+export default function Searchbar({ autoFocus = false }: { autoFocus?: boolean }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const currentSearchParam = searchParams.get("search") || "";
   
   const [searchQuery, setSearchQuery] = useState(currentSearchParam);
 
-  // Sync internal state if the URL changes externally (e.g. clicking a link)
   useEffect(() => {
     setSearchQuery(currentSearchParam);
   }, [currentSearchParam]);
@@ -42,6 +41,7 @@ export default function Searchbar() {
               placeholder="Search for products..."
               className="w-full px-4 py-3 pl-12 pr-10 bg-[#F0F0F0] border-none font-satoshi rounded-full focus:outline-none focus:ring-1 focus:ring-black/10 transition-all duration-300"
               type="text"
+              autoFocus={autoFocus}
               onChange={(e) => setSearchQuery(e.target.value)}
               value={searchQuery}
             />

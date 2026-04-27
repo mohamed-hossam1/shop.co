@@ -11,6 +11,7 @@ export default async function ProductsPage({
 }) {
   const params = await searchParams;
   const search = typeof params?.search === "string" ? params.search : undefined;
+  const category = typeof params?.category === "string" ? params.category : undefined;
   const isTopSelling = params?.is_top_selling === "true";
   const isNewArrival = params?.is_new_arrival === "true";
 
@@ -18,6 +19,7 @@ export default async function ProductsPage({
     <div>
       <Products
         searchQuery={search}
+        categorySlug={category}
         isTopSelling={isTopSelling}
         isNewArrival={isNewArrival}
       />

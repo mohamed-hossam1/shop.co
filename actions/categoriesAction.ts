@@ -2,17 +2,21 @@ import { createClient } from "@/lib/supabase/server";
 import { Category } from "@/types/Product";
 
 // -- Fetch Operations --
-export async function getAllCategories() {
+export async function getAllCategories(): Promise<{ success: true; data: Category[] } | { success: false; message: string }> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("categories")
     .select("*")
     .order("id", { ascending: true });
 
-  return { data: data as Category[] | null, error };
+  if (error) {
+    return { success: false, message: error.message };
+  }
+
+  return { success: true, data: data as Category[] };
 }
 
-export async function getCategoryById(id: number) {
+export async function getCategoryById(id: number): Promise<{ success: true; data: Category } | { success: false; message: string }> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("categories")
@@ -20,11 +24,15 @@ export async function getCategoryById(id: number) {
     .eq("id", id)
     .maybeSingle();
 
-  return { data: data as Category | null, error };
+  if (error || !data) {
+    return { success: false, message: error?.message || "Category not found" };
+  }
+
+  return { success: true, data: data as Category };
 }
 
 // -- Write Operations --
-export async function createCategory(categoryData: Omit<Category, "id" | "created_at">) {
+export async function createCategory(categoryData: Omit<Category, "id">): Promise<{ success: true; message: string; data: Category } | { success: false; message: string }> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("categories")
@@ -36,7 +44,7 @@ export async function createCategory(categoryData: Omit<Category, "id" | "create
   return { success: true, message: "Category created successfully.", data: data as Category };
 }
 
-export async function updateCategory(id: number, categoryData: Partial<Omit<Category, "id" | "created_at">>) {
+export async function updateCategory(id: number, categoryData: Partial<Omit<Category, "id">>): Promise<{ success: true; message: string; data: Category } | { success: false; message: string }> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("categories")
@@ -49,7 +57,7 @@ export async function updateCategory(id: number, categoryData: Partial<Omit<Cate
   return { success: true, message: "Category updated successfully.", data: data as Category };
 }
 
-export async function deleteCategory(id: number) {
+export async function deleteCategory(id: number): Promise<{ success: true; message: string } | { success: false; message: string }> {
   const supabase = await createClient();
   const { error } = await supabase
     .from("categories")

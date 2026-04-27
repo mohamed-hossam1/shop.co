@@ -3,7 +3,8 @@ import ROUTES from "@/constants/routes";
 import Link from "next/link";
 
 export default async function Categories() {
-  const {data:categories} = await getAllCategories()||[];
+  const categoriesRes = await getAllCategories();
+  const categories = categoriesRes.success ? categoriesRes.data : [];
   return (
     <ul className="space-y-2 text-gray-300">
       {categories?.map((category) => (

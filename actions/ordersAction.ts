@@ -1,230 +1,167 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { Order, OrderItem } from "@/types/Order";
-import { revalidatePath } from "next/cache";
-import { clearCart } from "./cart";
-
-interface OrderItemInput {
-  variant_id: number;
-  quantity: number;
-  price_at_purchase: number;
-  product_title: string;
-  product_image: string;
-  variant_snapshot?: any;
-}
-
-interface CommonOrderData {
-  subtotal: number;
-  discount_amount: number;
-  total_price: number;
-  delivery_fee: number;
-  payment_method: string;
-  payment_image_file?: File;
-  coupon_id?: number | null;
-  guest_info?: any;
-}
-
-async function uploadOrderImage(file: File) {
-  const supabase = await createClient();
-  try {
-    const timestamp = Date.now();
-    const fileExt = file.name.split(".").pop();
-    const fileName = `order_${timestamp}.${fileExt}`;
-    const { error } = await supabase.storage
-      .from("payment")
-      .upload(fileName, file);
-
-    if (error) throw error;
-
-    const { data: { publicUrl } } = supabase.storage
-      .from("payment")
-      .getPublicUrl(fileName);
-
-    return { success: true, url: publicUrl };
-  } catch (error) {
-    console.error("Image upload failed:", error);
-    return { success: false };
-  }
-}
-
-async function updateStock(supabase: any, items: OrderItemInput[]) {
-  for (const item of items) {
-    const { data: variant, error: fetchError } = await supabase
-      .from("product_variants")
-      .select("stock")
-      .eq("id", item.variant_id)
-      .single();
-
-    if (fetchError || !variant) throw new Error(`Variant ${item.variant_id} not found`);
-    if (variant.stock < item.quantity) throw new Error(`Insufficient stock for ${item.product_title}`);
-
-    const { error: updateError } = await supabase
-      .from("product_variants")
-      .update({ stock: variant.stock - item.quantity })
-      .eq("id", item.variant_id);
-
-    if (updateError) throw updateError;
-  }
-}
-
-async function processOrderInsertion(
-  supabase: any,
-  orderPayload: any,
-  items: OrderItemInput[]
-) {
-  const { data: order, error: orderError } = await supabase
-    .from("orders")
-    .insert(orderPayload)
-    .select("id")
-    .single();
-
-  if (orderError) throw new Error(`Order creation failed: ${orderError.message}`);
-
-  const orderItemsData = items.map((item) => ({
-    order_id: order.id,
-    variant_id: item.variant_id,
-    quantity: item.quantity,
-    price_at_purchase: item.price_at_purchase,
-    product_title: item.product_title,
-    product_image: item.product_image,
-    variant_snapshot: item.variant_snapshot || {},
-  }));
-
-  const { error: itemsError } = await supabase
-    .from("order_items")
-    .insert(orderItemsData);
-
-  if (itemsError) {
-    await supabase.from("orders").delete().eq("id", order.id);
-    throw new Error(`Order items creation failed: ${itemsError.message}`);
-  }
-
-  return order.id;
-}
+import { CreateOrderData, Order } from "@/types/Order";
 
 export async function createOrder(
-  data: CommonOrderData,
-  items: OrderItemInput[],
-  isGuest: boolean = false
-) {
+  orderData: CreateOrderData,
+  cartItems: any[]
+): Promise<{ success: true; data: Order } | { success: false; message: string }> {
   const supabase = await createClient();
+
   try {
-    let user_id = null;
-    if (!isGuest) {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return { success: false, error: "Unauthorized" };
-      user_id = user.id;
+    let serverSubtotal = 0;
+    
+    for (const item of cartItems) {
+      serverSubtotal += (item.variant.price * item.quantity);
+    }
+    
+    const serverTotalPrice = serverSubtotal + orderData.delivery_fee - orderData.discount_amount;
+    
+    // Insert order directly without abstractions to keep it simple and readable
+    const { data: order, error: orderError } = await supabase
+      .from("orders")
+      .insert([{
+        user_id: orderData.user_id || null,
+        guest_id: orderData.guest_id || null,
+        status: orderData.status || 'pending',
+        subtotal: serverSubtotal,
+        discount_amount: orderData.discount_amount,
+        total_price: serverTotalPrice,
+        payment_method: orderData.payment_method,
+        payment_image: orderData.payment_image || null,
+        delivery_fee: orderData.delivery_fee,
+        city: orderData.city,
+        area: orderData.area,
+        address_line: orderData.address_line,
+        notes: orderData.notes || null,
+        user_name: orderData.user_name
+      }])
+      .select()
+      .single();
+
+    if (orderError || !order) {
+       console.error("Order insertion failed:", orderError);
+       return { success: false, message: "Failed to create order" };
     }
 
-    if (data.coupon_id) {
-      const { data: coupon, error: couponError } = await supabase
-        .from("coupons")
-        .select("used_count, max_uses, is_active, expires_at")
-        .eq("id", data.coupon_id)
-        .single();
-        
-      if (couponError || !coupon) {
-        return { success: false, error: "Invalid coupon applied." };
-      }
-      
-      if (!coupon.is_active) {
-        return { success: false, error: "Promo code is no longer active." };
-      }
+    // Insert order items snapshot (data will not depend on product after order)
+    const orderItems = cartItems.map((item) => ({
+      order_id: order.id,
+      variant_id: item.variant.id,
+      quantity: item.quantity,
+      price_at_purchase: item.variant.price,
+      product_title: item.variant.product.title,
+      product_image: item.variant.product.image_cover,
+      variant_color: item.variant.color,
+      variant_size: item.variant.size
+    }));
 
-      if (coupon.used_count >= coupon.max_uses) {
-        return { success: false, error: "Promo code usage limit reached." };
-      }
+    const { error: itemsError } = await supabase
+      .from("order_items")
+      .insert(orderItems);
 
-      if (coupon.expires_at && new Date(coupon.expires_at) < new Date()) {
-        return { success: false, error: "Promo code has expired." };
-      }
+    if (itemsError) {
+       console.error("Order items insertion failed:", itemsError);
+       return { success: false, message: "Failed to create order items" };
     }
 
-    await updateStock(supabase, items);
-
-    let payment_image = null;
-    if (data.payment_image_file) {
-      const upload = await uploadOrderImage(data.payment_image_file);
-      if (upload.success) payment_image = upload.url;
+    // Update coupon usage if provided, increases ONLY after successful order
+    if (orderData.coupon_id) {
+       const { data: coupon } = await supabase
+         .from("coupons")
+         .select("used_count")
+         .eq("id", orderData.coupon_id)
+         .single();
+         
+       if (coupon) {
+         await supabase
+           .from("coupons")
+           .update({ used_count: coupon.used_count + 1 })
+           .eq("id", orderData.coupon_id);
+       }
     }
 
-    const orderPayload = {
-      user_id,
-      status: "pending",
-      subtotal: data.subtotal,
-      discount_amount: data.discount_amount,
-      total_price: data.total_price,
-      payment_method: data.payment_method,
-      payment_image,
-      delivery_fee: data.delivery_fee,
-      guest_info: data.guest_info || {},
-    };
+    return { success: true, data: order as Order };
 
-    const orderId = await processOrderInsertion(supabase, orderPayload, items);
-
-    if (data.coupon_id) {
-      await supabase.rpc("increment_coupon_usage", { coupon_id: data.coupon_id });
-    }
-
-    if (user_id) {
-      await clearCart();
-    }
-
-    revalidatePath("/admin/orders");
-    if (user_id) revalidatePath("/profile/orders");
-
-    return { success: true, orderId };
-  } catch (error: any) {
-    console.error("Order process error:", error);
-    return { success: false, error: error.message || "Checkout failed" };
+  } catch (err: any) {
+    console.error("createOrder unexpected error:", err);
+    return { success: false, message: err.message || "Unexpected error" };
   }
 }
 
-export async function getUserOrders() {
+export async function getOrdersByUserOrGuest(
+  userId?: string,
+  guestId?: string
+): Promise<{ success: true; data: Order[] } | { success: false; message: string }> {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return [];
 
-  const { data, error } = await supabase
-    .from("orders")
-    .select("*")
-    .eq("user_id", user.id)
-    .order("created_at", { ascending: false });
+  if (!userId && !guestId) {
+    return { success: false, message: "No user or guest ID provided" };
+  }
+
+  let query = supabase.from("orders").select(`
+    *,
+    items:order_items (*)
+  `).order("created_at", { ascending: false });
+
+  if (userId) {
+    query = query.eq("user_id", userId);
+  } else if (guestId) {
+    query = query.eq("guest_id", guestId).is("user_id", null);
+  }
+
+  const { data: orders, error } = await query;
 
   if (error) {
     console.error("Fetch orders error:", error);
-    return [];
+    return { success: false, message: "Failed to fetch orders" };
   }
 
-  return data as Order[];
+  return { success: true, data: orders as Order[] };
 }
 
-export async function getOrderItems(orderId: number) {
+export async function getOrderById(
+  orderId: number,
+  userId?: string,
+  guestId?: string
+): Promise<{ success: true; data: Order } | { success: false; message: string }> {
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("order_items")
-    .select("*")
-    .eq("order_id", orderId)
-    .order("id", { ascending: true });
 
-  if (error) {
-    console.error("Fetch order items error:", error);
-    return [];
+  let query = supabase.from("orders").select(`
+    *,
+    items:order_items (*)
+  `).eq("id", orderId);
+
+  if (userId) {
+    query = query.eq("user_id", userId); // ensure protection 
+  } else if (guestId) {
+    query = query.eq("guest_id", guestId).is("user_id", null);
   }
 
-  return data as OrderItem[];
+  const { data: order, error } = await query.single();
+
+  if (error || !order) {
+    return { success: false, message: "Order not found" };
+  }
+
+  return { success: true, data: order as Order };
 }
 
-export async function updateOrderStatus(orderId: number, status: string) {
+export async function updateOrderStatus(
+  orderId: number,
+  status: string
+): Promise<{ success: true; message: string } | { success: false; message: string }> {
   const supabase = await createClient();
+
   const { error } = await supabase
     .from("orders")
     .update({ status })
     .eq("id", orderId);
 
-  if (error) return { success: false, error: error.message };
-  
-  revalidatePath("/admin/orders");
-  return { success: true };
+  if (error) {
+    return { success: false, message: "Failed to update status" };
+  }
+
+  return { success: true, message: "Order status updated" };
 }

@@ -2,7 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 
-export async function getDeliveryFee(city: string) {
+export async function getDeliveryFee(city: string): Promise<{ success: true; data: number } | { success: false; message: string }> {
   const supabase = await createClient();
 
   const { data, error } = await supabase
@@ -13,8 +13,8 @@ export async function getDeliveryFee(city: string) {
 
   if (error || !data) {
     console.error("Error fetching delivery fee:", error);
-    return 0;
+    return { success: false, message: "Delivery fee not found" };
   }
 
-  return data.delivery_fee;
+  return { success: true, data: data.delivery_fee as number };
 }

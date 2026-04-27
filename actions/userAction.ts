@@ -2,6 +2,7 @@
 
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { User } from "@/types/User";
 
 interface UserData {
   name?: string;
@@ -15,7 +16,7 @@ export async function SignUpSupabase({
   email,
   password,
   phone,
-}: UserData) {
+}: UserData): Promise<{ success: true } | { success: false; message: string }> {
   const supabase = await createClient();
 
   const { data: authUser, error: signUpError } = await supabase.auth.signUp({
@@ -24,7 +25,7 @@ export async function SignUpSupabase({
   });
 
   if (signUpError) {
-    return { signUpError, addUserError: null };
+    return { success: false, message: signUpError.message };
   }
 
   const userId = authUser?.user?.id || "";
@@ -35,35 +36,39 @@ export async function SignUpSupabase({
 
   if (addUserError) {
     DeleteUser(userId);
-    return { signUpError: null, addUserError };
+    return { success: false, message: addUserError.message };
   }
 
-  return { signUpError: null, addUserError: null };
+  return { success: true };
 }
 
-export async function SignInSupabase({ email, password }: Pick<UserData, "email" | "password">) {
+export async function SignInSupabase({ email, password }: Pick<UserData, "email" | "password">): Promise<{ success: true } | { success: false; message: string }> {
   const supabase = await createClient();
   const { error: signInError } = await supabase.auth.signInWithPassword({
     email,
     password,
   });
 
-  return { signInError };
+  if (signInError) return { success: false, message: signInError.message };
+  return { success: true };
 }
 
-export async function SignOutSupabase() {
+export async function SignOutSupabase(): Promise<{ success: true } | { success: false; message: string }> {
   const supabase = await createClient();
   const { error: signOutError } = await supabase.auth.signOut();
 
-  return { signOutError };
+  if (signOutError) return { success: false, message: signOutError.message };
+  return { success: true };
 }
 
-export async function DeleteUser(id: string) {
+export async function DeleteUser(id: string): Promise<{ success: true } | { success: false; message: string }> {
   const admin = createAdminClient();
-  console.log(await admin.auth.admin.deleteUser(id));
+  const res = await admin.auth.admin.deleteUser(id);
+  if (res.error) return { success: false, message: res.error.message };
+  return { success: true };
 }
 
-export async function GetUser() {
+export async function GetUser(): Promise<{ success: true; data: User } | { success: false; message: string }> {
   const subabase = await createClient();
   const response = await subabase.auth.getUser();
   if (response.data.user?.id) {
@@ -72,14 +77,16 @@ export async function GetUser() {
       .select("*")
       .eq("id", response.data.user?.id)
       .maybeSingle();
+
     if (error) {
       console.error("Error fetching user profile:", error);
-      return null;
+      return { success: false, message: "Profile not found" };
     }
 
-    return userProfile;
+    if (!userProfile) return { success: false, message: "User not found" };
+    return { success: true, data: userProfile as User };
   }
-  return null;
+  return { success: false, message: "User not authenticated" };
 }
 
 export async function UpdateUserProfile({
@@ -90,16 +97,15 @@ export async function UpdateUserProfile({
   name: string;
   email: string;
   phone: string;
-}) {
+}): Promise<{ success: true } | { success: false; message: string }> {
   const supabase = await createClient();
   const { data: authUser, error: authError } = await supabase.auth.getUser();
 
   if (authError || !authUser.user) {
-    return { error: authError || { message: "User not authenticated" } };
+    return { success: false, message: "User not authenticated" };
   }
 
   const userId = authUser.user.id;
-  let updateErrors: { source: string; error: any }[] = [];
 
   const { error: userTableError } = await supabase
     .from("users")
@@ -107,7 +113,7 @@ export async function UpdateUserProfile({
     .eq("id", userId);
 
   if (userTableError) {
-    updateErrors.push({ source: "users_table", error: userTableError });
+    return { success: false, message: "Failed to update profile details" };
   }
 
   if (email !== authUser.user.email) {
@@ -116,15 +122,11 @@ export async function UpdateUserProfile({
     });
 
     if (authUpdateError) {
-      updateErrors.push({ source: "auth_email", error: authUpdateError });
+       return { success: false, message: "Failed to update email address" };
     }
   }
 
-  if (updateErrors.length > 0) {
-    return { error: updateErrors };
-  }
-
-  return { error: null };
+  return { success: true };
 }
 
 export async function UpdateUserPassword({
@@ -133,19 +135,19 @@ export async function UpdateUserPassword({
 }: {
   oldPassword: string;
   newPassword: string;
-}) {
+}): Promise<{ success: true } | { success: false; message: string }> {
   const supabase = await createClient();
 
   const { data: authUser, error: authError } = await supabase.auth.getUser();
 
   if (authError || !authUser.user) {
-    return { error: authError || { message: "User not authenticated" } };
+    return { success: false, message: "User not authenticated" };
   }
 
   const email = authUser.user.email;
 
   if (!email) {
-    return { error: { message: "User email not found in session." } };
+    return { success: false, message: "User email not found in session." };
   }
 
   const { error: signInError } = await supabase.auth.signInWithPassword({
@@ -154,7 +156,7 @@ export async function UpdateUserPassword({
   });
 
   if (signInError) {
-    return { error: { message: "Incorrect old password." } };
+    return { success: false, message: "Incorrect old password." };
   }
 
   const { error: updateError } = await supabase.auth.updateUser({
@@ -162,10 +164,10 @@ export async function UpdateUserPassword({
   });
 
   if (updateError) {
-    return { error: updateError };
+    return { success: false, message: updateError.message };
   }
 
   await supabase.auth.signOut();
 
-  return { error: null };
+  return { success: true };
 }

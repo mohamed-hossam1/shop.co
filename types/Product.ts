@@ -1,3 +1,16 @@
+export type Product = {
+  id: number;
+  title: string;
+  description: string | null;
+  category_id: number | null;
+  image_cover: string | null;
+  is_deleted: boolean;
+  created_at: string;
+  new_arrival_rank: number | null;
+  top_selling_rank: number | null;
+  category_rank: number | null;
+};
+
 export type ProductListItem = {
   id: number;
   title: string;
@@ -30,19 +43,10 @@ export type ProductImage = {
   url: string;
 };
 
-export type ProductDetails = {
-  id: number;
-  title: string;
-  description: string | null;
-  category_id: number | null;
-  image_cover: string | null;
-  is_deleted: boolean;
-  created_at: string;
-
+export type ProductDetails = Product & {
   variants: ProductVariant[];
   images: ProductImage[];
 };
-
 
 export interface CreateProductInput {
   title: string;
@@ -59,3 +63,10 @@ export interface CreateProductInput {
   }[];
   images: string[];
 }
+
+export type Category = {
+  id: number;
+  title: string;
+  slug: string;
+  image: string | null;
+};

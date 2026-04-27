@@ -15,6 +15,7 @@ export interface CartItem {
 export interface Cart {
   id: string;
   user_id?: string;
+  guest_id?: string;
   created_at?: string;
   items?: CartItem[];
   

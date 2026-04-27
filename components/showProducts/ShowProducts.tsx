@@ -13,7 +13,7 @@ export default async function ShowProducts() {
   const categoriesRes = await getAllCategories();
   
   const products = productsRes.success ? productsRes.data : [];
-  const categories = categoriesRes.data || [];
+  const categories = categoriesRes.success ? categoriesRes.data : [];
 
   const categoryId: number[] = [];
   const categoryImage: string[] = [];

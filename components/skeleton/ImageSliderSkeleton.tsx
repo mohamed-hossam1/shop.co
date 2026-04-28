@@ -1,14 +1,12 @@
 
 export default function ImageSliderSkeleton() {
   return (
-    <section className="mx-6 items-center relative">
-      <div className="relative h-[420px] mb-6 rounded-2xl overflow-hidden bg-gray-200  animate-pulse">
-        <div className="absolute top-0 left-0 w-full h-full transition-transform duration-700 ease-in-out"/>
-      </div>
+    <section className="mx-6 items-center relative animate-pulse">
+      <div className="relative h-[500px] mb-6 border border-black bg-gray-100 overflow-hidden" />
 
-      <div className="flex gap-3 items-center justify-center flex-wrap">
+      <div className="flex gap-4 items-center justify-center flex-wrap">
         {[...Array(4)].map((_, i) => (
-          <div key={i} className={`cursor-pointer w-16 h-16 md:w-20 md:h-20 border-2 rounded-xl object-cover transition-all duration-300 bg-gray-200  animate-pulse`}/>
+          <div key={i} className="w-20 h-20 border border-black/10 bg-gray-200" />
         ))}
       </div>
     </section>

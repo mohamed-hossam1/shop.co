@@ -33,7 +33,7 @@ const REVIEWS = [
     name: "Samantha D.",
     text: "I've been shopping at Elaris for a while now and I'm always impressed by the quality of their products and the level of customer service they provide.",
     rating: 5,
-  }
+  },
 ];
 
 export default function Reviews() {
@@ -42,7 +42,10 @@ export default function Reviews() {
   const scroll = (direction: "left" | "right") => {
     if (scrollRef.current) {
       const { scrollLeft, clientWidth } = scrollRef.current;
-      const scrollTo = direction === "left" ? scrollLeft - clientWidth : scrollLeft + clientWidth;
+      const scrollTo =
+        direction === "left"
+          ? scrollLeft - clientWidth
+          : scrollLeft + clientWidth;
       scrollRef.current.scrollTo({ left: scrollTo, behavior: "smooth" });
     }
   };
@@ -55,44 +58,46 @@ export default function Reviews() {
             OUR HAPPY CUSTOMERS
           </h2>
           <div className="flex items-center gap-3">
-            <button 
+            <button
               onClick={() => scroll("left")}
-              className="p-2 hover:bg-black/5 rounded-full transition-colors"
+              className="p-2 border border-black rounded-none hover:bg-black/5 transition-colors"
             >
               <ArrowLeft className="w-6 h-6" />
             </button>
-            <button 
+            <button
               onClick={() => scroll("right")}
-              className="p-2 hover:bg-black/5 rounded-full transition-colors"
+              className="p-2 border border-black rounded-none hover:bg-black/5 transition-colors"
             >
               <ArrowRight className="w-6 h-6" />
             </button>
           </div>
         </div>
 
-        <div 
+        <div
           ref={scrollRef}
           className="flex gap-5 overflow-x-auto no-scrollbar snap-x snap-mandatory"
         >
           {REVIEWS.map((review, index) => (
             <div
               key={review.id}
-              className="min-w-full sm:min-w-[400px] bg-white border border-black/10 rounded-[20px] p-6 sm:p-8 flex flex-col gap-3 sm:gap-4 snap-start"
+              className="min-w-full sm:min-w-[400px] bg-white border border-black rounded-none p-6 sm:p-8 flex flex-col gap-3 sm:gap-4 snap-start"
             >
               <div className="flex items-center gap-1">
                 {[...Array(5)].map((_, i) => (
-                  <Star 
-                    key={i} 
-                    className={`w-5 h-5 ${i < review.rating ? "fill-[#FFC633] text-[#FFC633]" : "text-black/10"}`} 
+                  <Star
+                    key={i}
+                    className={`w-5 h-5 ${i < review.rating ? "fill-[#FFC633] text-[#FFC633]" : "text-black/10"}`}
                   />
                 ))}
               </div>
-              
+
               <div className="flex items-center gap-2">
-                <span className="text-lg sm:text-xl font-bold font-satoshi">{review.name}</span>
+                <span className="text-lg sm:text-xl font-bold font-satoshi">
+                  {review.name}
+                </span>
                 <CheckCircle2 className="w-5 h-5 fill-[#01AB31] text-white" />
               </div>
-              
+
               <p className="text-black/60 font-satoshi text-sm sm:text-base leading-relaxed">
                 &quot;{review.text}&quot;
               </p>

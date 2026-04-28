@@ -19,7 +19,7 @@ export default function Hero() {
             </p>
             <Link
               href={ROUTES.PRODUCTS}
-              className="bg-black text-white px-14 py-4 rounded-full font-satoshi font-medium hover:bg-black/80 transition-all text-center w-full sm:w-fit"
+              className="bg-black text-white px-14 py-4 border border-black rounded-none uppercase tracking-widest text-sm font-bold hover:bg-white hover:text-black transition-colors text-center w-full sm:w-fit"
             >
               Shop Now
             </Link>

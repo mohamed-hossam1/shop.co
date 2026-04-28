@@ -116,7 +116,7 @@ export default function CartList() {
           </div>
 
           {hasItems ? (
-            <div className="border shadow-xl rounded-xl overflow-hidden bg-white">
+            <div className="border border-black bg-white">
               {cartEntries.map(([key, value], index) => {
                 const variantId = Number(key);
                 const stock = value.variant.stock || 0;
@@ -129,7 +129,7 @@ export default function CartList() {
                     key={variantId}
                     className="p-3 md:p-6 flex flex-col sm:flex-row items-start sm:items-center gap-4 border-b last:border-b-0 hover:bg-gray-50/50 transition-colors"
                   >
-                    <div className="w-24 h-24 md:w-32 md:h-32 relative bg-linear-to-br from-gray-100 to-gray-200 rounded-lg flex items-center justify-center shrink-0 overflow-hidden">
+                    <div className="w-24 h-24 md:w-32 md:h-32 relative bg-white border border-black flex items-center justify-center shrink-0 overflow-hidden">
                       <Image
                         src={value.variant.product?.image_cover || ""}
                         alt={value.variant.product.title}
@@ -156,7 +156,7 @@ export default function CartList() {
                             <div className="flex items-center gap-2 text-gray-600">
                               <span className="font-medium text-gray-900">Color:</span>
                               <div
-                                className="w-4 h-4 rounded-full border border-gray-300 shadow-sm"
+                                className="w-5 h-5 border border-black shadow-none ring-2 ring-transparent hover:ring-black/20"
                                 style={{ backgroundColor: value.variant.color }}
                                 title={value.variant.color}
                               />
@@ -188,7 +188,7 @@ export default function CartList() {
 
                       <div className="flex flex-row items-center justify-between mt-4 md:mt-6 gap-3">
                         <div className="flex flex-col">
-                          <div className="flex items-center bg-gray-100 rounded-full px-4 py-2 space-x-4">
+                          <div className="flex items-center border border-black px-4 py-2 space-x-4">
                             <button
                               className="text-gray-900 flex items-center justify-center hover:opacity-70 transition-opacity disabled:opacity-30 disabled:cursor-not-allowed"
                               disabled={value.quantity <= 1}
@@ -239,10 +239,10 @@ export default function CartList() {
               })}
             </div>
           ) : (
-            <div className="border shadow-xl rounded-xl p-12 text-center bg-white">
-              <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <div className="border border-black p-12 text-center bg-white">
+              <div className="w-20 h-20 bg-black border border-black flex items-center justify-center mx-auto mb-6">
                 <svg
-                  className="w-10 h-10 text-gray-400"
+                  className="w-10 h-10 text-white"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -255,11 +255,11 @@ export default function CartList() {
                   ></path>
                 </svg>
               </div>
-              <p className="text-gray-900 text-xl font-bold mb-2">Your cart is empty</p>
-              <p className="text-gray-500 mb-8 max-w-xs mx-auto">Looks like you haven't added anything to your cart yet.</p>
+              <p className="text-gray-900 text-xl font-black mb-2 uppercase font-integral tracking-widest">Your cart is empty</p>
+              <p className="text-gray-500 mb-8 max-w-xs mx-auto font-satoshi uppercase tracking-wider text-xs">Looks like you haven't added anything to your cart yet.</p>
               <Link
                 href={ROUTES.PRODUCTS}
-                className="inline-block bg-black text-white px-8 py-3 rounded-full font-bold hover:bg-gray-800 transition-all hover:px-10"
+                className="inline-block bg-black text-white px-8 py-4 font-bold border border-black hover:bg-white hover:text-black transition-colors uppercase tracking-widest text-sm"
               >
                 Start Shopping
               </Link>

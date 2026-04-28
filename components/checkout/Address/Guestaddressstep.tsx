@@ -1,6 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { getCities } from "@/actions/deliveryAction";
+import { useQuery } from "@tanstack/react-query";
+
+
 
 interface GuestAddressStepProps {
   guestAddress: {
@@ -13,36 +17,6 @@ interface GuestAddressStepProps {
   onAddressChange: (address: GuestAddressStepProps["guestAddress"]) => void;
 }
 
-const egyptCities = [
-  "Cairo",
-  "Giza",
-  "Alexandria",
-  "Dakahlia",
-  "Red Sea",
-  "Beheira",
-  "Fayoum",
-  "Gharbia",
-  "Ismailia",
-  "Monufia",
-  "Minya",
-  "Qaliubiya",
-  "New Valley",
-  "Suez",
-  "Aswan",
-  "Assiut",
-  "Beni Suef",
-  "Port Said",
-  "Damietta",
-  "Sharqia",
-  "South Sinai",
-  "Kafr El Sheikh",
-  "Matrouh",
-  "Luxor",
-  "Qena",
-  "North Sinai",
-  "Sohag",
-];
-
 export default function GuestAddressStep({
   guestAddress,
   onAddressChange,
@@ -50,9 +24,19 @@ export default function GuestAddressStep({
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [formData, setFormData] = useState(guestAddress);
 
+  const { data: cities = [], isLoading: isCitiesLoading } = useQuery({
+    queryKey: ["cities"],
+    queryFn: async () => {
+      const res = await getCities();
+      if (!res.success) throw new Error(res.message);
+      return res.data;
+    },
+  });
+
   useEffect(() => {
     setFormData(guestAddress);
   }, [guestAddress]);
+
 
 
 
@@ -134,8 +118,8 @@ export default function GuestAddressStep({
               Full Name *
             </label>
             <input
-              className={`w-full px-4 py-3 border rounded-sm focus:outline-none focus:border-black transition-colors text-sm md:text-base bg-transparent ${
-                errors.name ? "border-red-500" : "border-black/20"
+              className={`w-full px-4 py-3 border rounded-none focus:outline-none focus:border-black transition-colors text-sm md:text-base bg-transparent ${
+                errors.name ? "border-red-500" : "border-black"
               }`}
               placeholder="Enter your full name"
               type="text"
@@ -152,8 +136,8 @@ export default function GuestAddressStep({
               Phone Number *
             </label>
             <input
-              className={`w-full px-4 py-3 border rounded-sm focus:outline-none focus:border-black transition-colors text-sm md:text-base bg-transparent ${
-                errors.phone ? "border-red-500" : "border-black/20"
+              className={`w-full px-4 py-3 border rounded-none focus:outline-none focus:border-black transition-colors text-sm md:text-base bg-transparent ${
+                errors.phone ? "border-red-500" : "border-black"
               }`}
               placeholder="01XX XXX XXXX"
               type="tel"
@@ -173,20 +157,22 @@ export default function GuestAddressStep({
               City *
             </label>
             <select
-              className={`w-full px-4 py-3 border rounded-sm focus:outline-none focus:border-black transition-colors text-sm md:text-base bg-transparent ${
-                errors.city ? "border-red-500" : "border-black/20"
+              disabled={isCitiesLoading}
+              className={`w-full px-4 py-3 border rounded-none focus:outline-none focus:border-black transition-colors text-sm md:text-base bg-transparent ${
+                errors.city ? "border-red-500" : "border-black"
               }`}
               value={formData.city}
               onChange={(e) => handleChange("city", e.target.value)}
               onBlur={() => handleBlur("city")}
             >
-              <option value="">Select City</option>
-              {egyptCities.map((city) => (
+              <option value="">{isCitiesLoading ? "Loading Cities..." : "Select City"}</option>
+              {cities.map((city) => (
                 <option key={city} value={city}>
                   {city}
                 </option>
               ))}
             </select>
+
             {errors.city && (
               <p className="text-red-500 text-xs mt-1">{errors.city}</p>
             )}
@@ -196,8 +182,8 @@ export default function GuestAddressStep({
               Area/District *
             </label>
             <input
-              className={`w-full px-4 py-3 border rounded-sm focus:outline-none focus:border-black transition-colors text-sm md:text-base bg-transparent ${
-                errors.area ? "border-red-500" : "border-black/20"
+              className={`w-full px-4 py-3 border rounded-none focus:outline-none focus:border-black transition-colors text-sm md:text-base bg-transparent ${
+                errors.area ? "border-red-500" : "border-black"
               }`}
               placeholder="Enter area or district"
               type="text"
@@ -217,8 +203,8 @@ export default function GuestAddressStep({
               Address Details *
             </label>
             <input
-              className={`w-full px-4 py-3 border rounded-sm focus:outline-none focus:border-black transition-colors text-sm md:text-base bg-transparent ${
-                errors.address_line ? "border-red-500" : "border-black/20"
+              className={`w-full px-4 py-3 border rounded-none focus:outline-none focus:border-black transition-colors text-sm md:text-base bg-transparent ${
+                errors.address_line ? "border-red-500" : "border-black"
               }`}
               placeholder="Street name, building number"
               type="text"

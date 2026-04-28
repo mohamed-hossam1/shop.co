@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
 import { Address } from "@/types/Address";
 import { deleteAddress } from "@/actions/addressAction";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+
 
 interface SavedAddressListProps {
   addresses: Address[];
@@ -17,26 +18,26 @@ export default function SavedAddressList({
   onSelectAddress,
   onAddressDeleted,
 }: SavedAddressListProps) {
-  const [deletingId, setDeletingId] = useState<number | null>(null);
+  const queryClient = useQueryClient();
 
-  const handleDelete = async (addressId: number, e: React.MouseEvent) => {
-    e.stopPropagation();
-    
-    setDeletingId(addressId);
-    
-    try {
+  const { mutate: deleteAddressMutate, isPending, variables: deletingId } = useMutation({
+    mutationFn: async (addressId: number) => {
       const res = await deleteAddress(addressId);
-      
-      if (!res.success) {
-        console.error("Error deleting address:", res.message);
-      } else {
-        onAddressDeleted(addressId);
-      }
-    } catch (error) {
-      console.error("Failed to delete address:", error);
-    } finally {
-      setDeletingId(null);
-    }
+      if (!res.success) throw new Error(res.message);
+      return addressId;
+    },
+    onSuccess: (addressId) => {
+      queryClient.invalidateQueries({ queryKey: ["addresses"] });
+      onAddressDeleted(addressId);
+    },
+    onError: (error: any) => {
+      alert(error.message);
+    },
+  });
+
+  const handleDelete = (addressId: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    deleteAddressMutate(addressId);
   };
 
   if (!addresses) {
@@ -54,7 +55,7 @@ export default function SavedAddressList({
         <div
           key={address.id}
           onClick={() => onSelectAddress(address)}
-          className={`flex flex-col md:flex-row md:items-center md:justify-between p-3 md:p-4 border rounded-sm cursor-pointer transition-colors ${
+          className={`flex flex-col md:flex-row md:items-center md:justify-between p-3 md:p-4 border rounded-none cursor-pointer transition-colors ${
             selectedAddressId === address.id
               ? "border-black bg-[#F0EEED]/40"
               : "border-gray-200 hover:border-black/50 hover:bg-gray-50"
@@ -62,14 +63,14 @@ export default function SavedAddressList({
         >
           <div className="flex items-center flex-1">
             <div
-              className={`w-4 h-4 rounded-full border-2 mr-2 md:mr-3 flex items-center justify-center flex-shrink-0 ${
+              className={`w-5 h-5 border mr-2 md:mr-3 flex items-center justify-center flex-shrink-0 ${
                 selectedAddressId === address.id
-                  ? "border-black"
-                  : "border-gray-300"
+                  ? "border-black bg-black"
+                  : "border-black bg-white"
               }`}
             >
               {selectedAddressId === address.id && (
-                <div className="w-2 h-2 rounded-full bg-black"></div>
+                <div className="w-2.5 h-2.5 bg-white"></div>
               )}
             </div>
             <div className="flex-1 min-w-0">
@@ -83,11 +84,12 @@ export default function SavedAddressList({
           </div>
           <button
             onClick={(e) => handleDelete(address.id, e)}
-            disabled={deletingId === address.id}
+            disabled={isPending && deletingId === address.id}
             className="ml-2 text-red-500 hover:text-red-700 text-xs md:text-sm font-bold uppercase tracking-widest px-2 py-1 self-end md:self-center mt-2 md:mt-0 disabled:opacity-50 cursor-pointer transition-all duration-300"
           >
-            {deletingId === address.id ? "Deleting..." : "Delete"}
+            {isPending && deletingId === address.id ? "Deleting..." : "Delete"}
           </button>
+
         </div>
       ))}
     </div>

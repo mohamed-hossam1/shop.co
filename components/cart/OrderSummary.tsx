@@ -70,7 +70,7 @@ export default function OrderSummary({
 
   return (
     <div className="w-full lg:flex-2 font-satoshi">
-      <div className="bg-white rounded-2xl md:rounded-3xl shadow-xl border border-gray-100 p-6 md:p-8 lg:sticky lg:top-24">
+      <div className="bg-white border border-black p-6 sm:p-8 lg:sticky lg:top-24">
         <h3 className="text-xl md:text-2xl font-bold text-gray-900 mb-6 font-integral uppercase">
           Order Summary
         </h3>
@@ -97,7 +97,7 @@ export default function OrderSummary({
                   </div>
                   <input
                     placeholder="Add promo code"
-                    className="w-full pl-12 pr-4 py-3 bg-gray-100 border-none rounded-full focus:ring-2 focus:ring-black transition-all text-sm md:text-base outline-none disabled:opacity-50"
+                    className="w-full pl-12 pr-4 py-3 bg-white border border-black rounded-none focus:ring-1 focus:ring-black transition-all text-sm md:text-base outline-none disabled:opacity-50"
                     type="text"
                     value={promoCode}
                     onChange={(e) => setPromoCode(e.target.value)}
@@ -107,7 +107,7 @@ export default function OrderSummary({
                 </div>
                 {appliedPromo ? (
                   <button
-                    className="px-6 py-3 bg-red-50 text-red-600 rounded-full hover:bg-red-100 transition-all font-bold text-sm md:text-base cursor-pointer"
+                    className="px-6 py-3 bg-white text-black border border-black hover:bg-black hover:text-white transition-colors font-bold uppercase tracking-widest text-xs md:text-sm cursor-pointer"
                     onClick={handleRemovePromo}
                   >
                     Remove
@@ -115,7 +115,7 @@ export default function OrderSummary({
                 ) : (
                   <button
                     disabled={!promoCode.trim() || isApplying}
-                    className="px-8 py-3 bg-black text-white rounded-full hover:bg-gray-800 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-bold text-sm md:text-base cursor-pointer"
+                    className="px-8 py-3 bg-black text-white border border-black hover:bg-white hover:text-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-bold uppercase tracking-widest text-xs md:text-sm cursor-pointer"
                     onClick={handleApplyPromo}
                   >
                     {isApplying ? (
@@ -127,15 +127,13 @@ export default function OrderSummary({
                 )}
               </div>
 
-              {promoError && (
-                <p className="text-red-500 text-xs md:text-sm mt-2 flex items-center gap-1.5 font-medium animate-in fade-in slide-in-from-top-1">
-                  <span className="w-1.5 h-1.5 bg-red-500 rounded-full" />
-                  {promoError}
+               {promoError && (
+                <p className="text-red-500 text-xs md:text-sm mt-3 flex items-center gap-1.5 font-bold uppercase tracking-wider border border-red-500/20 p-2 bg-red-50 animate-in fade-in slide-in-from-top-1">
+                   {promoError}
                 </p>
               )}
               {appliedPromo && isConditionMet && (
-                <p className="text-green-600 text-xs md:text-sm mt-2 flex items-center gap-1.5 font-bold animate-in fade-in slide-in-from-top-1">
-                  <span className="w-1.5 h-1.5 bg-green-600 rounded-full" />
+                <p className="text-green-600 text-xs md:text-sm mt-3 flex items-center gap-1.5 font-black uppercase tracking-wider border border-green-500/20 p-2 bg-green-50 animate-in fade-in slide-in-from-top-1">
                   {appliedPromo.type === "percentage"
                     ? `${appliedPromo.value}%`
                     : `EGP ${appliedPromo.value}`}{" "}
@@ -143,8 +141,7 @@ export default function OrderSummary({
                 </p>
               )}
               {appliedPromo && !isConditionMet && (
-                <p className="text-red-500 text-xs md:text-sm mt-2 flex items-center gap-1.5 font-medium animate-in fade-in slide-in-from-top-1">
-                  <span className="w-1.5 h-1.5 bg-red-500 rounded-full" />
+                <p className="text-red-500 text-xs md:text-sm mt-3 flex items-center gap-1.5 font-bold uppercase tracking-wider border border-red-500/20 p-2 bg-red-50 animate-in fade-in slide-in-from-top-1">
                   {`Minimum purchase of EGP ${appliedPromo.min_purchase} required.`}
                 </p>
               )}
@@ -196,14 +193,14 @@ export default function OrderSummary({
 
           <div className="border-t border-gray-100 pt-6 mt-6">
             <div className="flex justify-between items-center">
-              <span className="text-lg md:text-xl font-bold text-gray-900">
+              <span className="text-lg md:text-xl font-bold text-gray-900 font-integral">
                 Total
               </span>
-              <span className="text-2xl md:text-3xl font-bold text-black font-integral">
+               <span className="text-2xl md:text-3xl font-black text-black font-integral">
                 {isLoadingFee ? (
-                  <div className="h-8 w-24 bg-gray-100 animate-pulse rounded-md"></div>
+                  <div className="h-8 w-24 bg-gray-100 animate-pulse"></div>
                 ) : (
-                  `EGP ${totalWithDelivery.toFixed(2)}`
+                  `EGP ${totalWithDelivery.toFixed(0)}`
                 )}
               </span>
             </div>
@@ -214,7 +211,7 @@ export default function OrderSummary({
           <div className="space-y-4">
             {price > 0 && (
               <Link
-                className="flex items-center justify-center w-full bg-black text-white py-4 md:py-5 px-6 rounded-full font-bold hover:bg-gray-800 transition-all shadow-lg hover:shadow-black/20 group uppercase tracking-tight"
+                className="flex items-center justify-center w-full bg-black text-white py-4 md:py-5 px-6 font-bold border border-black hover:bg-white hover:text-black transition-colors uppercase tracking-widest text-sm"
                 href={ROUTES.CHECKOUT}
               >
                 Go to Checkout
@@ -234,7 +231,7 @@ export default function OrderSummary({
               </Link>
             )}
             <Link
-              className="flex items-center justify-center w-full border-2 border-transparent hover:border-gray-100 py-4 text-center rounded-full text-gray-500 hover:text-black font-bold transition-all"
+              className="flex items-center justify-center w-full bg-white text-black py-4 md:py-5 px-6 font-bold border border-black hover:bg-black hover:text-white transition-colors uppercase tracking-widest text-sm"
               href={ROUTES.HOME}
             >
               Continue Shopping

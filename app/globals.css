@@ -133,8 +133,8 @@ html {
 }
 
 :root {
-  --radius: 0.625rem;
-  --background: #F2F0F1;
+  --radius: 0rem;
+  --background: #F9FAFB;
   --foreground: #000000;
   --primary: #000000;
   --primary-hover: #333333;
@@ -143,7 +143,7 @@ html {
   --secondary-foreground: #000000;
   --muted: #F0F0F0;
   --muted-foreground: #00000099;
-  --border: #0000001a;
+  --border: #000000;
   --hero-background: #F2F0F1;
 }
 

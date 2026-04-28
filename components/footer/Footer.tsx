@@ -25,7 +25,7 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="w-full relative bg-[#F0F0F0] pt-3 mt-40">
+    <footer className="w-full relative bg-hero-background pt-3 mt-40">
       <Newsletter />
 
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-12">
@@ -43,27 +43,27 @@ export default function Footer() {
             <div className="flex items-center gap-3">
               <a
                 href="#"
-                className="w-8 h-8 rounded-full bg-white border border-black/10 flex items-center justify-center hover:bg-black hover:text-white transition-all"
+                className="w-10 h-10 bg-white border border-black flex items-center justify-center hover:bg-black hover:text-white transition-all"
               >
-                <Twitter className="w-4 h-4 fill-currentColor" />
+                <Twitter className="w-5 h-5 fill-currentColor" />
               </a>
               <a
                 href="#"
-                className="w-8 h-8 rounded-full bg-white border border-black/10 flex items-center justify-center hover:bg-black hover:text-white transition-all"
+                className="w-10 h-10 bg-white border border-black flex items-center justify-center hover:bg-black hover:text-white transition-all"
               >
-                <Facebook className="w-4 h-4 fill-currentColor" />
+                <Facebook className="w-5 h-5 fill-currentColor" />
               </a>
               <a
                 href="#"
-                className="w-8 h-8 rounded-full bg-white border border-black/10 flex items-center justify-center hover:bg-black hover:text-white transition-all"
+                className="w-10 h-10 bg-white border border-black flex items-center justify-center hover:bg-black hover:text-white transition-all"
               >
-                <Instagram className="w-4 h-4" />
+                <Instagram className="w-5 h-5" />
               </a>
               <a
                 href="#"
-                className="w-8 h-8 rounded-full bg-white border border-black/10 flex items-center justify-center hover:bg-black hover:text-white transition-all"
+                className="w-10 h-10 bg-white border border-black flex items-center justify-center hover:bg-black hover:text-white transition-all"
               >
-                <Github className="w-4 h-4 fill-currentColor" />
+                <Github className="w-5 h-5 fill-currentColor" />
               </a>
             </div>
           </div>

@@ -1,46 +1,32 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { addAddress } from "@/actions/addressAction";
+import { getCities } from "@/actions/deliveryAction";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
+
+
 
 interface AddressFormProps {
   onSuccess: () => void;
   onCancel: () => void;
 }
 
-const egyptCities = [
-  "Cairo",
-  "Giza",
-  "Alexandria",
-  "Dakahlia",
-  "Red Sea",
-  "Beheira",
-  "Fayoum",
-  "Gharbia",
-  "Ismailia",
-  "Monufia",
-  "Minya",
-  "Qaliubiya",
-  "New Valley",
-  "Suez",
-  "Aswan",
-  "Assiut",
-  "Beni Suef",
-  "Port Said",
-  "Damietta",
-  "Sharqia",
-  "South Sinai",
-  "Kafr El Sheikh",
-  "Matrouh",
-  "Luxor",
-  "Qena",
-  "North Sinai",
-  "Sohag",
-];
-
 export default function AddressForm({ onSuccess, onCancel }: AddressFormProps) {
-  const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const queryClient = useQueryClient();
+
+
+  const { data: cities = [], isLoading: isCitiesLoading } = useQuery({
+    queryKey: ["cities"],
+    queryFn: async () => {
+      const res = await getCities();
+      if (!res.success) throw new Error(res.message);
+      return res.data;
+    },
+  });
+
   const [formData, setFormData] = useState({
     full_name: "",
     phone: "",
@@ -49,12 +35,33 @@ export default function AddressForm({ onSuccess, onCancel }: AddressFormProps) {
     address_line: "",
   });
 
+
+
   const validatePhone = (phone: string) => {
     const phoneRegex = /^(010|011|012|015)[0-9]{8}$/;
     return phoneRegex.test(phone);
   };
 
+  const { mutate: addAddressMutate, isPending } = useMutation({
+    mutationFn: async (data: any) => {
+      const res = await addAddress(data);
+      if (!res.success) {
+        throw new Error(res.message);
+      }
+      return res;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["addresses"] });
+      onSuccess();
+    },
+
+    onError: (error: any) => {
+      setErrors({ submit: error.message });
+    },
+  });
+
   const handleSubmit = async (e: React.FormEvent) => {
+
     e.preventDefault();
     
     const newErrors: { [key: string]: string } = {};
@@ -75,23 +82,10 @@ export default function AddressForm({ onSuccess, onCancel }: AddressFormProps) {
       return;
     }
 
-    setIsLoading(true);
     setErrors({});
-
-    try {
-      const res = await addAddress(formData as any); // Type simplified here
-      
-      if (!res.success) {
-        setErrors({ submit: res.message });
-      } else {
-        onSuccess();
-      }
-    } catch (error) {
-      setErrors({ submit: "Failed to add address" });
-    } finally {
-      setIsLoading(false);
-    }
+    addAddressMutate(formData as any);
   };
+
 
   const handleChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -122,8 +116,9 @@ export default function AddressForm({ onSuccess, onCancel }: AddressFormProps) {
               Full Name *
             </label>
             <input
-              className={`w-full px-4 py-3 border rounded-sm focus:outline-none focus:border-black text-sm md:text-base bg-transparent ${
-                errors.full_name ? "border-red-500" : "border-black/20"
+              disabled={isPending}
+              className={`w-full px-4 py-3 border rounded-none focus:outline-none focus:border-black text-sm md:text-base bg-transparent ${
+                errors.full_name ? "border-red-500" : "border-black"
               }`}
               placeholder="Enter your full name"
               type="text"
@@ -139,8 +134,9 @@ export default function AddressForm({ onSuccess, onCancel }: AddressFormProps) {
               Phone Number *
             </label>
             <input
-              className={`w-full px-4 py-3 border rounded-sm focus:outline-none focus:border-black text-sm md:text-base bg-transparent ${
-                errors.phone ? "border-red-500" : "border-black/20"
+              disabled={isPending}
+              className={`w-full px-4 py-3 border rounded-none focus:outline-none focus:border-black text-sm md:text-base bg-transparent ${
+                errors.phone ? "border-red-500" : "border-black"
               }`}
               placeholder="01XX XXX XXXX"
               type="tel"
@@ -157,19 +153,21 @@ export default function AddressForm({ onSuccess, onCancel }: AddressFormProps) {
               City *
             </label>
             <select
-              className={`w-full px-4 py-3 border rounded-sm focus:outline-none focus:border-black text-sm md:text-base bg-transparent ${
-                errors.city ? "border-red-500" : "border-black/20"
+              disabled={isCitiesLoading || isPending}
+              className={`w-full px-4 py-3 border rounded-none focus:outline-none focus:border-black text-sm md:text-base bg-transparent ${
+                errors.city ? "border-red-500" : "border-black"
               }`}
               value={formData.city}
               onChange={(e) => handleChange("city", e.target.value)}
             >
-              <option value="">Select City</option>
-              {egyptCities.map((city) => (
+              <option value="">{isCitiesLoading ? "Loading Cities..." : "Select City"}</option>
+              {cities.map((city) => (
                 <option key={city} value={city}>
                   {city}
                 </option>
               ))}
             </select>
+
             {errors.city && (
               <p className="text-red-500 text-xs mt-1">{errors.city}</p>
             )}
@@ -180,8 +178,9 @@ export default function AddressForm({ onSuccess, onCancel }: AddressFormProps) {
               Area/District *
             </label>
             <input
-              className={`w-full px-4 py-3 border rounded-sm focus:outline-none focus:border-black text-sm md:text-base bg-transparent ${
-                errors.area ? "border-red-500" : "border-black/20"
+              disabled={isPending}
+              className={`w-full px-4 py-3 border rounded-none focus:outline-none focus:border-black text-sm md:text-base bg-transparent ${
+                errors.area ? "border-red-500" : "border-black"
               }`}
               placeholder="Enter area or district"
               type="text"
@@ -198,8 +197,9 @@ export default function AddressForm({ onSuccess, onCancel }: AddressFormProps) {
               Address Details *
             </label>
             <input
-              className={`w-full px-4 py-3 border rounded-sm focus:outline-none focus:border-black text-sm md:text-base bg-transparent ${
-                errors.address_line ? "border-red-500" : "border-black/20"
+              disabled={isPending}
+              className={`w-full px-4 py-3 border rounded-none focus:outline-none focus:border-black text-sm md:text-base bg-transparent ${
+                errors.address_line ? "border-red-500" : "border-black"
               }`}
               placeholder="Street name, building number"
               type="text"
@@ -218,11 +218,20 @@ export default function AddressForm({ onSuccess, onCancel }: AddressFormProps) {
 
         <button
           type="submit"
-          disabled={isLoading}
-          className="w-full mt-6 bg-black text-white hover:bg-white hover:text-black border border-black py-4 rounded-sm font-bold uppercase tracking-widest transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={isPending}
+          className="w-full mt-6 bg-black text-white hover:bg-white hover:text-black border border-black py-4 rounded-none font-bold uppercase tracking-widest transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-h-[56px]"
         >
-          {isLoading ? "Saving..." : "Save Address"}
+          {isPending ? (
+            <div className="flex items-center justify-center gap-2">
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              <span>Saving Address...</span>
+            </div>
+          ) : (
+            "Save Address"
+          )}
         </button>
+
+
       </form>
     </div>
   );

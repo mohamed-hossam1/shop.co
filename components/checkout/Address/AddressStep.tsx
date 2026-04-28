@@ -59,7 +59,7 @@ export default function AddressStep({
       {!showForm && (
         <button
           onClick={() => setShowForm(true)}
-          className="w-full p-4 border border-black text-black font-semibold hover:bg-black hover:text-white transition-colors flex items-center justify-center text-sm md:text-base cursor-pointer rounded-sm uppercase tracking-wider"
+          className="w-full p-4 border border-black text-black font-semibold hover:bg-black hover:text-white transition-colors flex items-center justify-center text-sm md:text-base cursor-pointer rounded-none uppercase tracking-wider"
         >
           <svg
             className="w-4 h-4 md:w-5 md:h-5 mr-3"

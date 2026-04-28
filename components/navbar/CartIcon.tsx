@@ -16,7 +16,7 @@ export default function CartIcon() {
       >
         <ShoppingCart className="w-6 h-6 hover:text-black/70 transition-colors" />
         {quantity !== 0 && (
-          <div className="absolute top-4 -right-4 bg-black text-white w-4 h-4 rounded-full flex justify-center items-center text-[10px]">
+          <div className="absolute top-4 -right-5 bg-black text-white w-4 h-4 flex justify-center items-center text-[10px] border-none">
             {quantity}
           </div>
         )}

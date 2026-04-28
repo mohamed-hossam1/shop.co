@@ -74,7 +74,7 @@ export default function ImageSlider({ images }: { images: string[] }) {
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
     >
-      <div className="relative h-[420px] mb-6 rounded-2xl overflow-hidden">
+      <div className="relative h-[500px] mb-6 border border-black overflow-hidden bg-white">
         {images.map((image, i) => (
           <div
             key={i}
@@ -85,7 +85,7 @@ export default function ImageSlider({ images }: { images: string[] }) {
           >
             <Image
               fill
-              className="object-contain rounded-2xl"
+              className="object-contain"
               src={image}
               alt={`Image ${i + 1}`}
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1000px"
@@ -94,21 +94,24 @@ export default function ImageSlider({ images }: { images: string[] }) {
         ))}
       </div>
 
-      <div className="flex gap-3 items-center justify-center flex-wrap">
+      <div className="flex gap-4 items-center justify-center flex-wrap">
         {images.map((image, i) => (
-          <Image
+          <div
             key={i}
-            width={80}
-            height={80}
-            className={`cursor-pointer w-16 h-16 md:w-20 md:h-20 border-2 rounded-xl object-cover transition-all duration-300 ${
+            className={`cursor-pointer w-20 h-20 border transition-all duration-300 relative bg-white ${
               i === curSlide
-                ? "border-primary ring-2 ring-primary"
-                : "border-gray-300 opacity-60 hover:opacity-100"
+                ? "border-black ring-2 ring-black ring-offset-2"
+                : "border-gray-200 opacity-60 hover:opacity-100"
             }`}
             onClick={() => setCurSlide(i)}
-            src={image}
-            alt={`Thumbnail ${i + 1}`}
-          />
+          >
+            <Image
+              fill
+              className="object-cover"
+              src={image}
+              alt={`Thumbnail ${i + 1}`}
+            />
+          </div>
         ))}
       </div>
     </section>

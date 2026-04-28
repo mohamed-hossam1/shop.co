@@ -28,8 +28,8 @@ export default function BrowseByStyle({ categories }: { categories: Category[] }
   ];
 
   return (
-    <section className="w-full px-4 sm:px-6 lg:px-8 mb-16">
-      <div className="max-w-[1400px] mx-auto bg-[#F0F0F0] rounded-[20px] sm:rounded-[40px] p-6 sm:p-14 lg:p-16">
+    <section className="w-full px-4 sm:px-6 lg:px-8 mb-16 ">
+      <div className="max-w-[1400px] mx-auto bg-hero-background border border-black rounded-none p-6 sm:p-14 lg:p-16">
         <h2 className="text-3xl sm:text-5xl font-integral font-black text-center mb-8 sm:mb-14 tracking-[0.04em] uppercase">
           BROWSE BY DRESS STYLE
         </h2>
@@ -41,10 +41,10 @@ export default function BrowseByStyle({ categories }: { categories: Category[] }
             return (
               <div
                 key={category.id}
-                className={`${styles[index]} relative bg-white rounded-[20px] overflow-hidden group h-[200px] sm:h-[289px] transition-all hover:shadow-xl`}
+                className={`${styles[index]} relative bg-white border border-black rounded-none overflow-hidden group h-[200px] sm:h-[289px] transition-all hover:bg-black group`}
               >
                 <Link href={`/products?category=${category.slug}`} className="block w-full h-full p-6 sm:p-8">
-                  <span className="text-2xl sm:text-4xl font-bold font-satoshi relative z-10 block transition-transform group-hover:translate-x-2">
+                  <span className="text-2xl sm:text-4xl font-black font-integral relative z-10 block transition-all uppercase tracking-wider">
                     {category.title}
                   </span>
                   

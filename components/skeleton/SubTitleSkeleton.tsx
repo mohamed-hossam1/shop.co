@@ -1,11 +1,8 @@
 export default function SubTitleSkeleton() {
   return (
-    <div className='flex justify-between text-gray-600 relative mb-10'>
-      <div>
-        <div className='h-9 w-80 bg-gray-300 rounded animate-pulse'></div>
-      </div>
-
-      <div className='border-gray-300 w-full absolute bottom-[1px] -z-10'></div>
+    <div className='flex justify-between items-center relative mb-10 animate-pulse'>
+      <div className='h-10 w-80 bg-gray-200 border-b-2 border-black/10'></div>
+      <div className='h-px w-full absolute bottom-0 bg-black/5 -z-10'></div>
     </div>
   );
 }

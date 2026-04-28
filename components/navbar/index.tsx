@@ -31,8 +31,8 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="w-full bg-white sticky top-0 z-50 shadow-sm">
-      <div className="w-full bg-black text-white py-2 px-4 text-center text-xs sm:text-sm font-satoshi">
+    <nav className="w-full bg-white sticky top-0 z-50 border-b border-black">
+      <div className="w-full bg-black text-white py-2 px-4 text-center text-xs sm:text-sm font-satoshi uppercase tracking-widest">
         <p>
           Get 20% off when you use this code{" "}
           <span className="font-bold">SHOP.CO</span>
@@ -44,7 +44,7 @@ export default function Navbar() {
           <div className="flex items-center gap-2 sm:gap-4">
             <button 
               onClick={() => setIsMenuOpen(true)}
-              className="lg:hidden p-1 hover:bg-gray-100 rounded-md transition-colors cursor-pointer"
+              className="lg:hidden p-1 hover:bg-black hover:text-white border border-transparent hover:border-black transition-colors cursor-pointer"
               aria-label="Open menu"
             >
               <Menu className="w-6 h-6" />
@@ -56,7 +56,7 @@ export default function Navbar() {
             </Link>
           </div>
 
-          <div className="hidden lg:flex items-center gap-6 font-satoshi">
+          <div className="hidden lg:flex items-center gap-6 font-satoshi uppercase tracking-wider text-sm">
             <Link
               href={ROUTES.PRODUCTS}
               className={`${getLinkClass(ROUTES.PRODUCTS)}`}
@@ -82,7 +82,7 @@ export default function Navbar() {
             <div className="md:hidden">
               <button 
                 onClick={() => setIsSearchOpen(!isSearchOpen)}
-                className="p-1 hover:bg-gray-100 rounded-md transition-colors cursor-pointer"
+                className="p-1 hover:bg-black hover:text-white border border-transparent hover:border-black transition-colors cursor-pointer"
                 aria-label="Toggle search"
               >
                 <SearchIcon className="w-6 h-6" />

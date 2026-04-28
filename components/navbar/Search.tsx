@@ -39,7 +39,7 @@ export default function Searchbar({ autoFocus = false }: { autoFocus?: boolean }
           <div className="relative flex-1">
             <input
               placeholder="Search for products..."
-              className="w-full px-4 py-3 pl-12 pr-10 bg-[#F0F0F0] border-none font-satoshi rounded-full focus:outline-none focus:ring-1 focus:ring-black/10 transition-all duration-300"
+              className="w-full px-4 py-3 pl-12 pr-10 bg-white border border-black font-satoshi rounded-none focus:outline-none focus:ring-1 focus:ring-black transition-all duration-300 pointer-events-auto"
               type="text"
               autoFocus={autoFocus}
               onChange={(e) => setSearchQuery(e.target.value)}

@@ -116,16 +116,16 @@ export default function QuantityProduct({ product }: { product: ProductDetails }
                   key={color}
                   onClick={() => handleColorChange(color)}
                   title={color}
-                  className={`w-9 h-9 rounded-full border-2 transition-all flex items-center justify-center ${
+                  className={`w-10 h-10 border border-black transition-all flex items-center justify-center ${
                     selectedColor === color
-                      ? "border-black ring-2 ring-black/10"
-                      : "border-gray-200 hover:border-gray-400"
+                      ? "ring-2 ring-black ring-offset-2"
+                      : "hover:scale-105"
                   }`}
                   style={{ backgroundColor: color }}
                 >
                   {selectedColor === color && (
                     <div
-                      className={`w-3 h-3 rounded-full ${
+                      className={`w-3 h-3 ${
                         color.toLowerCase() === "#ffffff" ||
                         color.toLowerCase() === "white"
                           ? "bg-black"
@@ -149,10 +149,10 @@ export default function QuantityProduct({ product }: { product: ProductDetails }
                 <button
                   key={size}
                   onClick={() => handleSizeChange(size)}
-                  className={`px-6 py-2 rounded-full border-2 transition-all font-bold text-sm ${
+                  className={`px-8 py-3 border border-black transition-all font-bold text-xs uppercase tracking-widest ${
                     selectedSize === size
-                      ? "border-black bg-black text-white"
-                      : "border-gray-100 bg-gray-50 text-gray-500 hover:border-gray-300"
+                      ? "bg-black text-white"
+                      : "bg-white text-black hover:bg-gray-50"
                   }`}
                 >
                   {size}
@@ -165,10 +165,10 @@ export default function QuantityProduct({ product }: { product: ProductDetails }
 
       <div className="h-px bg-gray-100 w-full mb-8" />
 
-      <div className="flex flex-col sm:flex-row items-center gap-6 mb-8">
-        <div className="flex items-center bg-gray-100 rounded-full px-6 py-3 space-x-8">
+      <div className="flex flex-col sm:flex-row items-stretch gap-4 mb-8">
+        <div className="flex items-center border border-black px-6 py-4 space-x-10 bg-white">
           <button
-            className="text-2xl font-bold flex items-center justify-center hover:opacity-70 transition-opacity disabled:opacity-20 disabled:cursor-not-allowed"
+            className="text-2xl font-bold flex items-center justify-center hover:bg-gray-100 transition-colors p-1 disabled:opacity-20 disabled:cursor-not-allowed"
             onClick={() => quantity > 1 && setQuantity(quantity - 1)}
             disabled={quantity <= 1 || isOutOfStock}
           >
@@ -187,12 +187,12 @@ export default function QuantityProduct({ product }: { product: ProductDetails }
             </svg>
           </button>
 
-          <span className="font-bold text-lg text-black w-4 text-center select-none">
+          <span className="font-bold text-xl text-black w-6 text-center select-none font-integral">
             {isOutOfStock ? 0 : quantity}
           </span>
 
           <button
-            className="text-2xl font-bold flex items-center justify-center hover:opacity-70 transition-opacity disabled:opacity-20 disabled:cursor-not-allowed"
+            className="text-2xl font-bold flex items-center justify-center hover:bg-gray-100 transition-colors p-1 disabled:opacity-20 disabled:cursor-not-allowed"
             onClick={handleIncrease}
             disabled={isMaxQuantity || isOutOfStock}
           >
@@ -213,20 +213,20 @@ export default function QuantityProduct({ product }: { product: ProductDetails }
         </div>
 
         <button
-          className={`flex-1 py-4 px-8 rounded-full font-bold text-lg transition-all flex justify-center items-center shadow-lg active:scale-95 ${
+          className={`flex-1 py-4 px-8 font-black text-sm uppercase tracking-[0.2em] transition-all flex justify-center items-center border border-black ${
             isOutOfStock
-              ? "bg-gray-200 text-gray-400 cursor-not-allowed shadow-none"
-              : "bg-black text-white hover:bg-gray-800 shadow-black/10"
+              ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+              : "bg-black text-white hover:bg-white hover:text-black"
           }`}
           onClick={onSubmit}
           disabled={isLoading || isOutOfStock}
         >
           {isLoading ? (
-            <div className="h-6 w-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+            <div className="h-6 w-6 border-2 border-white/30 border-t-white animate-spin"></div>
           ) : isOutOfStock ? (
-            "Out of Stock"
+            "Sold Out"
           ) : (
-            `Add to Cart - EGP ${(price * quantity).toFixed(2)}`
+            `Add to Cart - ${ (price * quantity).toFixed(0)} EGP`
           )}
         </button>
       </div>

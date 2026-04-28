@@ -1,21 +1,15 @@
 export default function ProductCardSkeleton() {
   return (
-    <div className="w-full md:min-w-60 min-w-40 bg-white rounded-2xl overflow-hidden shadow-lg mb-2">
-      <div className="relative md:h-52 h-30 bg-gray-200 animate-pulse">
-      </div>
+    <div className="w-full h-full bg-white border border-black p-3 animate-pulse">
+      <div className="relative w-full pb-[125%] bg-gray-100 border border-black/5" />
 
-      <div className="p-5 h-43 flex flex-col justify-around">
-        <div className="flex items-center justify-between">
-          <div className="h-5 w-9/12 bg-gray-300 rounded animate-pulse"></div>
+      <div className="flex flex-col gap-2 mt-3">
+        <div className="h-6 bg-gray-200 rounded-none w-3/4" />
+        <div className="h-12 bg-gray-200 rounded-none w-full" />
+        <div className="flex items-center gap-2 mt-auto">
+          <div className="h-6 w-20 bg-gray-200 rounded-none" />
+          <div className="h-6 w-16 bg-gray-100 rounded-none" />
         </div>
-
-        <div className="flex gap-3">
-          <div className="h-5 w-[35px] bg-gray-200 rounded animate-pulse mt-5"></div>
-          <div className="h-5 w-[35px] bg-gray-200 rounded animate-pulse mt-5"></div>
-        </div>
-        
-        <div className="h-12 w-full bg-gray-300 rounded-sm animate-pulse mt-2"></div>
-
       </div>
     </div>
   );

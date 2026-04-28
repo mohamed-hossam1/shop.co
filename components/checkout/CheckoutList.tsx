@@ -7,6 +7,8 @@ import OrderSummary from "../cart/OrderSummary";
 import AddressStep from "./Address/AddressStep";
 import { getAddresses } from "@/actions/addressAction";
 import { getDeliveryFee } from "@/actions/deliveryAction";
+import { useQuery } from "@tanstack/react-query";
+
 import PaymentStep from "./Payment/PaymentStep";
 import { useRouter } from "next/navigation";
 import { createOrder } from "@/actions/ordersAction";
@@ -26,8 +28,21 @@ export default function CheckoutList() {
   } = useCart();
 
   const { user } = useUser();
-  const [addresses, setAddresses] = useState<Address[]>([]);
-  const [isLoadingAddresses, setIsLoadingAddresses] = useState(true);
+  const { 
+    data: addresses = [], 
+    isLoading: isLoadingAddresses,
+    refetch: refetchAddresses
+  } = useQuery({
+    queryKey: ["addresses", user?.id],
+    queryFn: async () => {
+      if (!user) return [];
+      const res = await getAddresses();
+      if (!res.success) throw new Error(res.message);
+      return res.data;
+    },
+    enabled: !!user
+  });
+
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
 
   // Guest address data
@@ -50,29 +65,6 @@ export default function CheckoutList() {
   const [isPlacingOrder, setIsPlacingOrder] = useState(false);
 
   const router = useRouter();
-
-  const fetchAddresses = async () => {
-    if (!user) {
-      setIsLoadingAddresses(false);
-      return;
-    }
-
-    setIsLoadingAddresses(true);
-    try {
-      const res = await getAddresses();
-      if (res.success) {
-        setAddresses(res.data);
-      }
-    } catch (error) {
-      console.error("Error fetching addresses:", error);
-    } finally {
-      setIsLoadingAddresses(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchAddresses();
-  }, [user]);
 
   const handleAddressSelected = async (address: Address | null) => {
     setSelectedAddress(address);
@@ -250,19 +242,20 @@ export default function CheckoutList() {
           {/* Delivery Details Section */}
           <section>
             <h2 className="text-xl md:text-2xl font-bold mb-6 flex items-center gap-3">
-              <span className="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center text-sm font-bold">
+              <span className="w-8 h-8 rounded-none border border-black bg-black text-white flex items-center justify-center text-sm font-bold shadow-[2px_2px_0px_rgba(0,0,0,1)]">
                 1
               </span>
               Delivery Details
             </h2>
-            <div className="border border-black/10 rounded-[20px] p-6 sm:p-8">
+            <div className="border border-black rounded-none bg-white p-6 sm:p-8">
               {user ? (
                 <AddressStep
                   addresses={addresses}
                   onAddressSelected={handleAddressSelected}
-                  onRefresh={fetchAddresses}
+                  onRefresh={refetchAddresses}
                   selectedAddress={selectedAddress || null}
                 />
+
               ) : (
                 <GuestAddressStep
                   guestAddress={guestAddress}
@@ -275,12 +268,12 @@ export default function CheckoutList() {
           {/* Payment Method Section */}
           <section>
             <h2 className="text-xl md:text-2xl font-bold mb-6 flex items-center gap-3">
-              <span className="w-8 h-8 rounded-full bg-black text-white flex items-center justify-center text-sm font-bold">
+              <span className="w-8 h-8 rounded-none border border-black bg-black text-white flex items-center justify-center text-sm font-bold shadow-[2px_2px_0px_rgba(0,0,0,1)]">
                 2
               </span>
               Payment Method
             </h2>
-            <div className="border border-black/10 rounded-[20px] p-6 sm:p-8">
+            <div className="border border-black rounded-none bg-white p-6 sm:p-8">
               <PaymentStep
                 onSelectPayment={onSelectPayment}
                 selectedPayment={selectedPayment}
@@ -306,7 +299,7 @@ export default function CheckoutList() {
 
             <button
               disabled={isPlacingOrder || isNextDisabled}
-              className="w-full py-4 bg-black text-white rounded-full font-bold text-lg hover:bg-black/80 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="w-full py-4 bg-black text-white font-bold border border-black hover:bg-white hover:text-black transition-colors uppercase tracking-widest text-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 rounded-none"
               onClick={handlePlaceOrder}
             >
               {isPlacingOrder ? (

@@ -32,7 +32,7 @@ export default function ProductSection({ title, products, viewAllLink }: Product
         <div className="mt-8 sm:mt-12 flex justify-center">
           <Link
             href={viewAllLink}
-            className="px-14 py-4 border border-black/10 rounded-full font-satoshi font-medium hover:bg-black hover:text-white transition-all w-full sm:w-fit text-center"
+            className="px-14 py-4 border border-black rounded-none bg-white text-black hover:bg-black hover:text-white uppercase tracking-widest text-sm font-bold transition-all w-full sm:w-fit text-center"
           >
             View All
           </Link>

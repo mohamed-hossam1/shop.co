@@ -3,17 +3,7 @@ import Link from "next/link";
 import { CheckCircle, Home, ShoppingBag } from "lucide-react";
 import ROUTES from "@/constants/routes";
 import { redirect } from "next/navigation";
-import type { Metadata } from "next";
 
-export const metadata: Metadata = {
-  title: "Order Successful | Cura",
-  description:
-    "Your order has been placed successfully. Track your order and view details.",
-  robots: {
-    index: false,
-    follow: false,
-  },
-};
 
 async function getOrderDetails(orderId: string, isGuest: boolean) {
   const { createClient } = await import("@/lib/supabase/server");
@@ -86,7 +76,7 @@ export default async function OrderSuccessPage({
     <div className="min-h-screen bg-gray-50 px-4 py-10">
       <div className="max-w-4xl mx-auto space-y-8">
         <div className="bg-white border border-black p-6 sm:p-8 flex items-center gap-4">
-          <div className="w-14 h-14 border border-black bg-black flex items-center justify-center flex-shrink-0">
+          <div className="w-14 h-14 border border-black bg-black flex items-center justify-center shrink-0">
             <CheckCircle className="w-7 h-7 text-white" />
           </div>
 

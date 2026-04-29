@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, Search as SearchIcon, X } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { motion, AnimatePresence } from "motion/react";
 
 import ROUTES from "@/constants/routes";
@@ -75,7 +75,9 @@ export default function Navbar() {
           </div>
 
           <div className="hidden md:flex flex-1 max-w-[600px]">
-            <Searchbar />
+            <Suspense fallback={<div className="w-full h-10 bg-white border border-black animate-pulse" />}>
+              <Searchbar />
+            </Suspense>
           </div>
 
           <div className="flex items-center gap-2 sm:gap-4 font-satoshi">
@@ -104,7 +106,9 @@ export default function Navbar() {
             >
               <div className="flex items-center gap-2">
                 <div className="flex-1">
-                  <Searchbar autoFocus={true} />
+                  <Suspense fallback={<div className="w-full h-10 bg-white border border-black animate-pulse" />}>
+                    <Searchbar autoFocus={true} />
+                  </Suspense>
                 </div>
                 <button 
                   onClick={() => setIsSearchOpen(false)}

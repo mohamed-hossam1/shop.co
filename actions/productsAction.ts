@@ -3,24 +3,22 @@
 import { requireAdmin } from "@/lib/auth/admin";
 import { revalidateCatalogPaths } from "@/lib/admin/revalidate";
 import { createClient } from "@/lib/supabase/server";
+import { AdminProductFilters } from "@/types/Admin";
 import {
+  AdminProductListItem,
   CreateProductInput,
   ProductDetails,
   ProductListItem,
 } from "@/types/Product";
 
 export async function getProducts({
-  searchQuery,
+  search,
   isTopSelling,
   isNewArrival,
   categoryId,
-}: {
-  searchQuery?: string;
-  isTopSelling?: boolean;
-  isNewArrival?: boolean;
-  categoryId?: number;
-} = {}): Promise<
-  | { success: true; data: ProductListItem[] }
+  showDeleted,
+}: AdminProductFilters = {}): Promise<
+  | { success: true; data: AdminProductListItem[] }
   | { success: false; message: string }
 > {
   const supabase = await createClient();
@@ -30,8 +28,8 @@ export async function getProducts({
     .select("*")
     .order("created_at", { ascending: false });
 
-  if (searchQuery) {
-    query = query.ilike("title", `%${searchQuery}%`);
+  if (search) {
+    query = query.ilike("title", `%${search}%`);
   }
 
   if (isTopSelling) {
@@ -46,13 +44,17 @@ export async function getProducts({
     query = query.eq("category_id", categoryId);
   }
 
+  if (!showDeleted) {
+    query = query.eq("is_deleted", false);
+  }
+
   const { data, error } = await query;
 
   if (error) {
     return { success: false, message: "Failed to fetch products" };
   }
 
-  return { success: true, data: data as ProductListItem[] };
+  return { success: true, data: data as AdminProductListItem[] };
 }
 
 
@@ -73,7 +75,6 @@ export async function getProductById(
     `,
     )
     .eq("id", id)
-    .eq("is_deleted", false)
     .single();
 
   if (error || !data) {

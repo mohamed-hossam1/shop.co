@@ -39,3 +39,11 @@ export interface AdminUserFilters {
 }
 
 export interface DeliveryInput extends Pick<Delivery, "city" | "delivery_fee"> {}
+
+export interface AdminProductFilters {
+  search?: string;
+  categoryId?: number;
+  isNewArrival?: boolean;
+  isTopSelling?: boolean;
+  showDeleted?: boolean;
+}

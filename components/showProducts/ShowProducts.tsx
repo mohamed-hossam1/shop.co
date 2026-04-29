@@ -29,7 +29,7 @@ export default async function ShowProducts({
   }
 
   const productsRes = await getProducts({
-    searchQuery,
+    search: searchQuery,
     isTopSelling,
     isNewArrival,
     categoryId: effectiveCategoryId,

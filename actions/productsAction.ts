@@ -1,5 +1,7 @@
 "use server";
 
+import { requireAdmin } from "@/lib/auth/admin";
+import { revalidateCatalogPaths } from "@/lib/admin/revalidate";
 import { createClient } from "@/lib/supabase/server";
 import {
   CreateProductInput,
@@ -154,6 +156,12 @@ export async function createProduct(
 ): Promise<
   { success: true; data: { id: number } } | { success: false; message: string }
 > {
+  try {
+    await requireAdmin();
+  } catch {
+    return { success: false, message: "Unauthorized" };
+  }
+
   const supabase = await createClient();
 
   if (!input.title) {
@@ -171,6 +179,9 @@ export async function createProduct(
       description: input.description,
       category_id: input.category_id,
       image_cover: input.image_cover,
+      new_arrival_rank: input.new_arrival_rank ?? null,
+      top_selling_rank: input.top_selling_rank ?? null,
+      category_rank: input.category_rank ?? null,
       is_deleted: false,
     })
     .select("id")
@@ -208,6 +219,7 @@ export async function createProduct(
     }
   }
 
+  revalidateCatalogPaths(product.id);
   return {
     success: true,
     data: { id: product.id },
@@ -218,6 +230,12 @@ export async function updateFullProduct(
   id: number,
   input: CreateProductInput,
 ): Promise<{ success: true } | { success: false; message: string }> {
+  try {
+    await requireAdmin();
+  } catch {
+    return { success: false, message: "Unauthorized" };
+  }
+
   const supabase = await createClient();
 
   const { error } = await supabase.rpc("update_full_product", {
@@ -234,12 +252,32 @@ export async function updateFullProduct(
     return { success: false, message: error.message };
   }
 
+  const { error: rankError } = await supabase
+    .from("products")
+    .update({
+      new_arrival_rank: input.new_arrival_rank ?? null,
+      top_selling_rank: input.top_selling_rank ?? null,
+      category_rank: input.category_rank ?? null,
+    })
+    .eq("id", id);
+
+  if (rankError) {
+    return { success: false, message: rankError.message };
+  }
+
+  revalidateCatalogPaths(id);
   return { success: true };
 }
 
 export async function deleteProduct(
   id: number,
 ): Promise<{ success: true } | { success: false; message: string }> {
+  try {
+    await requireAdmin();
+  } catch {
+    return { success: false, message: "Unauthorized" };
+  }
+
   const supabase = await createClient();
 
   const { error } = await supabase
@@ -251,5 +289,6 @@ export async function deleteProduct(
     return { success: false, message: error.message };
   }
 
+  revalidateCatalogPaths(id);
   return { success: true };
 }

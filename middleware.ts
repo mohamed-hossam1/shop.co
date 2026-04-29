@@ -33,6 +33,7 @@ export async function middleware(request: NextRequest) {
   const protectedRoutes = [
     "/profile",
     "/settings",
+    "/admin",
   ];
 
   const isProtected = protectedRoutes.some((route) =>

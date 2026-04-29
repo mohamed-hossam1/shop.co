@@ -1,7 +1,11 @@
 "use server";
 
+import { requireAdmin } from "@/lib/auth/admin";
+import { ADMIN_ROLES } from "@/lib/admin";
+import { revalidateUserPaths } from "@/lib/admin/revalidate";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
+import { AdminRole, AdminUserFilters } from "@/types/Admin";
 import { User } from "@/types/User";
 
 interface UserData {
@@ -170,4 +174,120 @@ export async function UpdateUserPassword({
   await supabase.auth.signOut();
 
   return { success: true };
+}
+
+export async function getAdminUsers(
+  filters: AdminUserFilters = {},
+): Promise<{ success: true; data: User[] } | { success: false; message: string }> {
+  try {
+    await requireAdmin();
+  } catch {
+    return { success: false, message: "Unauthorized" };
+  }
+
+  const supabase = await createClient();
+  const { search, role } = filters;
+
+  let query = supabase
+    .from("users")
+    .select("*")
+    .order("created_at", { ascending: false });
+
+  if (search) {
+    const term = search.trim();
+    query = query.or(`name.ilike.%${term}%,email.ilike.%${term}%,phone.ilike.%${term}%`);
+  }
+
+  if (role) {
+    query = query.eq("role", role);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    return { success: false, message: error.message };
+  }
+
+  return { success: true, data: data as User[] };
+}
+
+export async function getAdminUserById(
+  userId: string,
+): Promise<{ success: true; data: User } | { success: false; message: string }> {
+  try {
+    await requireAdmin();
+  } catch {
+    return { success: false, message: "Unauthorized" };
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("users")
+    .select("*")
+    .eq("id", userId)
+    .maybeSingle();
+
+  if (error || !data) {
+    return { success: false, message: "User not found" };
+  }
+
+  return { success: true, data: data as User };
+}
+
+export async function updateUserRole(
+  userId: string,
+  role: AdminRole,
+): Promise<{ success: true; data: User } | { success: false; message: string }> {
+  let currentAdmin: User;
+  try {
+    currentAdmin = await requireAdmin();
+  } catch {
+    return { success: false, message: "Unauthorized" };
+  }
+
+  if (!ADMIN_ROLES.includes(role)) {
+    return { success: false, message: "Invalid role selected." };
+  }
+
+  if (currentAdmin.id === userId && role !== "admin") {
+    return { success: false, message: "You cannot remove your own admin access." };
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("users")
+    .update({ role })
+    .eq("id", userId)
+    .select("*")
+    .single();
+
+  if (error) {
+    return { success: false, message: error.message };
+  }
+
+  revalidateUserPaths(userId);
+  return { success: true, data: data as User };
+}
+
+export async function deleteUserAccess(
+  userId: string,
+): Promise<{ success: true; message: string } | { success: false; message: string }> {
+  let currentAdmin: User;
+  try {
+    currentAdmin = await requireAdmin();
+  } catch {
+    return { success: false, message: "Unauthorized" };
+  }
+
+  if (currentAdmin.id === userId) {
+    return { success: false, message: "You cannot remove your own access." };
+  }
+
+  const result = await DeleteUser(userId);
+  if (!result.success) {
+    return result;
+  }
+
+  revalidateUserPaths(userId);
+  return { success: true, message: "User access removed successfully." };
 }

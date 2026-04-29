@@ -1,0 +1,191 @@
+# Admin Dashboard Development Plan
+
+## Summary
+- Build the dashboard inside the existing Next.js app as a dedicated `/admin` surface using App Router route groups and shared admin components.
+- Reuse existing server actions for products, categories, promo mutations, and order status updates wherever they already cover the needed behavior.
+- Add only the missing admin-only action surface required for global administration: global order reads, global user reads/role updates, promo listing, and delivery CRUD.
+- Keep Supabase, the current schema, and existing business logic intact; do not add `app/api` routes or a separate backend.
+- Treat stock integrity, order integrity, and payment-proof limitations as explicit late-phase hardening work so the dashboard does not expose unsafe production workflows.
+
+## Planned Admin Surface
+- `app/(admin)/admin/layout.tsx` for the admin shell and authorization gate.
+- `app/(admin)/admin/page.tsx` for a simple module index, not an analytics dashboard.
+- `app/(admin)/admin/products/*` for product CRUD and variant/image editing.
+- `app/(admin)/admin/categories/*` for category CRUD.
+- `app/(admin)/admin/orders/*` for order queue and order detail review.
+- `app/(admin)/admin/promo-codes/*` for coupon management.
+- `app/(admin)/admin/delivery/*` for city and fee management.
+- `app/(admin)/admin/users/*` for customer/admin account management.
+- `components/admin/*` for tables, filters, forms, confirm dialogs, and shared status badges.
+
+## Important Changes to Interfaces, Actions, and Types
+- Add admin route constants for `/admin` and each module path.
+- Add a server-side `requireAdmin()` helper and apply it to every action callable from the dashboard.
+- Extend the product admin input contract to include `new_arrival_rank`, `top_selling_rank`, and `category_rank`, because the storefront depends on them and the current product write contract does not expose them.
+- Add admin-only order read actions: `getAdminOrders(filters)` and `getAdminOrderById(orderId)`.
+- Add admin-only promo list action: `getPromoCodes(filters?)`.
+- Add admin-only delivery actions: `getDeliverySettings()`, `createDeliverySetting(data)`, `updateDeliverySetting(id, data)`, `deleteDeliverySetting(id)`.
+- Add admin-only user actions: `getAdminUsers(filters)`, `getAdminUserById(userId)`, `updateUserRole(userId, role)`, and `deleteUserAccess(userId)` as a guarded wrapper around the existing auth-user delete behavior.
+- Add UI-facing constants/types for bounded order statuses, admin filters, and admin table row shapes.
+- Add revalidation coverage for public pages affected by admin writes: `/`, `/products`, `/products/[id]`, `/checkout`, and admin module pages.
+
+## Phase 1: Admin Foundation and Access Control
+**Purpose**
+- Establish a secure admin entry point and shared shell before any management UI is exposed.
+
+**Scope**
+- Add the `/admin` route group and dedicated admin layout separate from the storefront shell.
+- Build the admin sidebar, header, breadcrumb pattern, empty states, loading states, and mutation feedback pattern.
+- Add `/admin` to auth protection for unauthenticated redirects.
+- Enforce `users.role === "admin"` in the admin layout and in every admin-exposed server action through a shared guard.
+- Keep the landing page as a simple module index with links only; no reporting widgets in the first milestone.
+
+**Key Outcomes**
+- Signed-out users cannot access `/admin`.
+- Signed-in non-admin users are blocked from admin pages and admin actions.
+- The project has a stable admin shell that later modules can plug into without rework.
+
+**Dependencies**
+- Existing Supabase session auth.
+- Existing `users.role` field.
+- Current App Router layout structure and middleware.
+
+## Phase 2: Catalog Management
+**Purpose**
+- Deliver the highest-value operational controls first by exposing existing product and category logic.
+
+**Scope**
+- Add category list/create/edit/delete screens using the existing category actions.
+- Add product list/search/filter views using `getProducts()` and category lookup.
+- Add product create and edit pages using `createProduct()`, `getProductById()`, `updateFullProduct()`, and `deleteProduct()`.
+- Add variant editing for color, size, SKU, stock, price, and compare-at price.
+- Add cover-image and gallery-image inputs as URL/path fields only.
+- Add merchandising-rank editing for `new_arrival_rank`, `top_selling_rank`, and `category_rank`.
+- Keep delete behavior as the existing soft delete through `is_deleted`.
+
+**Key Outcomes**
+- Admins can create, edit, and soft-delete products.
+- Admins can manage categories without touching the database directly.
+- Admins can adjust variant stock and pricing from the UI.
+- Admins can control which products appear in new-arrival and top-selling storefront placements.
+
+**Dependencies**
+- Phase 1.
+- Existing `update_full_product` RPC.
+- Existing `products`, `product_variants`, `product_images`, and `categories` tables.
+
+## Phase 3: Orders Operations
+**Purpose**
+- Give admins a single operational queue for fulfillment and manual-payment review.
+
+**Scope**
+- Add an orders table with filters for status, payment method, date, customer type, and search by order ID or customer name.
+- Add order detail pages or drawers showing items, totals, address data, notes, payment method, and `payment_image` filename.
+- Reuse `updateOrderStatus()` for status transitions.
+- Add admin-only global order reads because current order reads are shopper-scoped.
+- Standardize admin UI status options to `pending`, `confirmed`, `shipped`, `delivered`, and `cancelled`, while still rendering legacy unknown statuses from data.
+
+**Key Outcomes**
+- Admins can view all orders, including guest orders.
+- Admins can inspect order contents and fulfillment details from one place.
+- Admins can move orders through a consistent status workflow.
+
+**Dependencies**
+- Phase 1.
+- Existing `orders` and `order_items` schema.
+- Existing order status update action.
+
+## Phase 4: Promotions and Delivery Settings
+**Purpose**
+- Expose the remaining checkout and merchandising controls that already live in the database.
+
+**Scope**
+- Add promo-code list/create/edit/delete screens.
+- Add filters for active, inactive, expired, and usage-capped promo codes.
+- Add a promo list action because the current promo surface validates and mutates but does not list.
+- Add delivery city/fee list and CRUD screens.
+- Add duplicate-city validation and numeric fee validation.
+- Revalidate or refetch checkout-dependent data after delivery changes.
+
+**Key Outcomes**
+- Admins can manage campaigns and discount rules from the dashboard.
+- Admins can add cities, change delivery fees, and remove obsolete delivery rows.
+- Checkout configuration changes no longer require direct Supabase edits.
+
+**Dependencies**
+- Phase 1.
+- Existing `coupons` and `delivery` tables.
+- Existing promo validation rules in `validatePromoCode()`.
+
+## Phase 5: User Administration
+**Purpose**
+- Add controlled customer and staff administration on top of the existing auth/profile model.
+
+**Scope**
+- Add user list/search/filter views by role, email, phone, and created date.
+- Add user detail pages showing profile data and related order history from the existing orders table.
+- Add role-management UI backed by `users.role`.
+- Add guarded admin-only user read and role-update actions.
+- Add a destructive access-removal flow that wraps the current auth delete capability with explicit confirmation.
+- Keep historical commerce data intact when removing auth access unless staging verification proves row cleanup is safe.
+
+**Key Outcomes**
+- Admins can inspect customer accounts and promote or demote admin access.
+- Admins can remove platform access without redesigning the existing auth model.
+- User administration is explicit about what “delete” means in the current system.
+
+**Dependencies**
+- Phase 1.
+- Existing `users` table and service-role client.
+- Existing `DeleteUser()` capability.
+
+## Phase 6: Hardening, Integrity, and Launch Readiness
+**Purpose**
+- Close the known production risks that become more visible once the admin UI exists.
+
+**Scope**
+- Add server-side ownership validation to `order-success` access so arbitrary `orderId` values do not expose unrelated orders.
+- Harden `createOrder()` so totals are recomputed from live variant prices and live coupon data, not only the submitted cart payload.
+- Surface low-stock and out-of-stock warnings in product and order admin screens.
+- Keep stock management manual in the initial dashboard release; do not auto-decrement stock without a reliable reservation/deduction design in the current schema.
+- Add explicit admin-side warnings that payment screenshots are not stored server-side and only the filename is available today.
+- Add write-path revalidation so storefront content reflects admin edits predictably.
+- Audit every admin mutation to ensure non-admin callers are rejected server-side, not only hidden in the UI.
+
+**Key Outcomes**
+- The admin dashboard does not widen current order-access and integrity risks.
+- Product and checkout data stay fresher after admin changes.
+- The team has clear operational limits around stock and payment-proof handling.
+
+**Dependencies**
+- Phases 1 through 5.
+- Existing checkout and order actions.
+- Staging verification of current delete and order behaviors.
+
+## Test Cases and Scenarios
+1. A signed-out user hitting `/admin/products` is redirected to sign-in with a return path.
+2. A signed-in non-admin user is denied access to `/admin` and receives the same denial when attempting an admin mutation directly.
+3. Product creation succeeds with multiple variants and gallery images, then appears correctly on the storefront after revalidation.
+4. Product edit updates variant stock, pricing, and merchandising ranks without breaking the existing PDP shape.
+5. Product delete only soft-deletes and removed products no longer appear in shopper-facing listing queries.
+6. Order administration shows both authenticated and guest orders and allows status changes that persist correctly.
+7. Unknown historical order statuses still render in the admin UI and can be normalized by saving a supported status.
+8. Promo-code create/edit/delete flows preserve existing validation rules for expiry, usage caps, and minimum purchase.
+9. Delivery fee changes are reflected in checkout city selection and fee lookup after refetch.
+10. User role changes immediately affect access to `/admin`.
+11. User access removal behavior is verified in staging so the UI copy matches the real auth/profile side effects.
+12. `order-success` rejects unrelated order IDs for both authenticated and guest flows.
+13. `createOrder()` rejects stale pricing or invalid coupon data when cart payload values no longer match live data.
+14. Admin screens clearly indicate that payment proof is filename-only and not a retrievable uploaded asset.
+
+## Assumptions and Defaults
+- The admin dashboard lives at `/admin`.
+- `users.role === "admin"` is the only privileged role in the first release; all other values are treated as non-admin.
+- No `app/api` routes will be introduced; all admin behavior stays on server actions.
+- Product and category images are managed as URL/path strings in the first release; no upload pipeline is added.
+- Product deletion remains a soft delete.
+- The admin landing page is operational navigation, not analytics/reporting.
+- The initial order-status vocabulary is `pending`, `confirmed`, `shipped`, `delivered`, and `cancelled`.
+- Stock remains manually managed through variant editing in this dashboard plan; automatic deduction is intentionally deferred because the current schema does not safely track it.
+- Payment-proof review is limited to the stored filename until a real file-storage flow exists.
+- “Delete user” in the first release means removing auth access through the existing capability, while preserving historical commerce records unless staging proves deeper cleanup is safe.

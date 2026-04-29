@@ -1,4 +1,8 @@
+"use server";
+
 import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/auth/admin";
+import { revalidateCategoryPaths } from "@/lib/admin/revalidate";
 import { Category } from "@/types/Product";
 
 // -- Fetch Operations --
@@ -33,6 +37,12 @@ export async function getCategoryById(id: number): Promise<{ success: true; data
 
 // -- Write Operations --
 export async function createCategory(categoryData: Omit<Category, "id">): Promise<{ success: true; message: string; data: Category } | { success: false; message: string }> {
+  try {
+    await requireAdmin();
+  } catch {
+    return { success: false, message: "Unauthorized" };
+  }
+
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("categories")
@@ -41,10 +51,17 @@ export async function createCategory(categoryData: Omit<Category, "id">): Promis
     .single();
 
   if (error) return { success: false, message: error.message };
+  revalidateCategoryPaths();
   return { success: true, message: "Category created successfully.", data: data as Category };
 }
 
 export async function updateCategory(id: number, categoryData: Partial<Omit<Category, "id">>): Promise<{ success: true; message: string; data: Category } | { success: false; message: string }> {
+  try {
+    await requireAdmin();
+  } catch {
+    return { success: false, message: "Unauthorized" };
+  }
+
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("categories")
@@ -54,10 +71,17 @@ export async function updateCategory(id: number, categoryData: Partial<Omit<Cate
     .single();
 
   if (error) return { success: false, message: error.message };
+  revalidateCategoryPaths();
   return { success: true, message: "Category updated successfully.", data: data as Category };
 }
 
 export async function deleteCategory(id: number): Promise<{ success: true; message: string } | { success: false; message: string }> {
+  try {
+    await requireAdmin();
+  } catch {
+    return { success: false, message: "Unauthorized" };
+  }
+
   const supabase = await createClient();
   const { error } = await supabase
     .from("categories")
@@ -65,6 +89,7 @@ export async function deleteCategory(id: number): Promise<{ success: true; messa
     .eq("id", id);
 
   if (error) return { success: false, message: error.message };
+  revalidateCategoryPaths();
   return { success: true, message: "Category deleted successfully." };
 }
 export async function getCategoryBySlug(

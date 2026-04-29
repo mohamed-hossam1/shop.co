@@ -53,6 +53,9 @@ export interface CreateProductInput {
   description?: string;
   category_id?: number;
   image_cover?: string;
+  new_arrival_rank?: number | null;
+  top_selling_rank?: number | null;
+  category_rank?: number | null;
   variants: {
     color: string;
     size: string;

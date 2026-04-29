@@ -1,7 +1,63 @@
 "use server";
 
+import { requireAdmin } from "@/lib/auth/admin";
+import { revalidatePromoPaths } from "@/lib/admin/revalidate";
 import { createClient } from "@/lib/supabase/server";
+import { AdminPromoFilters } from "@/types/Admin";
 import { PromoCode } from "@/types/PromoCode";
+
+export async function getPromoCodes(filters: AdminPromoFilters = {}): Promise<
+  { success: true; data: PromoCode[] } | { success: false; message: string }
+> {
+  try {
+    await requireAdmin();
+  } catch {
+    return { success: false, message: "Unauthorized" };
+  }
+
+  const supabase = await createClient();
+  const { search, status = "all" } = filters;
+
+  try {
+    let query = supabase
+      .from("coupons")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (search) {
+      query = query.ilike("code", `%${search}%`);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      return { success: false, message: error.message };
+    }
+
+    const now = new Date();
+    const filtered = (data as PromoCode[]).filter((promo) => {
+      const isExpired = promo.expires_at ? new Date(promo.expires_at) < now : false;
+      const isExhausted = promo.used_count >= promo.max_uses;
+
+      switch (status) {
+        case "active":
+          return promo.is_active && !isExpired && !isExhausted;
+        case "inactive":
+          return !promo.is_active;
+        case "expired":
+          return isExpired;
+        case "exhausted":
+          return isExhausted;
+        default:
+          return true;
+      }
+    });
+
+    return { success: true, data: filtered };
+  } catch (error: any) {
+    return { success: false, message: error.message || "Unexpected error." };
+  }
+}
 
 export async function validatePromoCode(promoCode: string, price: number): Promise<{
     success: true;
@@ -84,6 +140,12 @@ export async function validatePromoCode(promoCode: string, price: number): Promi
 }
 
 export async function createPromoCode(promoCodeData: Omit<PromoCode, "id" | "created_at" | "used_count">): Promise<{ success: true; message: string; data: PromoCode } | { success: false; message: string }> {
+  try {
+    await requireAdmin();
+  } catch {
+    return { success: false, message: "Unauthorized" };
+  }
+
   const supabase = await createClient();
 
   try {
@@ -100,6 +162,7 @@ export async function createPromoCode(promoCodeData: Omit<PromoCode, "id" | "cre
       return { success: false, message: error.message };
     }
 
+    revalidatePromoPaths();
     return { success: true, message: "Promo code created successfully.", data: data as PromoCode };
   } catch (error: any) {
     console.error("createPromoCode unexpected error", error);
@@ -108,6 +171,12 @@ export async function createPromoCode(promoCodeData: Omit<PromoCode, "id" | "cre
 }
 
 export async function updatePromoCode(id: number, promoCodeData: Partial<Omit<PromoCode, "id" | "created_at">>): Promise<{ success: true; message: string; data: PromoCode } | { success: false; message: string }> {
+  try {
+    await requireAdmin();
+  } catch {
+    return { success: false, message: "Unauthorized" };
+  }
+
   const supabase = await createClient();
 
   try {
@@ -122,6 +191,7 @@ export async function updatePromoCode(id: number, promoCodeData: Partial<Omit<Pr
       return { success: false, message: error.message };
     }
 
+    revalidatePromoPaths();
     return { success: true, message: "Promo code updated successfully.", data: data as PromoCode };
   } catch (error: any) {
     console.error("updatePromoCode unexpected error", error);
@@ -130,6 +200,12 @@ export async function updatePromoCode(id: number, promoCodeData: Partial<Omit<Pr
 }
 
 export async function deletePromoCode(id: number): Promise<{ success: true; message: string } | { success: false; message: string }> {
+  try {
+    await requireAdmin();
+  } catch {
+    return { success: false, message: "Unauthorized" };
+  }
+
   const supabase = await createClient();
 
   try {
@@ -142,6 +218,7 @@ export async function deletePromoCode(id: number): Promise<{ success: true; mess
       return { success: false, message: error.message };
     }
 
+    revalidatePromoPaths();
     return { success: true, message: "Promo code deleted successfully." };
   } catch (error: any) {
     console.error("deletePromoCode unexpected error", error);

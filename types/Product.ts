@@ -26,6 +26,10 @@ export type ProductListItem = {
   min_price_before: number;
 };
 
+export type AdminProductListItem = ProductListItem & {
+  is_deleted: boolean;
+};
+
 export type ProductVariant = {
   id: number;
   product_id: number;

@@ -9,12 +9,12 @@ export default async function ProductDetails({ id }: { id: string }) {
   const response = await getProductById(Number(id));
   const product = response.success ? response.data : null;
 
-  if (!product) {
+  if (!product || product.is_deleted) {
     return (
-      <div className="max-w-[1450px] px-5 m-auto mt-12 text-center py-20">
-        <h1 className="text-3xl font-bold mb-4">Product Not Found</h1>
-        <p className="text-gray-500">
-          The product you're looking for doesn't exist or has been removed.
+      <div className="max-w-[1450px] px-5 m-auto mt-12 text-center py-20 font-satoshi">
+        <h1 className="text-3xl font-bold mb-4 font-integral">Product Not Available</h1>
+        <p className="text-black/50">
+          The product you're looking for is currently unavailable or has been removed.
         </p>
       </div>
     );

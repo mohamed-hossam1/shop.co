@@ -1,5 +1,5 @@
 <!-- SPECKIT START -->
-<!-- Current feature plan: specs/001-admin-foundation/plan.md -->
+<!-- Current feature plan: specs/002-admin-catalog-mgmt/plan.md -->
 # AI_CONTEXT
 
 Note: This file reflects the current repo state. Branding/content is inconsistent across the codebase: `Cura` appears in README/SEO/auth metadata, while `ELARIS` and `SHOP.CO` appear in UI copy, and parts of the home page still use fashion-template content.

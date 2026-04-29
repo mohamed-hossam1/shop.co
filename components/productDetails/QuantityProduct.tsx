@@ -4,9 +4,19 @@ import { useCart } from "@/stores/cartStore";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { ProductDetails, ProductVariant } from "@/types/Product";
-import Swal from "sweetalert2";
+import Toast from "@/components/ui/Toast";
 
 export default function QuantityProduct({ product }: { product: ProductDetails }) {
+  const [toast, setToast] = useState<{
+    show: boolean;
+    message: string;
+    type: "success" | "error";
+  }>({
+    show: false,
+    message: "",
+    type: "success",
+  });
+  
   const variants = product.variants || [];
   const [selectedColor, setSelectedColor] = useState<string>(
     variants[0]?.color || "",
@@ -70,32 +80,26 @@ export default function QuantityProduct({ product }: { product: ProductDetails }
       });
 
       if (res && !res.success) {
-        Swal.fire({
-          icon: "error",
-          title: "Error",
-          text: res.message || "Failed to add to cart",
-          confirmButtonColor: "#000",
+        setToast({
+          show: true,
+          message: res.message || "Failed to add to cart",
+          type: "error",
         });
         return;
       }
 
-      await Swal.fire({
-        position: "top-end",
-        icon: "success",
-        title: "Added to cart",
-        showConfirmButton: false,
-        timer: 1500,
-        timerProgressBar: true,
-        toast: true,
+      setToast({
+        show: true,
+        message: "Product added to cart successfully",
+        type: "success",
       });
 
       setQuantity(1);
     } catch (e: any) {
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: e.message || "An unexpected error occurred",
-        confirmButtonColor: "#000",
+      setToast({
+        show: true,
+        message: e.message || "An unexpected error occurred",
+        type: "error",
       });
     } finally {
       setIsLoading(false);
@@ -222,7 +226,7 @@ export default function QuantityProduct({ product }: { product: ProductDetails }
           disabled={isLoading || isOutOfStock}
         >
           {isLoading ? (
-            <div className="h-6 w-6 border-2 border-white/30 border-t-white animate-spin"></div>
+            <div className="h-6 w-6 border-2 border-black/30 border-t-black animate-spin"></div>
           ) : isOutOfStock ? (
             "Sold Out"
           ) : (
@@ -236,6 +240,13 @@ export default function QuantityProduct({ product }: { product: ProductDetails }
           Only {stock} available in stock for this variant!
         </p>
       )}
+
+      <Toast
+        isVisible={toast.show}
+        message={toast.message}
+        type={toast.type}
+        onClose={() => setToast({ ...toast, show: false })}
+      />
     </div>
   );
 }

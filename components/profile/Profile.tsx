@@ -1,107 +1,113 @@
-"use client"
+"use client";
 
 import { useUser } from "@/stores/userStore";
 import ROUTES from "@/constants/routes";
 import Link from "next/link";
+import { User, MapPin, Settings, ShieldCheck } from "lucide-react";
 
 export default function Profile({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const userContext = useUser();
-  const userData = userContext.user;
-  if (userContext.isLoading) return <></>;
-  if (!userData) return <div className="p-10 text-center">User not found. Please log in.</div>;
+  const { user: userData, isLoading } = useUser();
+
+  if (isLoading) return null;
+
+  if (!userData) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] px-4 font-satoshi">
+        <p className="text-xl font-black uppercase tracking-widest mb-6 text-black/20">Access Denied</p>
+        <Link 
+          href={ROUTES.SIGNIN}
+          className="px-12 py-5 bg-black text-white font-black text-xs uppercase tracking-[0.3em] border border-black hover:bg-white hover:text-black transition-all"
+        >
+          Login Required
+        </Link>
+      </div>
+    );
+  }
+
   return (
-    <div className="flex-1 p-4 sm:p-6">
-      <div className="w-full">
-        <div className="mb-6 sm:mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">My Profile</h1>
-          <div className="h-1 w-20 bg-gradient-to-r from-[#1F1F6F] to-[#14274E] rounded-full" />
+    <div className="bg-white font-satoshi">
+      <div className="max-w-[1000px] mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-24">
+        
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-20">
+          <div className="space-y-4">
+            <div className="flex items-center gap-4">
+              <div className="w-20 h-20 sm:w-24 sm:h-24 bg-black flex items-center justify-center text-white text-3xl sm:text-4xl font-black font-integral border border-black shadow-[8px_8px_0px_rgba(0,0,0,0.1)]">
+                {userData?.name?.[0] ?? "U"}
+              </div>
+              <div>
+                <h1 className="text-3xl sm:text-5xl font-integral font-black tracking-wider uppercase text-black">
+                  {userData?.name}
+                </h1>
+                <p className="text-black/40 text-xs sm:text-sm font-bold uppercase tracking-[0.3em] mt-1">
+                  Verified Member
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex gap-4">
+            <Link
+              href="/profile/settings"
+              className="px-8 py-4 bg-black text-white text-[10px] font-black uppercase tracking-[0.2em] border border-black hover:bg-white hover:text-black transition-all flex items-center gap-2"
+            >
+              <Settings className="w-4 h-4" />
+              Settings
+            </Link>
+          </div>
         </div>
 
-        <div className="space-y-6">
-          <div className="w-full space-y-4 md:space-y-6 lg:space-y-8">
-            <div className="bg-white rounded-xl md:rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-              <div className="h-20 md:h-32 bg-gradient-to-r from-[#1F1F6F] to-[#14274E] relative">
-                <div className="absolute inset-0 bg-black/10" />
+        <div className="grid gap-20">
+          <div className="grid md:grid-cols-2 gap-12">
+            <section className="space-y-8">
+              <div className="flex items-center gap-4 border-b border-black pb-4">
+                <User className="w-5 h-5 text-black" />
+                <h3 className="text-xs font-black uppercase tracking-[0.3em] text-black">Contact Details</h3>
               </div>
-
-              <div className="px-3 md:px-4 lg:px-8 py-4 md:py-6 lg:py-8 relative">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 md:space-x-6">
-                  <div className="relative mb-3 sm:mb-0 -mt-12 md:-mt-20">
-                    <div className="w-20 h-20 md:w-24 md:h-24 bg-gradient-to-r from-[#1F1F6F] to-[#14274E] rounded-full flex items-center justify-center text-white text-lg md:text-3xl font-bold border-3 md:border-4 border-white shadow-lg">
-                      {userData?.name?.[0] ?? "U"}
-                    </div>
-                    <div className="absolute bottom-1 left-14 md:-bottom-1 md:-right-1 w-4 h-4 md:w-6 md:h-6 bg-green-500 rounded-full border-2 border-white" />
-                  </div>
-
-                  <div className="flex-1">
-                    <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-1">
-                      {userData?.name}
-                    </h1>
-                    <p className="text-sm md:text-base text-gray-600 mb-2 break-all">
-                      {userData?.email}
-                    </p>
-                  </div>
-
-                  <div className="flex space-x-2 md:space-x-3 mt-3 sm:mt-0">
-                    <Link
-                      href={ROUTES.SETTINGS}
-                      className="px-3 md:px-4 py-1.5 md:py-2  text-white rounded-lg bg-gradient-to-r from-[#1F1F6F] to-[#14274E] hover:from-[#14274E] hover:to-[#394867]  cursor-pointer transition-colors text-xs md:text-sm font-medium"
-                    >
-                      Edit Profile
-                    </Link>
-                  </div>
+              
+              <div className="space-y-6">
+                <div className="space-y-1">
+                  <span className="text-[10px] uppercase font-black text-black/30 tracking-widest">Email Address</span>
+                  <p className="text-lg font-bold text-black lowercase">{userData?.email}</p>
+                </div>
+                <div className="space-y-1">
+                  <span className="text-[10px] uppercase font-black text-black/30 tracking-widest">Phone Number</span>
+                  <p className="text-lg font-bold text-black tracking-widest">{userData?.phone || "Not Set"}</p>
                 </div>
               </div>
-            </div>
+            </section>
+
+            <section className="space-y-8">
+              <div className="flex items-center gap-4 border-b border-black pb-4">
+                <ShieldCheck className="w-5 h-5 text-black" />
+                <h3 className="text-xs font-black uppercase tracking-[0.3em] text-black">Account Security</h3>
+              </div>
+              <div className="bg-black/5 p-6 border border-black/5 group hover:border-black transition-all">
+                <p className="text-xs font-bold text-black/60 uppercase tracking-widest leading-relaxed">
+                  Your account is protected with standard encryption. Manage your password and security settings in the dashboard.
+                </p>
+                <Link href="/profile/settings" className="inline-block mt-6 text-[10px] font-black uppercase tracking-[0.2em] text-black border-b border-black pb-1 hover:opacity-50 transition-all">
+                  Update Password
+                </Link>
+              </div>
+            </section>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-3 md:p-4 lg:p-6">
-            <div className="flex items-center justify-between mb-4 md:mb-6">
-              <h2 className="text-base md:text-xl font-semibold text-gray-900">
-                Personal Information
-              </h2>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 lg:gap-6">
-              <div>
-                <label className="block text-lg md:text-sm font-medium text-gray-700 mb-1 md:mb-2">
-                  Name
-                </label>
-                <div className="text-sm md:text-base text-gray-900 bg-gray-100 px-2 md:px-3 py-1.5 md:py-3 rounded-lg">
-                  {userData?.name}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">
-                  Email
-                </label>
-                <div className="text-sm md:text-base text-gray-900 bg-gray-100 px-2 md:px-3 py-1.5 md:py-3 rounded-lg ">
-                  {userData?.email}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">
-                  Phone
-                </label>
-                <div className="text-sm md:text-base text-gray-900 bg-gray-100 px-2 md:px-3 py-1.5 md:py-3 rounded-lg">
-                  {userData?.phone}
-                </div>
-              </div>
-
-              <div className="sm:col-span-2">
-                <label className="block text-xs md:text-sm font-medium text-gray-700 mb-1 md:mb-2">
-                  Address
-                </label>
-                {children}
+          <section className="space-y-10">
+            <div className="flex items-center justify-between border-b border-black pb-4">
+              <div className="flex items-center gap-4">
+                <MapPin className="w-5 h-5 text-black" />
+                <h3 className="text-xs font-black uppercase tracking-[0.3em] text-black">Stored Addresses</h3>
               </div>
             </div>
-          </div>
+            
+            <div className="grid sm:grid-cols-2 gap-6">
+              {children}
+            </div>
+          </section>
         </div>
       </div>
     </div>

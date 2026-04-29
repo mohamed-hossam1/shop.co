@@ -32,7 +32,6 @@ export async function middleware(request: NextRequest) {
 
   const protectedRoutes = [
     "/profile",
-    "/orders",
     "/settings",
   ];
 

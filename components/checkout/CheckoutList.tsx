@@ -45,7 +45,6 @@ export default function CheckoutList() {
 
   const [selectedAddress, setSelectedAddress] = useState<Address | null>(null);
 
-  // Guest address data
   const [guestAddress, setGuestAddress] = useState({
     name: "",
     phone: "",
@@ -176,7 +175,7 @@ export default function CheckoutList() {
         paymentFile = instapayFile;
       }
 
-      // For logged in users, we Snapshot the address into guest_info as well if needed
+      const guestId = !user ? "guest_" + Date.now() : undefined;
       const result = await createOrder(
         {
           subtotal: price,
@@ -184,10 +183,10 @@ export default function CheckoutList() {
           total_price: total,
           delivery_fee: deliveryFee,
           payment_method: selectedPayment as string,
-          payment_image: paymentFile ? paymentFile.name : undefined, // Simplify file upload handling for now if it requires a cloud store step
+          payment_image: paymentFile ? paymentFile.name : undefined, 
           coupon_id: appliedPromo?.id,
           user_id: user?.id,
-          guest_id: !user ? "guest_" + Date.now() : undefined,
+          guest_id: guestId,
           city: user ? selectedAddress?.city! : guestAddress.city,
           area: user ? selectedAddress?.area! : guestAddress.area,
           address_line: user
@@ -199,6 +198,9 @@ export default function CheckoutList() {
       );
 
       if (result.success) {
+        if (!user && guestId) {
+          document.cookie = `guest-id=${guestId}; path=/; max-age=${30 * 24 * 60 * 60}`;
+        }
         await clearCart();
         setAppliedPromo(null);
 
@@ -279,14 +281,13 @@ export default function CheckoutList() {
                 selectedPayment={selectedPayment}
                 onVodafoneFileChange={setVodafoneFile}
                 onInstapayFileChange={setInstapayFile}
-                vodafoneNumber="01092288325"
-                instapayLink="https://ipn.eg/S/mahmoud.ashraf3420/instapay/27tw6b"
+                vodafoneNumber="01013429234"
+                instapayLink="https://instapay.com"
               />
             </div>
           </section>
         </div>
 
-        {/* Right Column - Summary */}
         <div className="w-full lg:flex-1">
           <div className="sticky top-28 space-y-6">
             <OrderSummary

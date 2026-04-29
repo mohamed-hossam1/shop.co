@@ -2,6 +2,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { CreateOrderData, Order } from "@/types/Order";
+import { cookies } from "next/headers";
 
 export async function createOrder(
   orderData: CreateOrderData,
@@ -90,35 +91,40 @@ export async function createOrder(
   }
 }
 
-export async function getOrdersByUserOrGuest(
-  userId?: string,
-  guestId?: string
-): Promise<{ success: true; data: Order[] } | { success: false; message: string }> {
+export async function getUserOrders(): Promise<Order[]> {
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  const cookieStore = await cookies();
+  const guestId = cookieStore.get("guest-id")?.value;
 
-  if (!userId && !guestId) {
-    return { success: false, message: "No user or guest ID provided" };
-  }
+  if (!user && !guestId) return [];
 
   let query = supabase.from("orders").select(`
     *,
     items:order_items (*)
   `).order("created_at", { ascending: false });
 
-  if (userId) {
-    query = query.eq("user_id", userId);
-  } else if (guestId) {
+  if (user) {
+    query = query.eq("user_id", user.id);
+  } else {
     query = query.eq("guest_id", guestId).is("user_id", null);
   }
 
-  const { data: orders, error } = await query;
+  const { data, error } = await query;
+  if (error) return [];
+  return data as Order[];
+}
 
-  if (error) {
-    console.error("Fetch orders error:", error);
-    return { success: false, message: "Failed to fetch orders" };
-  }
-
-  return { success: true, data: orders as Order[] };
+export async function getOrderItems(orderId: number) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("order_items")
+    .select("*")
+    .eq("order_id", orderId);
+    
+  if (error) return [];
+  return data;
 }
 
 export async function getOrderById(
@@ -134,7 +140,7 @@ export async function getOrderById(
   `).eq("id", orderId);
 
   if (userId) {
-    query = query.eq("user_id", userId); // ensure protection 
+    query = query.eq("user_id", userId);
   } else if (guestId) {
     query = query.eq("guest_id", guestId).is("user_id", null);
   }

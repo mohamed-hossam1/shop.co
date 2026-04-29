@@ -19,7 +19,7 @@ type Props = {
 export default function PaymentStep({
   onSelectPayment,
   selectedPayment,
-  vodafoneNumber = "0100 123 4567",
+  vodafoneNumber = "01013429234",
   instapayLink = "https://instapay.com",
   onVodafoneFileChange,
   onInstapayFileChange,
@@ -155,7 +155,6 @@ export default function PaymentStep({
       )}
 
       <div className="flex flex-col gap-4">
-        {/* Cash on Delivery */}
         <div
           onClick={() => onSelectPayment(payments[0])}
           className={`flex items-center justify-between p-4 border cursor-pointer transition-all rounded-none ${
@@ -180,7 +179,6 @@ export default function PaymentStep({
           </div>
         </div>
 
-        {/* Vodafone Cash */}
         <div
           onClick={() => onSelectPayment(payments[1])}
           className={`flex items-center justify-between p-4 border cursor-pointer transition-all rounded-none ${
@@ -298,7 +296,6 @@ export default function PaymentStep({
           </div>
         )}
 
-        {/* Instapay */}
         <div
           onClick={() => onSelectPayment(payments[2])}
           className={`flex items-center justify-between p-4 border cursor-pointer transition-all rounded-none ${

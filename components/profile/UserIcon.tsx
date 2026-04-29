@@ -1,60 +1,40 @@
 import { useUser } from "@/stores/userStore";
 
 export default function UserIcon({ isExpanded }: { isExpanded: boolean }) {
-  const userContext = useUser();
-  const userData = userContext.user;
-  if (userContext.isLoading) {
+  const { user: userData, isLoading } = useUser();
+
+  if (isLoading) {
     return (
-      <div className="flex flex-row-reverse items-center gap-2 font-semibold ">
-        <div className="hidden md:block">
-          <p
-            className={`${
-              isExpanded ? "opacity-100 block" : "opacity-0 hidden"
-            } transition-all duration-300 w-30 h-6 animate-pulse bg-gray-200 mb-2`}
-          ></p>
-          <p
-            className={`${
-              isExpanded ? "opacity-100 block" : "opacity-0 hidden"
-            } transition-all duration-300 text-gray-500 bg-gray-200 w-45 h-6 animate-pulse text-sm`}
-          ></p>
-        </div>
-        <div className="border-2 flex bg-gradient-to-r from-[#1F1F6F] to-[#14274E] items-center w-10 h-10 flex justify-center items-center rounded-full cursor-pointer border-primary transition-all duration-300">
-          
-        </div>
+      <div className="flex items-center gap-4">
+        <div className="w-12 h-12 bg-black/5 animate-pulse border border-black/10 shrink-0" />
+        {isExpanded && (
+          <div className="space-y-2">
+            <div className="w-24 h-4 bg-black/5 animate-pulse" />
+            <div className="w-32 h-3 bg-black/5 animate-pulse" />
+          </div>
+        )}
       </div>
     );
   }
+
   return (
-    <div className="flex flex-row-reverse items-center gap-2 font-semibold">
-      <div>
-        {userData && (
-          <p
-            className={`${
-              isExpanded ? "opacity-100 block" : "opacity-0 hidden"
-            } transition-all duration-300 `}
-          >
-            {userData.name}
-          </p>
-        )}
-        {userData && (
-          <p
-            className={`${
-              isExpanded ? "opacity-100 block" : "opacity-0 hidden"
-            } transition-all duration-300 text-gray-500 text-sm`}
-          >
-            {userData.email}
-          </p>
-        )}
+    <div className="flex items-center gap-4 font-satoshi">
+      <div className="w-12 h-12 bg-black flex items-center justify-center shrink-0 border border-black shadow-[2px_2px_0px_rgba(0,0,0,0.1)]">
+        <span className="text-white text-xl font-black font-integral">
+          {userData?.name?.[0] || "U"}
+        </span>
       </div>
-      <div className="border-2 flex bg-gradient-to-r from-[#1F1F6F] to-[#14274E]  items-center w-10 h-10 flex justify-center items-center rounded-full cursor-pointer border-primary transition-all duration-300">
-        {userData && (
-          <>
-            <p className="text-white text-center w-5 cursor-pointer font-bold">
-              {userData.name?.[0] || userData.email?.[0] || "U"}
-            </p>
-          </>
-        )}
-      </div>
+      
+      {isExpanded && (
+        <div className="flex flex-col min-w-0">
+          <p className="text-sm font-black text-black uppercase tracking-wider truncate">
+            {userData?.name || "User"}
+          </p>
+          <p className="text-[10px] text-black/40 font-bold uppercase tracking-widest truncate">
+            {userData?.email}
+          </p>
+        </div>
+      )}
     </div>
   );
 }

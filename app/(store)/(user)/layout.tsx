@@ -1,5 +1,4 @@
 import Navbar from "@/components/navbar";
-import Sidebar from "@/components/profile/Sidebar";
 import React from "react";
 
 export default function UserLayout({
@@ -8,12 +7,10 @@ export default function UserLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <>
-      <div className="flex min-h-screen bg-gray-100">
-        <Sidebar />
-
+    <div className="min-h-screen bg-white">
+      <main className="max-w-[1400px] mx-auto">
         {children}
-      </div>
-    </>
+      </main>
+    </div>
   );
 }

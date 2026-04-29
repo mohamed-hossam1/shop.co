@@ -1,10 +1,11 @@
 "use client";
 
 import { useFormik } from "formik";
-import { useTransition } from "react";
+import { useTransition, useState } from "react";
 import { UpdateUserProfile } from "@/actions/userAction";
 import * as Yup from "yup";
 import { useUser } from "@/stores/userStore";
+import Toast from "@/components/ui/Toast";
 
 interface AccountSettingsFormProps {
   initialName: string;
@@ -38,29 +39,28 @@ const InputField = ({
   disabled?: boolean;
   formik: any; 
 }) => (
-  <div className="w-full">
-    <label htmlFor={id} className="block text-sm font-medium text-primary mb-2">
+  <div className="w-full space-y-2">
+    <label htmlFor={id} className="text-[10px] uppercase font-black text-black/40 tracking-[0.2em] block">
       {label}
     </label>
     <input
       id={id}
-      className={`w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-prring-primary transition-all duration-300 ${
-        formik.touched[id as keyof typeof formik.values] &&
-        formik.errors[id as keyof typeof formik.values] &&
-        "border-red-500"
-      } ${disabled ? "bg-gray-100 cursor-not-allowed" : ""}`}
+      className={`w-full px-4 py-4 border border-black/10 font-bold text-black focus:border-black outline-none transition-all duration-300 placeholder:text-black/20 ${
+        formik.touched[id] && formik.errors[id] ? "border-red-500" : ""
+      } ${disabled ? "bg-black/5 cursor-not-allowed text-black/40 border-transparent" : ""}`}
       placeholder={placeholder}
       type={type}
       name={id}
-      value={formik.values[id as keyof typeof formik.values]}
+      value={formik.values[id]}
       onChange={formik.handleChange}
       onBlur={formik.handleBlur}
       disabled={disabled}
     />
-    <div className="text-red-500 mt-2">
-      {formik.touched[id as keyof typeof formik.values] &&
-        formik.errors[id as keyof typeof formik.values]}
-    </div>
+    {formik.touched[id] && formik.errors[id] && (
+      <div className="text-[10px] text-red-500 font-bold uppercase tracking-widest mt-1">
+        {formik.errors[id]}
+      </div>
+    )}
   </div>
 );
 
@@ -71,6 +71,7 @@ export default function AccountSettingsForm({
 }: AccountSettingsFormProps) {
   const [isPending, startTransition] = useTransition();
   const { updateUser } = useUser();
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
   const onSubmit = async (values: {
     name: string;
@@ -78,16 +79,17 @@ export default function AccountSettingsForm({
     phone: string;
   }) => {
     startTransition(async () => {
-      const { error } = await UpdateUserProfile(values);
+      const res = await UpdateUserProfile(values);
 
-      if (error) {
-        console.error("Update failed:", error);
+      if (!res.success) {
+        setToast({ message: res.message || "Failed to update profile", type: "error" });
       } else {
         updateUser({
           name: values.name,
           phone: values.phone,
           email: values.email,
         });
+        setToast({ message: "Profile updated successfully", type: "success" });
       }
     });
   };
@@ -103,54 +105,66 @@ export default function AccountSettingsForm({
   });
 
   return (
-    <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
-      <h2 className="text-xl font-bold text-primary mb-6">
-        Account Information
-      </h2>
-      <form className="space-y-6" onSubmit={formik.handleSubmit}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="bg-white border border-black p-8 sm:p-12 font-satoshi relative overflow-hidden">
+      <div className="mb-10">
+        <h2 className="text-2xl font-black font-integral uppercase tracking-wider text-black">
+          Account Details
+        </h2>
+        <div className="h-1 w-12 bg-black mt-2" />
+      </div>
+
+      <form className="space-y-8" onSubmit={formik.handleSubmit}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <InputField
             id="name"
-            label="Display Name"
-            placeholder="Enter your name"
+            label="Full Name"
+            placeholder="John Doe"
             formik={formik} 
           />
           <InputField
             id="email"
-            label="Email"
-            placeholder={"Emairl"}
+            label="Email Address"
+            placeholder="email@example.com"
             disabled={true}
             formik={formik} 
           />
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <InputField
             id="phone"
             label="Phone Number"
             type="tel"
-            placeholder="Enter your phone number"
+            placeholder="01xxxxxxxxx"
             formik={formik} 
           />
         </div>
 
-        <div className="flex justify-end pt-4">
+        <div className="flex justify-end pt-6 border-t border-black/5">
           <button
             type="submit"
-            className={` flex gap-2 justify-center items-center text-white py-3 px-6 rounded-xl font-semibold bg-gradient-to-r from-[#1F1F6F] to-[#14274E] hover:from-[#14274E] hover:to-[#394867]  transition-all duration-500 shadow-lg hover:shadow-xl ${
-              isPending
-                ? "bg-primary/70 hover:bg-primary/70 cursor-not-allowed"
-                : "cursor-pointer"
-            }`}
+            className={`px-10 py-4 bg-black text-white text-xs font-black uppercase tracking-[0.2em] border border-black hover:bg-white hover:text-black transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed`}
             disabled={isPending || !formik.dirty || !formik.isValid}
           >
             {isPending ? (
-              <div className="h-5 w-5 border-b-2 border-current rounded-full animate-spin"></div>
+              <>
+                <div className="h-4 w-4 border-2 border-white border-t-transparent animate-spin group-hover:border-black"></div>
+                <span>Saving...</span>
+              </>
             ) : (
               "Save Changes"
             )}
           </button>
         </div>
       </form>
+
+      {toast && (
+        <Toast 
+          message={toast.message} 
+          type={toast.type} 
+          isVisible={!!toast}
+          onClose={() => setToast(null)} 
+        />
+      )}
     </div>
   );
 }

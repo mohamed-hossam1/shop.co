@@ -1,11 +1,12 @@
 "use client";
 
 import { useFormik } from "formik";
-import { useTransition } from "react";
+import { useTransition, useState } from "react";
 import { UpdateUserPassword } from "@/actions/userAction";
 import * as Yup from "yup";
 import { useRouter } from "next/navigation";
 import ROUTES from "@/constants/routes";
+import Toast from "@/components/ui/Toast";
 
 const validationSchema = Yup.object({
   oldPassword: Yup.string().required("Current password is required"),
@@ -30,36 +31,33 @@ const InputField = ({
   placeholder: string;
   formik: any;
 }) => (
-  <div className="w-full">
-    <label
-      htmlFor={id}
-      className="block text-sm font-medium text-primary mb-2"
-    >
+  <div className="w-full space-y-2">
+    <label htmlFor={id} className="text-[10px] uppercase font-black text-black/40 tracking-[0.2em] block">
       {label}
     </label>
     <input
       id={id}
-      className={`w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-prring-primary transition-all duration-300 ${
-        formik.touched[id as keyof typeof formik.values] &&
-        formik.errors[id as keyof typeof formik.values] &&
-        "border-red-500"
+      className={`w-full px-4 py-4 border border-black/10 font-bold text-black focus:border-black outline-none transition-all duration-300 placeholder:text-black/20 ${
+        formik.touched[id] && formik.errors[id] ? "border-red-500" : ""
       }`}
       placeholder={placeholder}
       type={type}
       name={id}
-      value={formik.values[id as keyof typeof formik.values]}
+      value={formik.values[id]}
       onChange={formik.handleChange}
       onBlur={formik.handleBlur}
     />
-    <div className="text-red-500 mt-2">
-      {formik.touched[id as keyof typeof formik.values] &&
-        formik.errors[id as keyof typeof formik.values]}
-    </div>
+    {formik.touched[id] && formik.errors[id] && (
+      <div className="text-[10px] text-red-500 font-bold uppercase tracking-widest mt-1">
+        {formik.errors[id]}
+      </div>
+    )}
   </div>
 );
 
 export default function PasswordSettingsForm() {
   const [isPending, startTransition] = useTransition();
+  const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
   const router = useRouter();
 
   const onSubmit = async (values: {
@@ -67,11 +65,15 @@ export default function PasswordSettingsForm() {
     newPassword: string;
   }) => {
     startTransition(async () => {
-      const { error } = await UpdateUserPassword(values);
+      const res = await UpdateUserPassword(values);
 
-      if (error) {
+      if (!res.success) {
+        setToast({ message: res.message || "Failed to update password", type: "error" });
       } else {
-        router.replace(ROUTES.SIGNIN);
+        setToast({ message: "Password updated! Redirecting to sign in...", type: "success" });
+        setTimeout(() => {
+          router.replace(ROUTES.SIGNIN);
+        }, 2000);
       }
     });
   };
@@ -91,50 +93,65 @@ export default function PasswordSettingsForm() {
   });
 
   return (
-    <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
-      <h2 className="text-xl font-bold text-primary mb-6">Change Password</h2>
-      <form className="space-y-6" onSubmit={formik.handleSubmit}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="bg-white border border-black p-8 sm:p-12 font-satoshi relative overflow-hidden">
+      <div className="mb-10">
+        <h2 className="text-2xl font-black font-integral uppercase tracking-wider text-black">
+          Security
+        </h2>
+        <div className="h-1 w-12 bg-black mt-2" />
+        <p className="text-black/40 text-xs mt-4 font-bold uppercase tracking-widest">Update your login password</p>
+      </div>
+
+      <form className="space-y-8" onSubmit={formik.handleSubmit}>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <InputField
             id="oldPassword"
             label="Current Password"
-            placeholder="Enter your current password"
+            placeholder="••••••••"
             formik={formik}
           />
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <InputField
             id="newPassword"
             label="New Password"
-            placeholder="Enter your new password"
+            placeholder="••••••••"
             formik={formik}
           />
           <InputField
             id="confirmPassword"
             label="Confirm New Password"
-            placeholder="Confirm your new password"
+            placeholder="••••••••"
             formik={formik}
           />
         </div>
 
-        <div className="flex justify-end pt-4">
+        <div className="flex justify-end pt-6 border-t border-black/5">
           <button
             type="submit"
-            className={`bg-gradient-to-r from-[#1F1F6F] to-[#14274E] hover:from-[#14274E] hover:to-[#394867]  flex gap-2 justify-center items-center text-white py-3 px-6 rounded-xl font-semibold  transition-all duration-500 shadow-lg hover:shadow-xl ${
-              isPending
-                ? "bg-primary/70 hover:bg-primary/70 cursor-not-allowed"
-                : "cursor-pointer"
-            }`}
+            className={`px-10 py-4 bg-black text-white text-xs font-black uppercase tracking-[0.2em] border border-black hover:bg-white hover:text-black transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed`}
             disabled={isPending || !formik.dirty || !formik.isValid}
           >
             {isPending ? (
-              <div className="h-5 w-5 border-b-2 border-current rounded-full animate-spin"></div>
+              <>
+                <div className="h-4 w-4 border-2 border-white border-t-transparent animate-spin group-hover:border-black"></div>
+                <span>Updating...</span>
+              </>
             ) : (
-              "Change Password"
+              "Update Password"
             )}
           </button>
         </div>
       </form>
+
+      {toast && (
+        <Toast 
+          message={toast.message} 
+          type={toast.type} 
+          isVisible={!!toast}
+          onClose={() => setToast(null)} 
+        />
+      )}
     </div>
   );
 }

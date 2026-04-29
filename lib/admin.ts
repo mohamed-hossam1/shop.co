@@ -1,5 +1,14 @@
 import ROUTES from "@/constants/routes";
 import { AdminOrderStatus, AdminRole } from "@/types/Admin";
+import {
+  FolderTree,
+  LayoutDashboard,
+  Package,
+  ReceiptText,
+  TicketPercent,
+  Truck,
+  Users,
+} from "lucide-react";
 
 export const ADMIN_ORDER_STATUSES: AdminOrderStatus[] = [
   "pending",
@@ -12,13 +21,13 @@ export const ADMIN_ORDER_STATUSES: AdminOrderStatus[] = [
 export const ADMIN_ROLES: AdminRole[] = ["admin", "user"];
 
 export const ADMIN_NAV_ITEMS = [
-  { href: ROUTES.ADMIN, label: "Overview" },
-  { href: ROUTES.ADMIN_PRODUCTS, label: "Products" },
-  { href: ROUTES.ADMIN_CATEGORIES, label: "Categories" },
-  { href: ROUTES.ADMIN_ORDERS, label: "Orders" },
-  { href: ROUTES.ADMIN_PROMO_CODES, label: "Promo Codes" },
-  { href: ROUTES.ADMIN_DELIVERY, label: "Delivery" },
-  { href: ROUTES.ADMIN_USERS, label: "Users" },
+  { href: ROUTES.ADMIN, label: "Overview", icon: LayoutDashboard },
+  { href: ROUTES.ADMIN_PRODUCTS, label: "Products", icon: Package },
+  { href: ROUTES.ADMIN_CATEGORIES, label: "Categories", icon: FolderTree },
+  { href: ROUTES.ADMIN_ORDERS, label: "Orders", icon: ReceiptText },
+  { href: ROUTES.ADMIN_PROMO_CODES, label: "Promo Codes", icon: TicketPercent },
+  { href: ROUTES.ADMIN_DELIVERY, label: "Delivery", icon: Truck },
+  { href: ROUTES.ADMIN_USERS, label: "Users", icon: Users },
 ] as const;
 
 export function isAdminOrderStatus(status: string): status is AdminOrderStatus {

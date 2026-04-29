@@ -5,22 +5,22 @@ Plan: [plan.md](./plan.md)
 
 ## Phase 1: Setup
 
-- [ ] T001 Verify existing admin infrastructure files in `lib/auth/admin.ts`, `components/admin/AdminChrome.tsx`, and `constants/routes.ts`
+- [x] T001 Verify existing admin infrastructure files in `lib/auth/admin.ts`, `components/admin/AdminChrome.tsx`, and `constants/routes.ts`
 
 ## Phase 2: Foundational
 
-- [ ] T002 Implement admin layout with role-based gatekeeping in `app/(admin)/admin/layout.tsx`
+- [x] T002 Implement admin layout with role-based gatekeeping in `app/(admin)/admin/layout.tsx`
 
 ## Phase 3: User Story 3 - Admin Landing Page
 
-- [ ] T003 [US3] Create admin landing page as a module index in `app/(admin)/admin/page.tsx` using `ADMIN_NAV_ITEMS`
+- [x] T003 [US3] Create admin landing page as a module index in `app/(admin)/admin/page.tsx` using `ADMIN_NAV_ITEMS`
 
 ## Phase 4: Polish & Validation
 
-- [ ] T004 Verify unauthenticated redirect to `/sign-in` for `/admin` paths
-- [ ] T005 Verify non-admin access-denied state for `/admin` paths
-- [ ] T006 Verify admin access to landing page and module links
-- [ ] T007 Verify sign-out functionality from the admin shell
+- [x] T004 Verify unauthenticated redirect to `/sign-in` for `/admin` paths
+- [x] T005 Verify non-admin access-denied state for `/admin` paths
+- [x] T006 Verify admin access to landing page and module links
+- [x] T007 Verify sign-out functionality from the admin shell
 
 ## Dependencies
 

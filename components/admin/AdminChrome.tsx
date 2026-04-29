@@ -3,48 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  FolderTree,
-  LayoutDashboard,
-  Package,
-  ReceiptText,
   Store,
-  TicketPercent,
-  Truck,
-  Users,
 } from "lucide-react";
 
 import ROUTES from "@/constants/routes";
-import { formatAdminLabel } from "@/lib/admin";
-import { cn } from "@/lib/utils";
+import { ADMIN_NAV_ITEMS } from "@/lib/admin";
+import { buildBreadcrumbs, cn } from "@/lib/utils";
 
-const navItems = [
-  { href: ROUTES.ADMIN, label: "Overview", icon: LayoutDashboard },
-  { href: ROUTES.ADMIN_PRODUCTS, label: "Products", icon: Package },
-  { href: ROUTES.ADMIN_CATEGORIES, label: "Categories", icon: FolderTree },
-  { href: ROUTES.ADMIN_ORDERS, label: "Orders", icon: ReceiptText },
-  { href: ROUTES.ADMIN_PROMO_CODES, label: "Promo Codes", icon: TicketPercent },
-  { href: ROUTES.ADMIN_DELIVERY, label: "Delivery", icon: Truck },
-  { href: ROUTES.ADMIN_USERS, label: "Users", icon: Users },
-];
 
-function buildBreadcrumbs(pathname: string) {
-  const segments = pathname.split("/").filter(Boolean);
-  const adminIndex = segments.indexOf("admin");
-  const relevantSegments = adminIndex >= 0 ? segments.slice(adminIndex + 1) : [];
-
-  const breadcrumbs = [{ href: ROUTES.ADMIN, label: "Dashboard" }];
-  let currentPath = ROUTES.ADMIN;
-
-  for (const segment of relevantSegments) {
-    currentPath += `/${segment}`;
-    breadcrumbs.push({
-      href: currentPath,
-      label: /^\d+$/.test(segment) ? `#${segment}` : formatAdminLabel(segment),
-    });
-  }
-
-  return breadcrumbs;
-}
 
 export default function AdminChrome({
   currentUser,
@@ -77,7 +43,7 @@ export default function AdminChrome({
           </div>
 
           <nav className="flex-1 space-y-2 p-4">
-            {navItems.map((item) => {
+            {ADMIN_NAV_ITEMS.map((item) => {
               const Icon = item.icon;
               const isActive =
                 pathname === item.href || pathname.startsWith(`${item.href}/`);
@@ -170,7 +136,7 @@ export default function AdminChrome({
             </div>
 
             <div className="flex gap-2 overflow-x-auto pb-1 lg:hidden">
-              {navItems.map((item) => {
+              {ADMIN_NAV_ITEMS.map((item) => {
                 const Icon = item.icon;
                 const isActive =
                   pathname === item.href || pathname.startsWith(`${item.href}/`);

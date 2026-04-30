@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -24,13 +25,24 @@ export function AdminPageHeader({
   title,
   description,
   actions,
+  backHref,
 }: {
   title: string;
   description: string;
   actions?: React.ReactNode;
+  backHref?: string;
 }) {
   return (
     <div className="flex flex-col gap-6 border border-black bg-white p-6 sm:p-8">
+      {backHref && (
+        <Link
+          href={backHref}
+          className="group inline-flex items-center gap-2 text-[11px] font-black uppercase tracking-[0.28em] text-black/55 transition hover:text-black"
+        >
+          <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
+          Back
+        </Link>
+      )}
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div className="max-w-3xl space-y-3">
           <p className="text-[11px] font-black uppercase tracking-[0.35em] text-black/45">

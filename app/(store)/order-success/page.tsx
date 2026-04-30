@@ -5,50 +5,28 @@ import ROUTES from "@/constants/routes";
 import { redirect } from "next/navigation";
 
 
-async function getOrderDetails(orderId: string, isGuest: boolean) {
-  const { createClient } = await import("@/lib/supabase/server");
-  const supabase = await createClient();
-
-  const { data: order, error: orderError } = await supabase
-    .from("orders")
-    .select("*")
-    .eq("id", orderId)
-    .single();
-
-  if (orderError || !order) {
-    console.error("Error fetching order:", orderError);
-    return null;
-  }
-
-  const { data: items, error: itemsError } = await supabase
-    .from("order_items")
-    .select("*")
-    .eq("order_id", orderId);
-
-  if (itemsError) {
-    console.error("Error fetching order items:", itemsError);
-    return { ...order, items: [] };
-  }
-
-  return { ...order, items: items || [] };
-}
+import { getOrderById, getCurrentOrderScope } from "@/actions/ordersAction";
 
 export default async function OrderSuccessPage({
   searchParams,
 }: {
-  searchParams: Promise<{ orderId?: string; isGuest?: string }>;
+  searchParams: Promise<{ orderId?: string }>;
 }) {
-  const { orderId, isGuest } = await searchParams;
+  const { orderId } = await searchParams;
 
   if (!orderId) {
     redirect(ROUTES.HOME);
   }
 
-  const order = await getOrderDetails(orderId, isGuest === "true");
+  const { userId, guestId } = await getCurrentOrderScope();
+  const orderRes = await getOrderById(Number(orderId), userId, guestId);
 
-  if (!order) {
+  if (!orderRes.success) {
     redirect(ROUTES.HOME);
   }
+
+  const order = orderRes.data;
+
 
   let phone = "N/A";
   if (order.user_id) {
@@ -195,7 +173,7 @@ export default async function OrderSuccessPage({
         </div>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-end mt-4">
-          {isGuest !== "true" && (
+          {order.user_id && (
             <Link
               href={ROUTES.ORDERS}
               className="flex items-center justify-center gap-2 px-8 py-4 font-bold text-white bg-black border border-black hover:bg-white hover:text-black transition-colors uppercase tracking-widest text-sm"

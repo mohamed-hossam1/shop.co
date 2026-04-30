@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { verifyAdmin } from "./userAction";
 import { requireAdmin } from "@/lib/auth/admin";
 import { revalidateCategoryPaths } from "@/lib/admin/revalidate";
 import { Category } from "@/types/Product";
@@ -37,11 +38,9 @@ export async function getCategoryById(id: number): Promise<{ success: true; data
 
 // -- Write Operations --
 export async function createCategory(categoryData: Omit<Category, "id">): Promise<{ success: true; message: string; data: Category } | { success: false; message: string }> {
-  try {
-    await requireAdmin();
-  } catch {
-    return { success: false, message: "Unauthorized" };
-  }
+  const verification = await verifyAdmin();
+  if (!verification.success) return verification;
+
 
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -56,11 +55,9 @@ export async function createCategory(categoryData: Omit<Category, "id">): Promis
 }
 
 export async function updateCategory(id: number, categoryData: Partial<Omit<Category, "id">>): Promise<{ success: true; message: string; data: Category } | { success: false; message: string }> {
-  try {
-    await requireAdmin();
-  } catch {
-    return { success: false, message: "Unauthorized" };
-  }
+  const verification = await verifyAdmin();
+  if (!verification.success) return verification;
+
 
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -76,11 +73,9 @@ export async function updateCategory(id: number, categoryData: Partial<Omit<Cate
 }
 
 export async function deleteCategory(id: number): Promise<{ success: true; message: string } | { success: false; message: string }> {
-  try {
-    await requireAdmin();
-  } catch {
-    return { success: false, message: "Unauthorized" };
-  }
+  const verification = await verifyAdmin();
+  if (!verification.success) return verification;
+
 
   const supabase = await createClient();
   const { error } = await supabase

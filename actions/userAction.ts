@@ -8,6 +8,15 @@ import { createClient } from "@/lib/supabase/server";
 import { AdminRole, AdminUserFilters, DeleteUserAccessPayload } from "@/types/Admin";
 import { User } from "@/types/User";
 
+export async function verifyAdmin(): Promise<{ success: true; user: User } | { success: false; message: string }> {
+  try {
+    const user = await requireAdmin();
+    return { success: true, user };
+  } catch (error) {
+    return { success: false, message: "Unauthorized: Admin access required" };
+  }
+}
+
 interface UserData {
   name?: string;
   email: string;
@@ -179,11 +188,9 @@ export async function UpdateUserPassword({
 export async function getAdminUsers(
   filters: AdminUserFilters = {},
 ): Promise<{ success: true; data: User[] } | { success: false; message: string }> {
-  try {
-    await requireAdmin();
-  } catch {
-    return { success: false, message: "Unauthorized" };
-  }
+  const verification = await verifyAdmin();
+  if (!verification.success) return verification;
+
 
   const supabase = await createClient();
   const { search, role, dateFrom, dateTo } = filters;
@@ -226,11 +233,9 @@ export async function getAdminUsers(
 export async function getAdminUserById(
   userId: string,
 ): Promise<{ success: true; data: User } | { success: false; message: string }> {
-  try {
-    await requireAdmin();
-  } catch {
-    return { success: false, message: "Unauthorized" };
-  }
+  const verification = await verifyAdmin();
+  if (!verification.success) return verification;
+
 
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -251,11 +256,10 @@ export async function updateUserRole(
   role: AdminRole,
 ): Promise<{ success: true; data: User } | { success: false; message: string }> {
   let currentAdmin: User;
-  try {
-    currentAdmin = await requireAdmin();
-  } catch {
-    return { success: false, message: "Unauthorized" };
-  }
+  const verification = await verifyAdmin();
+  if (!verification.success) return verification;
+  currentAdmin = verification.user;
+
 
   if (!ADMIN_ROLES.includes(role)) {
     return { success: false, message: "Invalid role selected." };
@@ -286,11 +290,10 @@ export async function deleteUserAccess(
   payload: DeleteUserAccessPayload,
 ): Promise<{ success: true; message: string } | { success: false; message: string }> {
   let currentAdmin: User;
-  try {
-    currentAdmin = await requireAdmin();
-  } catch {
-    return { success: false, message: "Unauthorized" };
-  }
+  const verification = await verifyAdmin();
+  if (!verification.success) return verification;
+  currentAdmin = verification.user;
+
 
   if (currentAdmin.id === userId) {
     return { success: false, message: "You cannot remove your own access." };

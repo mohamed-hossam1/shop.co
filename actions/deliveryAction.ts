@@ -1,5 +1,6 @@
 "use server";
 
+import { verifyAdmin } from "./userAction";
 import { requireAdmin } from "@/lib/auth/admin";
 import { revalidateDeliveryPaths } from "@/lib/admin/revalidate";
 import { createClient } from "@/lib/supabase/server";
@@ -43,11 +44,9 @@ export async function getCities(): Promise<{ success: true; data: string[] } | {
 export async function getDeliverySettings(): Promise<
   { success: true; data: Delivery[] } | { success: false; message: string }
 > {
-  try {
-    await requireAdmin();
-  } catch {
-    return { success: false, message: "Unauthorized" };
-  }
+  const verification = await verifyAdmin();
+  if (!verification.success) return verification;
+
 
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -65,11 +64,9 @@ export async function getDeliverySettings(): Promise<
 export async function getDeliverySettingById(id: number): Promise<
   { success: true; data: Delivery } | { success: false; message: string }
 > {
-  try {
-    await requireAdmin();
-  } catch {
-    return { success: false, message: "Unauthorized" };
-  }
+  const verification = await verifyAdmin();
+  if (!verification.success) return verification;
+
 
   const supabase = await createClient();
   const { data, error } = await supabase
@@ -92,11 +89,9 @@ export async function getDeliverySettingById(id: number): Promise<
 export async function createDeliverySetting(
   input: DeliveryInput,
 ): Promise<{ success: true; data: Delivery } | { success: false; message: string }> {
-  try {
-    await requireAdmin();
-  } catch {
-    return { success: false, message: "Unauthorized" };
-  }
+  const verification = await verifyAdmin();
+  if (!verification.success) return verification;
+
 
   const city = input.city.trim();
   if (!city) {
@@ -136,11 +131,9 @@ export async function updateDeliverySetting(
   id: number,
   input: DeliveryInput,
 ): Promise<{ success: true; data: Delivery } | { success: false; message: string }> {
-  try {
-    await requireAdmin();
-  } catch {
-    return { success: false, message: "Unauthorized" };
-  }
+  const verification = await verifyAdmin();
+  if (!verification.success) return verification;
+
 
   const city = input.city.trim();
   if (!city) {
@@ -181,11 +174,9 @@ export async function updateDeliverySetting(
 export async function deleteDeliverySetting(
   id: number,
 ): Promise<{ success: true; message: string } | { success: false; message: string }> {
-  try {
-    await requireAdmin();
-  } catch {
-    return { success: false, message: "Unauthorized" };
-  }
+  const verification = await verifyAdmin();
+  if (!verification.success) return verification;
+
 
   const supabase = await createClient();
   const { error } = await supabase.from("delivery").delete().eq("id", id);

@@ -1,5 +1,6 @@
 "use server";
 
+import { verifyAdmin } from "./userAction";
 import { requireAdmin } from "@/lib/auth/admin";
 import { revalidateCatalogPaths } from "@/lib/admin/revalidate";
 import { createClient } from "@/lib/supabase/server";
@@ -25,7 +26,7 @@ export async function getProducts({
 
   let query = supabase
     .from("products_with_min_price")
-    .select("*")
+    .select("*, variants:product_variants(stock)")
     .order("created_at", { ascending: false });
 
   if (search) {
@@ -157,11 +158,9 @@ export async function createProduct(
 ): Promise<
   { success: true; data: { id: number } } | { success: false; message: string }
 > {
-  try {
-    await requireAdmin();
-  } catch {
-    return { success: false, message: "Unauthorized" };
-  }
+  const verification = await verifyAdmin();
+  if (!verification.success) return verification;
+
 
   const supabase = await createClient();
 
@@ -231,11 +230,9 @@ export async function updateFullProduct(
   id: number,
   input: CreateProductInput,
 ): Promise<{ success: true } | { success: false; message: string }> {
-  try {
-    await requireAdmin();
-  } catch {
-    return { success: false, message: "Unauthorized" };
-  }
+  const verification = await verifyAdmin();
+  if (!verification.success) return verification;
+
 
   const supabase = await createClient();
 
@@ -273,11 +270,9 @@ export async function updateFullProduct(
 export async function deleteProduct(
   id: number,
 ): Promise<{ success: true } | { success: false; message: string }> {
-  try {
-    await requireAdmin();
-  } catch {
-    return { success: false, message: "Unauthorized" };
-  }
+  const verification = await verifyAdmin();
+  if (!verification.success) return verification;
+
 
   const supabase = await createClient();
 

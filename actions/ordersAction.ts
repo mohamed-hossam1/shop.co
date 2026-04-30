@@ -1,5 +1,6 @@
 "use server";
 
+import { verifyAdmin } from "./userAction";
 import { requireAdmin } from "@/lib/auth/admin";
 import { ADMIN_ORDER_STATUSES, isAdminOrderStatus } from "@/lib/admin";
 import { revalidateOrderPaths } from "@/lib/admin/revalidate";
@@ -12,7 +13,7 @@ function roundCurrency(value: number) {
   return Math.round((value + Number.EPSILON) * 100) / 100;
 }
 
-async function getCurrentOrderScope() {
+export async function getCurrentOrderScope() {
   const supabase = await createClient();
   const {
     data: { user },
@@ -242,7 +243,7 @@ export async function getUserOrders(): Promise<Order[]> {
 
   let query = supabase.from("orders").select(`
     *,
-    items:order_items (*)
+    items:order_items (*, variant:product_variants(stock))
   `).order("created_at", { ascending: false });
 
   if (userId) {
@@ -280,7 +281,7 @@ export async function getOrderById(
 
   let query = supabase.from("orders").select(`
     *,
-    items:order_items (*)
+    items:order_items (*, variant:product_variants(stock))
   `).eq("id", orderId);
 
   if (userId) {
@@ -301,11 +302,9 @@ export async function getOrderById(
 export async function getAdminOrders(
   filters: AdminOrderFilters = {},
 ): Promise<{ success: true; data: Order[] } | { success: false; message: string }> {
-  try {
-    await requireAdmin();
-  } catch {
-    return { success: false, message: "Unauthorized" };
-  }
+  const verification = await verifyAdmin();
+  if (!verification.success) return verification;
+
 
   const supabase = await createClient();
   const {
@@ -322,7 +321,7 @@ export async function getAdminOrders(
     .from("orders")
     .select(`
       *,
-      items:order_items (*)
+      items:order_items (*, variant:product_variants(stock))
     `)
     .order("created_at", { ascending: false });
 
@@ -373,18 +372,16 @@ export async function getAdminOrders(
 export async function getAdminOrderById(
   orderId: number,
 ): Promise<{ success: true; data: Order } | { success: false; message: string }> {
-  try {
-    await requireAdmin();
-  } catch {
-    return { success: false, message: "Unauthorized" };
-  }
+  const verification = await verifyAdmin();
+  if (!verification.success) return verification;
+
 
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("orders")
     .select(`
       *,
-      items:order_items (*)
+      items:order_items (*, variant:product_variants(stock))
     `)
     .eq("id", orderId)
     .single();
@@ -400,11 +397,9 @@ export async function updateOrderStatus(
   orderId: number,
   status: string
 ): Promise<{ success: true; message: string } | { success: false; message: string }> {
-  try {
-    await requireAdmin();
-  } catch {
-    return { success: false, message: "Unauthorized" };
-  }
+  const verification = await verifyAdmin();
+  if (!verification.success) return verification;
+
 
   if (!isAdminOrderStatus(status)) {
     return {

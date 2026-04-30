@@ -10,6 +10,7 @@ export interface OrderItem {
   product_image: string;
   variant_color: string;
   variant_size: string;
+  variant?: { stock: number };
 }
 
 export interface Order {

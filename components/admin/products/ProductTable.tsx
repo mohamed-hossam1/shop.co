@@ -224,11 +224,27 @@ export default function ProductTable({
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      {product.is_deleted ? (
-                        <AdminStatusBadge label="Deleted" tone="danger" />
-                      ) : (
-                        <AdminStatusBadge label="Active" tone="success" />
-                      )}
+                      <div className="flex flex-col gap-2">
+                        {product.is_deleted ? (
+                          <AdminStatusBadge label="Deleted" tone="danger" />
+                        ) : (
+                          <AdminStatusBadge label="Active" tone="success" />
+                        )}
+                        
+                        {(() => {
+                          const totalStock = product.variants?.reduce((acc, v) => acc + v.stock, 0) ?? 0;
+                          const hasOutOfStock = product.variants?.some(v => v.stock === 0);
+                          
+                          if (totalStock === 0) {
+                            return <AdminStatusBadge label="Out of Stock" tone="danger" />;
+                          } else if (hasOutOfStock) {
+                            return <AdminStatusBadge label="Partial OOS" tone="warning" />;
+                          } else if (totalStock <= 5) {
+                            return <AdminStatusBadge label="Low Stock" tone="warning" />;
+                          }
+                          return null;
+                        })()}
+                      </div>
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">

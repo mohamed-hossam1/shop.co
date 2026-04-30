@@ -28,6 +28,7 @@ export type ProductListItem = {
 
 export type AdminProductListItem = ProductListItem & {
   is_deleted: boolean;
+  variants?: { stock: number }[];
 };
 
 export type ProductVariant = {

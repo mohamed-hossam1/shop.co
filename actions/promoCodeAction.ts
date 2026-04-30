@@ -1,5 +1,6 @@
 "use server";
 
+import { verifyAdmin } from "./userAction";
 import { requireAdmin } from "@/lib/auth/admin";
 import { revalidatePromoPaths } from "@/lib/admin/revalidate";
 import { createClient } from "@/lib/supabase/server";
@@ -9,11 +10,9 @@ import { PromoCode } from "@/types/PromoCode";
 export async function getPromoCodes(filters: AdminPromoFilters = {}): Promise<
   { success: true; data: PromoCode[] } | { success: false; message: string }
 > {
-  try {
-    await requireAdmin();
-  } catch {
-    return { success: false, message: "Unauthorized" };
-  }
+  const verification = await verifyAdmin();
+  if (!verification.success) return verification;
+
 
   const supabase = await createClient();
   const { search, status = "all" } = filters;
@@ -62,11 +61,9 @@ export async function getPromoCodes(filters: AdminPromoFilters = {}): Promise<
 export async function getPromoCodeById(id: number): Promise<
   { success: true; data: PromoCode } | { success: false; message: string }
 > {
-  try {
-    await requireAdmin();
-  } catch {
-    return { success: false, message: "Unauthorized" };
-  }
+  const verification = await verifyAdmin();
+  if (!verification.success) return verification;
+
 
   const supabase = await createClient();
 
@@ -172,11 +169,9 @@ export async function validatePromoCode(promoCode: string, price: number): Promi
 }
 
 export async function createPromoCode(promoCodeData: Omit<PromoCode, "id" | "created_at" | "used_count">): Promise<{ success: true; message: string; data: PromoCode } | { success: false; message: string }> {
-  try {
-    await requireAdmin();
-  } catch {
-    return { success: false, message: "Unauthorized" };
-  }
+  const verification = await verifyAdmin();
+  if (!verification.success) return verification;
+
 
   const supabase = await createClient();
 
@@ -216,11 +211,9 @@ export async function createPromoCode(promoCodeData: Omit<PromoCode, "id" | "cre
 }
 
 export async function updatePromoCode(id: number, promoCodeData: Partial<Omit<PromoCode, "id" | "created_at">>): Promise<{ success: true; message: string; data: PromoCode } | { success: false; message: string }> {
-  try {
-    await requireAdmin();
-  } catch {
-    return { success: false, message: "Unauthorized" };
-  }
+  const verification = await verifyAdmin();
+  if (!verification.success) return verification;
+
 
   const supabase = await createClient();
 
@@ -263,11 +256,9 @@ export async function updatePromoCode(id: number, promoCodeData: Partial<Omit<Pr
 }
 
 export async function deletePromoCode(id: number): Promise<{ success: true; message: string } | { success: false; message: string }> {
-  try {
-    await requireAdmin();
-  } catch {
-    return { success: false, message: "Unauthorized" };
-  }
+  const verification = await verifyAdmin();
+  if (!verification.success) return verification;
+
 
   const supabase = await createClient();
 

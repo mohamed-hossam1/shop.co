@@ -147,8 +147,6 @@
 - Add server-side ownership validation to `order-success` access so arbitrary `orderId` values do not expose unrelated orders.
 - Harden `createOrder()` so totals are recomputed from live variant prices and live coupon data, not only the submitted cart payload.
 - Surface low-stock and out-of-stock warnings in product and order admin screens.
-- Keep stock management manual in the initial dashboard release; do not auto-decrement stock without a reliable reservation/deduction design in the current schema.
-- Add explicit admin-side warnings that payment screenshots are not stored server-side and only the filename is available today.
 - Add write-path revalidation so storefront content reflects admin edits predictably.
 - Audit every admin mutation to ensure non-admin callers are rejected server-side, not only hidden in the UI.
 

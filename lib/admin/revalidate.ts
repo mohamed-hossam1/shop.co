@@ -45,6 +45,7 @@ export function revalidatePromoPaths() {
 export function revalidateDeliveryPaths() {
   revalidatePaths([
     ROUTES.CHECKOUT,
+    ROUTES.PROFILE,
     ROUTES.ADMIN,
     ROUTES.ADMIN_DELIVERY,
   ]);

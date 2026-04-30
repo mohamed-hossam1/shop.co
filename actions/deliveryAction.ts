@@ -62,6 +62,33 @@ export async function getDeliverySettings(): Promise<
   return { success: true, data: data as Delivery[] };
 }
 
+export async function getDeliverySettingById(id: number): Promise<
+  { success: true; data: Delivery } | { success: false; message: string }
+> {
+  try {
+    await requireAdmin();
+  } catch {
+    return { success: false, message: "Unauthorized" };
+  }
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("delivery")
+    .select("*")
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error) {
+    return { success: false, message: error.message };
+  }
+
+  if (!data) {
+    return { success: false, message: "Delivery setting not found" };
+  }
+
+  return { success: true, data: data as Delivery };
+}
+
 export async function createDeliverySetting(
   input: DeliveryInput,
 ): Promise<{ success: true; data: Delivery } | { success: false; message: string }> {
@@ -76,8 +103,8 @@ export async function createDeliverySetting(
     return { success: false, message: "City is required." };
   }
 
-  if (input.delivery_fee < 0) {
-    return { success: false, message: "Delivery fee must be zero or greater." };
+  if (input.delivery_fee <= 0) {
+    return { success: false, message: "Delivery fee must be a positive number." };
   }
 
   const supabase = await createClient();
@@ -120,18 +147,20 @@ export async function updateDeliverySetting(
     return { success: false, message: "City is required." };
   }
 
-  if (input.delivery_fee < 0) {
-    return { success: false, message: "Delivery fee must be zero or greater." };
+  if (input.delivery_fee <= 0) {
+    return { success: false, message: "Delivery fee must be a positive number." };
   }
 
   const supabase = await createClient();
   const { data: existing } = await supabase
     .from("delivery")
-    .select("id, city")
-    .order("city", { ascending: true });
+    .select("id")
+    .ilike("city", city)
+    .neq("id", id)
+    .maybeSingle();
 
-  if ((existing as Delivery[] | null)?.some((item) => item.id !== id && item.city.toLowerCase() === city.toLowerCase())) {
-    return { success: false, message: "City already exists." };
+  if (existing) {
+    return { success: false, message: "Another city with this name already exists." };
   }
 
   const { data, error } = await supabase

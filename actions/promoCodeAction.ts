@@ -37,7 +37,7 @@ export async function getPromoCodes(filters: AdminPromoFilters = {}): Promise<
     const now = new Date();
     const filtered = (data as PromoCode[]).filter((promo) => {
       const isExpired = promo.expires_at ? new Date(promo.expires_at) < now : false;
-      const isExhausted = promo.used_count >= promo.max_uses;
+      const isExhausted = promo.max_uses !== null && promo.used_count >= promo.max_uses;
 
       switch (status) {
         case "active":
@@ -54,6 +54,38 @@ export async function getPromoCodes(filters: AdminPromoFilters = {}): Promise<
     });
 
     return { success: true, data: filtered };
+  } catch (error: any) {
+    return { success: false, message: error.message || "Unexpected error." };
+  }
+}
+
+export async function getPromoCodeById(id: number): Promise<
+  { success: true; data: PromoCode } | { success: false; message: string }
+> {
+  try {
+    await requireAdmin();
+  } catch {
+    return { success: false, message: "Unauthorized" };
+  }
+
+  const supabase = await createClient();
+
+  try {
+    const { data, error } = await supabase
+      .from("coupons")
+      .select("*")
+      .eq("id", id)
+      .maybeSingle();
+
+    if (error) {
+      return { success: false, message: error.message };
+    }
+
+    if (!data) {
+      return { success: false, message: "Promo code not found" };
+    }
+
+    return { success: true, data: data as PromoCode };
   } catch (error: any) {
     return { success: false, message: error.message || "Unexpected error." };
   }
@@ -101,7 +133,7 @@ export async function validatePromoCode(promoCode: string, price: number): Promi
        return { success: false, message: "Promo code has expired." };
     }
 
-    if (coupon.used_count >= coupon.max_uses) {
+    if (coupon.max_uses !== null && coupon.used_count >= coupon.max_uses) {
       return { success: false, message: "Promo code usage limit reached." };
     }
 
@@ -149,10 +181,23 @@ export async function createPromoCode(promoCodeData: Omit<PromoCode, "id" | "cre
   const supabase = await createClient();
 
   try {
+    // Duplicate check
+    const { data: existing } = await supabase
+      .from("coupons")
+      .select("id")
+      .eq("code", promoCodeData.code)
+      .maybeSingle();
+
+    if (existing) {
+      return { success: false, message: "Promo code already exists." };
+    }
+
     const { data, error } = await supabase
       .from("coupons")
       .insert([{
         ...promoCodeData,
+        expires_at: promoCodeData.expires_at || null,
+        max_uses: promoCodeData.max_uses ?? null,
         used_count: 0
       }])
       .select()
@@ -180,9 +225,27 @@ export async function updatePromoCode(id: number, promoCodeData: Partial<Omit<Pr
   const supabase = await createClient();
 
   try {
+    // Duplicate check if code is changing
+    if (promoCodeData.code) {
+      const { data: existing } = await supabase
+        .from("coupons")
+        .select("id")
+        .eq("code", promoCodeData.code)
+        .neq("id", id)
+        .maybeSingle();
+
+      if (existing) {
+        return { success: false, message: "Another promo code with this name already exists." };
+      }
+    }
+
     const { data, error } = await supabase
       .from("coupons")
-      .update(promoCodeData)
+      .update({
+        ...promoCodeData,
+        expires_at: promoCodeData.expires_at === undefined ? undefined : (promoCodeData.expires_at || null),
+        max_uses: promoCodeData.max_uses === undefined ? undefined : (promoCodeData.max_uses ?? null),
+      })
       .eq("id", id)
       .select()
       .single();

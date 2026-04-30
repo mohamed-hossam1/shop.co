@@ -5,7 +5,7 @@ import { ADMIN_ROLES } from "@/lib/admin";
 import { revalidateUserPaths } from "@/lib/admin/revalidate";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { AdminRole, AdminUserFilters } from "@/types/Admin";
+import { AdminRole, AdminUserFilters, DeleteUserAccessPayload } from "@/types/Admin";
 import { User } from "@/types/User";
 
 interface UserData {
@@ -186,7 +186,11 @@ export async function getAdminUsers(
   }
 
   const supabase = await createClient();
-  const { search, role } = filters;
+  const { search, role, dateFrom, dateTo } = filters;
+
+  if (dateFrom && dateTo && dateFrom > dateTo) {
+    return { success: false, message: "From date cannot be after To date" };
+  }
 
   let query = supabase
     .from("users")
@@ -200,6 +204,14 @@ export async function getAdminUsers(
 
   if (role) {
     query = query.eq("role", role);
+  }
+
+  if (dateFrom) {
+    query = query.gte("created_at", `${dateFrom}T00:00:00`);
+  }
+
+  if (dateTo) {
+    query = query.lte("created_at", `${dateTo}T23:59:59.999`);
   }
 
   const { data, error } = await query;
@@ -271,6 +283,7 @@ export async function updateUserRole(
 
 export async function deleteUserAccess(
   userId: string,
+  payload: DeleteUserAccessPayload,
 ): Promise<{ success: true; message: string } | { success: false; message: string }> {
   let currentAdmin: User;
   try {
@@ -283,11 +296,18 @@ export async function deleteUserAccess(
     return { success: false, message: "You cannot remove your own access." };
   }
 
+  if (!payload.confirmRemoval) {
+    return { success: false, message: "Explicit confirmation required to remove access." };
+  }
+
   const result = await DeleteUser(userId);
   if (!result.success) {
     return result;
   }
 
   revalidateUserPaths(userId);
-  return { success: true, message: "User access removed successfully." };
+  return { 
+    success: true, 
+    message: "User access removed successfully. Historical commerce records have been preserved." 
+  };
 }

@@ -36,9 +36,15 @@ export type AdminRole = "admin" | "user";
 export interface AdminUserFilters {
   search?: string;
   role?: AdminRole;
+  dateFrom?: string;
+  dateTo?: string;
 }
 
-export interface DeliveryInput extends Pick<Delivery, "city" | "delivery_fee"> {}
+export interface DeleteUserAccessPayload {
+  confirmRemoval: boolean;
+}
+
+export type DeliveryInput = Pick<Delivery, "city" | "delivery_fee">;
 
 export interface AdminProductFilters {
   search?: string;

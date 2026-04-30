@@ -17,8 +17,8 @@
 
 **Purpose**: Create the route/component scaffolding for the new admin users module.
 
-- [ ] T001 Create users admin route files in `app/(admin)/admin/users/page.tsx` and `app/(admin)/admin/users/[id]/page.tsx`
-- [ ] T002 [P] Create users admin component files in `components/admin/users/UserFilterBar.tsx`, `components/admin/users/UserTable.tsx`, `components/admin/users/UserProfileCard.tsx`, and `components/admin/users/UserOrdersTable.tsx`
+- [x] T001 Create users admin route files in `app/(admin)/admin/users/page.tsx` and `app/(admin)/admin/users/[id]/page.tsx`
+- [x] T002 [P] Create users admin component files in `components/admin/users/UserFilterBar.tsx`, `components/admin/users/UserTable.tsx`, `components/admin/users/UserProfileCard.tsx`, and `components/admin/users/UserOrdersTable.tsx`
 
 ---
 
@@ -28,8 +28,8 @@
 
 **⚠️ CRITICAL**: Complete this phase before user-story implementation.
 
-- [ ] T003 Extend admin user contracts in `types/Admin.ts` to include `dateFrom`/`dateTo` filters and explicit access-removal confirmation payload typing
-- [ ] T004 Update admin user actions in `actions/userAction.ts` to validate created-date ranges and apply server-side `created_at` filtering in `getAdminUsers`
+- [x] T003 Extend admin user contracts in `types/Admin.ts` to include `dateFrom`/`dateTo` filters and explicit access-removal confirmation payload typing
+- [x] T004 Update admin user actions in `actions/userAction.ts` to validate created-date ranges and apply server-side `created_at` filtering in `getAdminUsers`
 
 **Checkpoint**: Shared contracts are ready; user stories can begin.
 
@@ -43,10 +43,10 @@
 
 ### Implementation for User Story 1
 
-- [ ] T005 [P] [US1] Implement URL-driven search/role/date filter controls in `components/admin/users/UserFilterBar.tsx`
-- [ ] T006 [P] [US1] Implement users table UI with role badge, created-date display, and detail-link action in `components/admin/users/UserTable.tsx`
-- [ ] T007 [US1] Implement server page loading and filter mapping in `app/(admin)/admin/users/page.tsx` using `getAdminUsers`
-- [ ] T008 [US1] Add list-level empty/error handling in `app/(admin)/admin/users/page.tsx` and `components/admin/users/UserTable.tsx`
+- [x] T005 [P] [US1] Implement URL-driven search/role/date filter controls in `components/admin/users/UserFilterBar.tsx`
+- [x] T006 [P] [US1] Implement users table UI with role badge, created-date display, and detail-link action in `components/admin/users/UserTable.tsx`
+- [x] T007 [US1] Implement server page loading and filter mapping in `app/(admin)/admin/users/page.tsx` using `getAdminUsers`
+- [x] T008 [US1] Add list-level empty/error handling in `app/(admin)/admin/users/page.tsx` and `components/admin/users/UserTable.tsx`
 
 **Checkpoint**: User Story 1 is functional and independently testable.
 
@@ -60,10 +60,10 @@
 
 ### Implementation for User Story 2
 
-- [ ] T009 [P] [US2] Build profile summary and role-management panel in `components/admin/users/UserProfileCard.tsx`
-- [ ] T010 [P] [US2] Build user-specific order history table with links to admin order detail in `components/admin/users/UserOrdersTable.tsx`
-- [ ] T011 [US2] Implement user detail data composition and `notFound()` handling in `app/(admin)/admin/users/[id]/page.tsx` using `getAdminUserById` and `getAdminOrders`
-- [ ] T012 [US2] Refine role-update feedback and self-demotion safeguards in `components/admin/UserRoleSelect.tsx` and `components/admin/users/UserProfileCard.tsx`
+- [x] T009 [P] [US2] Build profile summary and role-management panel in `components/admin/users/UserProfileCard.tsx`
+- [x] T010 [P] [US2] Build user-specific order history table with links to admin order detail in `components/admin/users/UserOrdersTable.tsx`
+- [x] T011 [US2] Implement user detail data composition and `notFound()` handling in `app/(admin)/admin/users/[id]/page.tsx` using `getAdminUserById` and `getAdminOrders`
+- [x] T012 [US2] Refine role-update feedback and self-demotion safeguards in `components/admin/UserRoleSelect.tsx` and `components/admin/users/UserProfileCard.tsx`
 
 **Checkpoint**: User Stories 1 and 2 are both functional and independently testable.
 
@@ -77,10 +77,10 @@
 
 ### Implementation for User Story 3
 
-- [ ] T013 [US3] Enforce explicit confirmation contract and preserved-history success messaging in `actions/userAction.ts` `deleteUserAccess`
-- [ ] T014 [P] [US3] Replace `window.confirm` with `ConfirmDialog` flow in `components/admin/DeleteUserAccessButton.tsx`
-- [ ] T015 [P] [US3] Wire destructive access-removal control into the detail card in `components/admin/users/UserProfileCard.tsx`
-- [ ] T016 [US3] Handle self-removal, missing-user, and already-removed no-op/error messaging in `actions/userAction.ts` and `components/admin/DeleteUserAccessButton.tsx`
+- [x] T013 [US3] Enforce explicit confirmation contract and preserved-history success messaging in `actions/userAction.ts` `deleteUserAccess`
+- [x] T014 [P] [US3] Replace `window.confirm` with `ConfirmDialog` flow in `components/admin/DeleteUserAccessButton.tsx`
+- [x] T015 [P] [US3] Wire destructive access-removal control into the detail card in `components/admin/users/UserProfileCard.tsx`
+- [x] T016 [US3] Handle self-removal, missing-user, and already-removed no-op/error messaging in `actions/userAction.ts` and `components/admin/DeleteUserAccessButton.tsx`
 
 **Checkpoint**: All user stories are functional and independently testable.
 
